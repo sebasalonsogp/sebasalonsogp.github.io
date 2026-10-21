@@ -1,61 +1,56 @@
 # Personal Portfolio
 
-A custom outer-space portfolio for backend engineering, AI/ML, and data science. The planned centerpiece is a rotatable solar system with an **Explore → Visit → Read → Land → Return** journey, supported by a readable portfolio page and direct project links.
+A custom outer-space portfolio for backend engineering, ML systems, and data science. The hero is a rotatable solar system where each planet is a project (**Explore → Visit → Land → Return**), followed by a readable project list, a four-lane experience timeline, a skills constellation, and contact set against a live ray-traced black hole.
 
-**Stage:** Phase 0 complete; Phase 1 is next. The current page is a deliberately minimal development shell, not the finished layout. No starfield, 3D explorer, verified biography, or live deployment is implemented yet. See the handoff for actual validation results.
+**Stage:** design approved; Phase 1 (content model, readable site, GitHub Pages pipeline) is next. The current page is still the Phase 0 development shell. See the handoff for actual status.
 
 ## Start here
 
-- [Product brief](PRODUCT.md): confirmed goals and unresolved choices.
-- [Implementation plan](tasks/plan.md) and [task checklist](tasks/todo.md): ordered phases and acceptance criteria.
+- [Product brief](PRODUCT.md): goals, capabilities and open decisions.
+- [Design spec](docs/design-spec.md) and the [approved concept](references/concept/orbit-concept-v19.html) (open in a browser): the visual contract.
+- [Implementation plan](tasks/plan.md) and [task checklist](tasks/todo.md): phases, slices and acceptance criteria.
 - [Current handoff](docs/handoff.md): completed work, validation, and the next task.
-- [Architecture and stack decisions](docs/architecture.md): boundaries and reasons.
-- [Stitch reference](references/README.md): visual source and prior feedback.
+- [Architecture](docs/architecture.md), [content model](docs/content.md), [deployment](docs/deployment.md).
 
 ## Local development
 
-Use **Node 24.22.0 LTS** (recorded in `.nvmrc`) and npm. The package engines also permit compatible Node 22 and 26 installations. CI uses the pinned LTS version. No global Astro installation, database, account, or environment file is needed.
+Use **Node 24.22.0 LTS** (recorded in `.nvmrc`) and npm. CI uses the pinned LTS version.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open the localhost URL printed by Astro. Run all commands in this `repo` directory.
-
 ```sh
 npm run check         # Astro diagnostics and TypeScript checking
-npm run format:check  # Authored source and documentation formatting
+npm run format:check  # Formatting
 npm run build         # Static production output in dist/
-npm run preview       # Serve the existing production build locally
+npm run preview       # Serve the production build locally
 npm run verify        # Formatting + checking + build
 npm run format        # Apply formatting
 ```
 
-The repository pins direct package versions and commits `package-lock.json`. Use `npm ci` for reproducible installs. Dependencies are added when the relevant phase needs them: Three.js in the explorer slice, Playwright tests when meaningful interaction behavior exists. No empty framework layers or placeholder test suite are included.
+Dependencies are added by the phase that uses them (fonts and Playwright in Phase 1, Three.js in Phase 3).
 
 ## Structure
 
 ```text
 src/
-  content/projects/   Markdown entries; drafts are hidden
-  content.config.ts   Validated project metadata
-  layouts/            Shared HTML document structure
-  pages/              Astro routes
-  styles/             Shared tokens and base CSS
-public/               Static files with preserved URLs (currently a favicon)
-references/           Original design essentials; not served to visitors
-docs/                 Architecture, content, hosting, and handoff
-tasks/                Maintained phased plan and checklist
-.github/workflows/    CI checks; no deployment workflow yet
+  content/            Projects, experience, education (validated collections)
+  data/               Site profile, skill groups, GitHub snapshot
+  features/           Progressive-enhancement modules (sky, explorer, timeline, …)
+  layouts/ pages/     Astro layout and routes (/, /projects/<id>/, 404)
+  styles/             Tokens and base CSS
+public/               Resume, video, favicon
+references/           Approved concept and original Stitch export; not served
+docs/ tasks/          Spec, architecture, content, deployment, handoff, plan
+.github/workflows/    CI checks and (from Phase 1) GitHub Pages deploy
 ```
-
-See [content authoring](docs/content.md) before adding a project. A draft example records the data shape without inventing portfolio claims.
 
 ## Agent handoff
 
-Point a new coding agent at this directory and ask it to read `AGENTS.md` and `docs/handoff.md`. Thin Claude and Copilot instruction files point to the same maintained context. No prior conversation, agent memory, proprietary plugin, or absolute machine path is required to continue.
+Point a coding agent at this directory and ask it to read `AGENTS.md` and `docs/handoff.md`. No prior conversation or machine-specific path is required.
 
 ## Hosting
 
-GitHub Pages is the selected target. The repository has no remote or publication configured. [Deployment notes](docs/deployment.md) describe the remaining destination and base-path decisions. Compute-heavy demos will be hosted independently and linked from the portfolio.
+GitHub Pages via GitHub Actions, deployed from Phase 1 with `noindex` until launch. See [deployment](docs/deployment.md).

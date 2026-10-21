@@ -1,5 +1,5 @@
 {
-  "description": "Unchanged source references. Paths relative to references/.",
+  "description": "Unchanged source references. Paths relative to references/. concept/ is the approved visual source; stitch/ and interaction-studies/ are historical.",
   "archive": {
     "name": "stitch_design_system_component_library.zip",
     "sha256": "7a5d3623cecf9d937c8f123a959b7e5e9014422999d810d02d655efb42d1d482"
@@ -20,6 +20,38 @@
     {
       "path": "interaction-studies/explorer-comparison.html",
       "sha256": "e6a4cb8d7288fedb9374ab3644877a8b84e89f9ee8aa7773904f008ac4953971"
+    },
+    {
+      "path": "concept/orbit-concept-v19.html",
+      "sha256": "3e77eae11cbf001e63cff3609653a481da34151f50d736aec91cefa96ab0ced0"
+    },
+    {
+      "path": "concept/media/eigenflow-demo.webm",
+      "sha256": "fdd4b96c2acb3647d2e8525bc92a101cdcb1f07ded777167f00ec1b196a359b0"
+    },
+    {
+      "path": "concept/media/eigenflow-experiment.jpg",
+      "sha256": "4ae348132c5a9186abbc6d36aa1ff7a5d350609c12ab522850d75db6063a2b52"
+    },
+    {
+      "path": "concept/media/eigenflow-fiedler.jpg",
+      "sha256": "0daa0c33bd38db1a2a431d3940e3d26d2b5c27aaafc39ca07fead37693bc8413"
+    },
+    {
+      "path": "concept/media/eigenflow-poster.jpg",
+      "sha256": "f86b16ad3dd4cd1028359b7ee501c91488af5f5259847044ab668bfce9d9bffc"
+    },
+    {
+      "path": "concept/media/exoplanet-dashboard.jpg",
+      "sha256": "9cc9c26beb2919cc225b44a0e88e2080be980a201db890575fa5a29e92ca0ff1"
+    },
+    {
+      "path": "concept/media/quantum-app.jpg",
+      "sha256": "c139c795fc438ff2b25d664f14e6c82ae3b589af76e71c9d63621d8fcfcf9d20"
+    },
+    {
+      "path": "concept/media/wine-prototype.jpg",
+      "sha256": "f739277f0611be28390c623432d98c45e632c92862b0c0222d75c303bfeb0df5"
     }
   ]
 }

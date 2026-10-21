@@ -8,58 +8,54 @@ web
 
 ## Stack
 
-The user delegated stack selection to the assistant based on project fitness and sound engineering, without adding technology for its own sake.
-
-Selected: Astro static output, strict TypeScript, direct Three.js for the explorer, scoped custom CSS with shared CSS variables, and Markdown content collections. Node LTS/npm builds the site. GitHub Pages and GitHub Actions are the intended hosting and delivery tools. Playwright will check meaningful browser interactions.
-
-The foundation installs only the tools it currently uses. Three.js and browser test dependencies enter with their implementation slices. No React, Tailwind, state library, general animation library, server, or database is needed initially. See `docs/architecture.md` for rationale and reconsideration triggers.
+Astro static output, strict TypeScript, scoped CSS with shared tokens, Astro content
+collections with Zod, self-hosted fonts (Fontsource), a 2D canvas sky, direct Three.js for
+the explorer, a raw WebGL shader for the black hole, Playwright with axe for tests, GitHub
+Pages via GitHub Actions. Dependencies enter with the phase that uses them. See
+`docs/architecture.md`.
 
 ## Users
 
-Hiring managers and engineers reviewing the owner's work before contacting them.
+Hiring managers and engineers reviewing Sebastian's work before contacting him.
 
-## Product Purpose
+## Product purpose
 
-Present the owner's backend engineering, AI/ML, and data science focus through a distinctive portfolio and accessible project exploration.
+Present Sebastian Gonzales-Portillo — backend and ML systems engineer, University of Miami
+CS & Math '25, most recently Founding Software Engineer at PadStats — through a memorable,
+honest portfolio that is fast to scan.
 
-## Capabilities and Constraints
+## Capabilities
 
-- Outer-space theme with a visibly twinkling star background.
-- A rotatable solar system is the main visual element within a complete portfolio website.
-- Visit a planet: animate toward it and show a readable project description beside a close view.
-- Land: open that project's real demo. Offer an honest source/walkthrough action when no live demo exists.
-- Return to the system predictably; support direct project links and browser Back.
-- Keep project content interchangeable without changing scene logic or page components.
-- Feature the owner's pinned projects once their account and current selection are verified. Do not block the design foundation on final copy.
-- Work iteratively. The current authorization is the phased plan and scaffold, not the entire finished site.
-- Use the Stitch composition as the starting structure, incorporating the requested explorer additions. Do not restart layout discovery as though there is no reference.
-- Keep maintenance and hosting lean; avoid generic portfolio templates.
+- Hero solar system: each planet is a solo project, with surface, orbit, size, rings, moons
+  and an outer belt encoding facts about the work. Explore → Visit → Land → Return, with a
+  60-second tour and shareable `/projects/<id>/` URLs.
+- Landing previews with screenshots and video where the project has them.
+- Projects list as the plain, no-scene path to the same content.
+- Experience as a four-lane spacetime timeline with playback, built from resume and
+  LinkedIn data.
+- Skills as grouped constellations derived from projects and roles.
+- Contact with email, phone, location, resume download, LinkedIn and GitHub, set against a
+  live ray-traced black hole; matching 404 page.
+- Everything usable without WebGL, with keyboard, touch, and reduced motion.
 
-## Brand Commitments
+## Brand commitments
 
-The supplied Stitch reference establishes the dark space direction, restrained violet/cyan accents, thin orbital geometry, and portfolio composition. Custom authorship comes from deliberate typography, composition, motion, and interaction. Choosing CSS over Tailwind does not itself create originality.
+Near-black void with visibly twinkling stars and a soft cool Milky Way; one warm accent
+(the star). Newsreader for display, Schibsted Grotesk for text, IBM Plex Mono only for
+dates and data. Space metaphors carry real information. No explanatory bulk, no invented
+facts. Full detail in `docs/design-spec.md`; visual reference
+`references/concept/orbit-concept-v19.html`. The original Stitch export in
+`references/stitch/` is historical context only.
 
-## Evidence on Hand
+## Product principles
 
-- Original extracted Stitch files: `references/stitch/`.
-- Earlier comparison: `references/interaction-studies/explorer-comparison.html`.
-- User selected rotational navigation after the comparison.
-- User said the comparison's star twinkle was not working. Treat the visual effect as unresolved, not approved.
-- Confirmed focus, audience, and contact outcome above.
-- Exported name, employment, projects, metrics, and contact details are not verified biography or publication-ready content.
+- Memorable interaction, easy inspection: nothing important lives only in a canvas.
+- Content changes never require scene or component changes.
+- Build in small reviewed slices; review each phase on the live Pages URL.
 
-## Product Principles
+## Open decisions
 
-- Make the interaction memorable and the work easy to inspect.
-- Keep reading and contacting possible without navigating a scene.
-- Let content change independently from presentation.
-- Review small visual and interaction slices before extending them across the site.
-
-## Open Decisions
-
-- Final planet style, typography, star density/intensity, and motion pacing.
-- Responsive adaptation and exact placement of the visit view within the reference composition.
-- Final project identifiers/content, verified source and demo URLs, resume, and contact links.
-- Repository identity/visibility, domain, hosting path, and initial publication.
-
-The architecture direction and phased development method are settled. The foundation shell is not a new visual proposal or an approved finished design.
+- Final pitch wording (draft in use).
+- Phone number public (currently shown).
+- Custom domain (optional, at launch).
+- SVD Lens and Wine Journal screenshots (to be supplied).

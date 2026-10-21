@@ -1,48 +1,79 @@
 # Delivery checklist
 
-Work one small slice at a time. Read the phase acceptance criteria in `plan.md`; update the handoff with actual checks before ending a session.
+Work one slice at a time (see `plan.md` for acceptance criteria). Update `docs/handoff.md`
+before ending a session.
 
-## Phase 0 — Foundation
+## Phase 0 — Foundation ✓
 
-- [x] Confirm the stack and neighboring project-folder convention.
-- [x] Create the project container, portable context, and retained design references.
-- [x] Add a minimal Astro shell, strict TypeScript, and draft content schema.
-- [x] Configure formatting and GitHub Actions quality checks.
-- [x] Install compatible pinned dependencies and generate the lockfile.
-- [x] Verify types, formatting, static build, browser shell, and asset integrity.
-- [x] Record validation and a clean local Git baseline in the handoff.
+- [x] Astro static shell, strict TypeScript, CI checks, phased plan, references.
 
-## Phase 1 — Composition and stars (next)
+## Design — approved concept ✓
 
-- [ ] Adapt the Stitch layout and define typography/spacing/motion tokens.
-- [ ] Implement a visibly twinkling starfield and reduced-motion presentation.
-- [ ] Review first viewport, portfolio flow, mobile, and keyboard behavior with the user.
+- [x] Interactive concept approved (`references/concept/orbit-concept-v19.html`).
+- [x] Design spec written (`docs/design-spec.md`).
 
-## Phase 2 — One complete journey
+## Phase 1 — Content model, readable site, Pages pipeline (next)
 
-- [ ] Add Three.js, one planet, orbit controls, selection, and accessible HTML controls.
-- [ ] Implement Visit/Read/Return and reduced-motion behavior.
-- [ ] Implement static detail URL, direct entry, browser history, and focus restoration.
-- [ ] Add Land with a verified destination or clearly identified development fixture.
-- [ ] Add meaningful Playwright behavior coverage; measure graphics cost and lifecycle behavior.
-- [ ] Review the complete interaction before scaling.
+- [ ] 1.1 Collections: projects, experience, education, skills groups, site profile; migrate real content.
+- [ ] 1.2 Tokens and self-hosted fonts.
+- [ ] 1.3 Page skeleton: nav, hero text, projects, experience list, skills lists, contact, footer.
+- [ ] 1.4 Static `/projects/<id>/` routes.
+- [ ] 1.5 Playwright + axe harness with first tests.
+- [ ] 1.6 GitHub Pages workflow (tests gate deploy), `noindex`, resume PDF, plain 404; verify direct loads live.
+- [ ] Checkpoint: review the live readable site.
 
-## Phase 3 — All projects and supporting content
+## Phase 2 — Sky and visual system
 
-- [ ] Drive scene/index/details from collection data; prove add/remove without source changes.
-- [ ] Verify pinned selection, project count, content, links, and asset rights.
-- [ ] Complete experience, about, contact, and supplied resume.
-- [ ] Review full desktop/mobile portfolio and remove development fixtures.
+- [ ] 2.1 Sky module (stars, twinkle, haze 0.024, parallax).
+- [ ] 2.2 Shared motion policy (reduced motion, visibility pause, fps cap).
+- [ ] 2.3 Visual pass: type rules, headings, help popovers, focus.
+- [ ] Checkpoint: look and feel.
 
-## Phase 4 — Release readiness
+## Phase 3 — Solar-system explorer
 
-- [ ] Audit keyboard, touch, reduced motion, contrast, and non-graphics navigation.
-- [ ] Profile performance and optimize measured bottlenecks.
-- [ ] Check Chromium, Firefox, WebKit, mobile, 404, and metadata.
-- [ ] Verify production root/subpath build and direct project refresh.
+- [ ] 3.1 Three.js scene shell with lazy load and fallback.
+- [ ] 3.2 Data-driven bodies: star, orbits, procedural planets, rings, moons, belt.
+- [ ] 3.3 HTML labels, drag, hover, select, list ↔ planet highlight.
+- [ ] 3.4 Hero key popover.
+- [ ] Checkpoint: explore on desktop and phone.
 
-## Phase 5 — Launch
+## Phase 4 — Visit, land, return
 
-- [ ] Confirm remote, visibility, domain/path, and initial publication.
-- [ ] Add and configure gated Pages deployment.
-- [ ] Verify the live release; document its URL, editing workflow, and rollback.
+- [ ] 4.1 Visit state machine and panel.
+- [ ] 4.2 Landing previews, video, lightbox.
+- [ ] 4.3 Routes, history, direct load, focus.
+- [ ] 4.4 Tour.
+- [ ] 4.5 Journey tests.
+- [ ] Checkpoint: full journey, shared link on a phone.
+
+## Phase 5 — Experience timeline
+
+- [ ] 5.1 Build-time SVG timeline.
+- [ ] 5.2 Selection, details, skill links, help popover.
+- [ ] 5.3 Playback.
+
+## Phase 6 — Skills constellation
+
+- [ ] 6.1 Build-time layout and group lines.
+- [ ] 6.2 Overview, light-up selection, filter, cross-links.
+
+## Phase 7 — Contact, black hole, 404
+
+- [ ] 7.1 Contact polish and resume download.
+- [ ] 7.2 Black hole (lazy, adaptive, fallback).
+- [ ] 7.3 404 page.
+
+## Phase 8 — Quality
+
+- [ ] 8.1 Accessibility audit.
+- [ ] 8.2 Performance budgets + Lighthouse CI.
+- [ ] 8.3 Cross-browser and device pass.
+- [ ] 8.4 SEO, Open Graph, sitemap, structured data.
+- [ ] 8.5 GitHub data refresh automation.
+- [ ] 8.6 Analytics (optional).
+
+## Phase 9 — Launch
+
+- [ ] 9.1 Final content review and missing screenshots.
+- [ ] 9.2 Remove `noindex`, domain, tag v1.0.0.
+- [ ] 9.3 Live verification and rollback notes.

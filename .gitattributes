@@ -3,3 +3,7 @@ references/stitch/* -text
 references/interaction-studies/*.html -text
 *.png binary
 *.zip binary
+references/concept/*.html -text
+*.jpg binary
+*.webm binary
+*.pdf binary

@@ -1,35 +1,52 @@
 # Hosting and deployment
 
-Selected host: **GitHub Pages**, serving Astro's `dist/` output. The scaffold has no GitHub remote, Pages deployment workflow, custom domain, or live site.
+Target: **GitHub Pages**, deployed by GitHub Actions from `main`.
 
-## Decisions needed at launch
+## Decisions
 
-- The repository owner/name and visibility. GitHub Pages availability for private repositories depends on the account plan; confirm when choosing visibility.
-- Whether this is the account root (`OWNER.github.io` repository), a repository subpath, or a custom domain.
-- The publication branch and initial publication decision.
+- **Repository:** `sebasalonsogp/sebasalonsogp.github.io` (recommended). Serves at
+  `https://sebasalonsogp.github.io/` with `base: '/'`. A custom domain can be added later
+  without changing paths.
+  - If a project repository is used instead (e.g. `portfolio`), set `base: '/portfolio'`
+    and keep every internal URL on `import.meta.env.BASE_URL`.
+- **Visibility before launch:** deploy from Phase 1 with `<meta name="robots"
+content="noindex">` and no sitemap submission. Removed in Phase 9.
 
-## Configuration
+## Astro configuration
 
-Set Astro's `site` to the public origin. Use `/` as `base` for an account-root/custom-domain site; use `/REPOSITORY` for a project site under that path. Document the final values in `astro.config.mjs` when the destination is known.
-
-For a local subpath rehearsal before a destination exists:
-
-```sh
-npm run build -- --site https://example.com --base /portfolio-check
-npm run preview -- --base /portfolio-check
+```js
+export default defineConfig({
+  site: 'https://sebasalonsogp.github.io',
+  base: '/',
+  output: 'static',
+  trailingSlash: 'always',
+});
 ```
 
-Open the URL Astro prints. The example origin is a build-only placeholder; no request publishes there. Rebuild normally afterward. All internal/asset URLs introduced later must respect `import.meta.env.BASE_URL` or the equivalent Astro URL construction. Test nested project refreshes on the built site; GitHub Pages does not provide arbitrary SPA routing rewrites.
+Pages serves `/projects/<id>/index.html` for `/projects/<id>/` and `404.html` for unknown
+paths. No SPA rewrites are needed.
 
-## CI and future publication
+## Workflow (`.github/workflows/deploy.yml`)
 
-`.github/workflows/ci.yml` checks pull requests and pushes to `main`: reproducible install, formatting, Astro/TypeScript diagnostics, production build, and dependency audit. Actions are pinned to reviewed commit identifiers. It does not deploy. Its steps have local equivalents; a hosted run still requires a remote.
+1. Trigger on push to `main` (and manual dispatch).
+2. **Check job:** `npm ci`, `npm run verify`, Playwright against `astro preview`.
+3. **Build job:** build and upload `dist/` with `actions/upload-pages-artifact`.
+4. **Deploy job:** `actions/deploy-pages` into the `github-pages` environment.
+   Permissions: `contents: read` for build; `pages: write` and `id-token: write` for deploy only.
+5. Pin actions to commit SHAs (existing CI policy). In repository settings, set Pages source
+   to "GitHub Actions" and require the check job on `main`.
 
-Phase 2 will add actual interaction tests and their browser installation step to this workflow. There is no empty test command or false passing test suite in the foundation.
+## After each deploy
 
-At launch, add a Pages workflow using the maintained official actions, with checks before deployment, read-only permissions for build, and only the permissions needed by the deployment job. Set up the `github-pages` environment and required branch checks where available. Publish `dist/`, not source or the surrounding project container.
+Open the live URL: home, one `/projects/<id>/` direct load and refresh, an unknown path
+(404), resume download, and one demo link.
 
-After deployment, check HTTPS, origin/base paths, direct project URLs, refresh, social metadata, contact/resume, and demo links on the public site. Record the release commit and live URL. Roll back by redeploying the previous known-good source commit through the same checks; do not improvise manual changes to generated output.
+## Launch (Phase 9)
 
-- [Astro's GitHub Pages guide](https://docs.astro.build/en/guides/deploy/github/)
-- [GitHub Pages overview](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
+Remove `noindex`, add sitemap and canonical URLs, optional custom domain (`CNAME` in
+`public/`, DNS records, enforce HTTPS), tag `v1.0.0`.
+
+## Rollback
+
+Revert the offending commit on `main` (or re-run the deploy workflow on the last good
+commit). Never edit the deployed output by hand.
