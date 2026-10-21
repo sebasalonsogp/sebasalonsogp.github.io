@@ -2,12 +2,12 @@
 
 ## Current state
 
-**Phase 1, slices 1.1–1.5 are done** on stacked branches: `feat/content-model` (1.1) →
-`feat/tokens-fonts` (1.2) → `feat/page-skeleton` (1.3) → `feat/project-routes` (1.4) →
-`test/playwright-harness` (1.5) → `deploy/github-pages` (1.6, local part), all on
-`docs/plan-v2`; none merged or pushed. There is no remote yet.
-The visual source of truth stays `references/concept/orbit-concept-v19.html` and
-`docs/design-spec.md`; the phased plan is `tasks/plan.md` (v2).
+**Phase 1 is built and live** at https://sebasalonsogp.github.io/ (`noindex`), from the
+public repository `sebasalonsogp/sebasalonsogp.github.io`, branch `main`. Every push to
+`main` runs the CI checks (verify, audit, Playwright + axe in three browsers) and deploys
+only if they pass. **Next: the Phase 1 checkpoint**, where Sebastian reviews copy and
+structure on the live URL, then Phase 2. The visual source of truth stays
+`references/concept/orbit-concept-v19.html` and `docs/design-spec.md`.
 
 ## Slice 1.1 — content model
 
@@ -76,23 +76,23 @@ content migrated; each validation rule was shown to fail the build when broken.
   `ContactSection.astro`). The in-app browser had widened its 320 px viewport to 328 and
   hidden it, so the 320 px claims in slices 1.2–1.4 were wrong.
 
-## Slice 1.6 — Pages deploy (local part)
+## Slice 1.6 — GitHub Pages
 
-- `astro.config.mjs`: `site: 'https://sebasalonsogp.github.io'`, `base: '/'`.
-- `src/pages/404.astro`: plain "This page fell past the event horizon." with a link home
-  (black hole in 7.3). Test checks the 404 status and the way back.
-- `deploy.yml` (check → build → deploy) reuses `ci.yml`; see `docs/deployment.md`.
-- `npm run verify` passes; `npm test` 17 × 3 = 51 passed.
+- `astro.config.mjs` sets `site`/`base`; `src/pages/404.astro` (plain; black hole in 7.3);
+  `deploy.yml` (check via `ci.yml` → build → deploy, actions pinned by SHA); resume PDF
+  in `public/` with a download test. 18 tests × 3 browsers = 54 passing.
+- Before the first push the 9 local commits were re-authored from the old work identity
+  to `sebasalonsogp <sebasagpf@gmail.com>` (Sebastian's choice), set in this repo's local
+  git config; content unchanged. The global git config still holds the old identity.
+- First deploy (run 39681323004) passed all jobs. Live checks: home and project pages 200
+  (direct load and refresh), `/projects/eigenflow` → 301 to the slash URL, unknown path
+  404 with the custom page, resume PDF and video served, `noindex` everywhere, no console
+  errors.
 
 ## Next task
 
-Finish slice 1.6. Needs Sebastian first: (1) confirm repository name
-`sebasalonsogp.github.io` (public, required for a free Pages user site), (2) the resume
-PDF for `public/Sebastian_Gonzales_Portillo_Resume.pdf`, (3) phone shown or hidden (the
-number becomes public with the repository either way unless removed from `site.ts`).
-Then: create the repository with `gh`, merge the stacked branches into `main`, push, set
-Pages source to GitHub Actions, watch the deploy, and check the live URL (home, a project
-direct load and refresh, 404, resume, one demo link).
+Phase 1 checkpoint: Sebastian reviews https://sebasalonsogp.github.io/ on desktop and
+phone. After approval, Phase 2 slice 2.1 (sky module).
 
 ## Open inputs and issues
 
@@ -104,23 +104,21 @@ direct load and refresh, 404, resume, one demo link).
 - **axe "incomplete" (needs a human):** `color-contrast` on some elements (measure in 2.3)
   and `video-caption` for the Eigenflow demo; no captions are needed if the recording is
   silent. Confirm.
-
 - **Font weight:** Newsreader with the opsz axis (as specified) is 129 KB per face vs 57 KB
   weight-only. Revisit in Phase 8 if LCP needs it. No fallback metric overrides yet (CLS
   check in Phase 8).
-- Resume links point to `Sebastian_Gonzales_Portillo_Resume.pdf`, which arrives in 1.6;
-  until then they 404.
-- **Phone:** `showPhone` is `true` (as in the approved concept). The number is stored in
-  `src/data/site.ts`, so it becomes public with the repository in slice 1.6 whatever the
-  flag says. Decide before 1.6.
+- **Streamlit demos sleep:** the Quantum Playground demo showed Streamlit's "gone to
+  sleep" screen when opened. Idle Community Cloud apps sleep, so visitors may have to wake
+  them. Consider a keep-alive or a note near the demo buttons.
+- Phone is shown (Sebastian's decision); it is also in the public repo and resume.
 - Eigenflow's page stacks three media items before the text on phones; Phase 4.2's
   carousel (dots + lightbox) should replace the stack.
 - SVD Lens and Exoplanet share `lastCommit` 2026-09-15; ties sort by id, so Exoplanet
   orbits inside SVD Lens (the concept had the reverse). Real commit times from the sync
   script (Phase 8) would settle it.
 - Final pitch (draft in use); PadStats title on LinkedIn ("Software Engineer") vs resume
-  ("Founding Software Engineer"); screenshots for SVD Lens and the real Wine Journal app;
-  confirm repository name `sebasalonsogp.github.io` before 1.6.
+  ("Founding Software Engineer"); screenshots for SVD Lens and the real Wine Journal app. The resume
+  lists the PadStats role as "Founding Software Engineer – Cloud & ML Systems".
 
 ## Media sources
 
