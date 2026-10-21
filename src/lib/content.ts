@@ -1,15 +1,23 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { githubSnapshot, type RepoSnapshot } from './github-snapshot';
+import { resolveMedia, type ProjectMedia } from './media';
 
-export type Project = CollectionEntry<'projects'> & { github: RepoSnapshot };
+export type Project = CollectionEntry<'projects'> & { github: RepoSnapshot; media: ProjectMedia[] };
 export type Role = CollectionEntry<'experience'>;
 export type Education = CollectionEntry<'education'>;
 
-/** Published projects with their GitHub facts, most recent commit first (inner orbit first). */
+/**
+ * Published projects with their GitHub facts and resolved media, most recent commit first
+ * (inner orbit first).
+ */
 export async function getProjects(): Promise<Project[]> {
   const entries = await getCollection('projects', ({ data }) => !data.draft);
   const projects = entries
-    .map((entry) => ({ ...entry, github: githubSnapshot[entry.data.repo]! }))
+    .map((entry) => ({
+      ...entry,
+      github: githubSnapshot[entry.data.repo]!,
+      media: resolveMedia(entry.id, entry.data.media),
+    }))
     .sort(
       (a, b) => b.github.lastCommit.localeCompare(a.github.lastCommit) || a.id.localeCompare(b.id),
     );

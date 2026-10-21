@@ -112,9 +112,20 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
 - Tour: Eigenflow → Wine Journal → Quantum Playground, 8.5 s each, progress bar, stops on
   any interaction.
 
+## Project pages (readable visit)
+
+`/projects/<id>/` is the full page with the visit open in the hero: domain · month and
+"← Back to system" (link to `/`), title (`h1`), one-liner, media, "The short version" and
+"Engineering log" one after the other (tabs arrive with JavaScript in Phase 4.1), actions,
+stack tags linking to skills, and "← Previous / n of N / Next world →" (wraps). Desktop:
+media column left, panel right (26 rem); ≤ 900 px: one column, media after the one-liner.
+Media is static for now: every item shown with its caption, video with controls and poster
+(autoplay, dots and lightbox in Phase 4.2). The first image loads eagerly. Project rows on
+the home page link here; the whole row is the target and the open project is highlighted.
+
 ## Projects list
 
-Rows: month · name (display) · domain dot + label · one-liner · status ("Live demo" in
+Rows (each links to its project page): month · name (display) · domain dot + label · one-liner · status ("Live demo" in
 accent or "In development"). Section fact: "5 solo builds · 4 live demos". "Earlier work"
 links to older repositories with years. Phones stack: date + status, name, domain,
 one-liner.

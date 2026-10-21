@@ -16,6 +16,11 @@ log: >-
   are checked against exact answers, with residual, normalization and orthogonality diagnostics
   and measured second-order convergence. Solver medians are 1.9–6.4 ms.
 media:
-  - { type: image, src: quantum-app.jpg, caption: The live app }
+  - type: image
+    src: quantum-app.jpg
+    alt: >-
+      Quantum Playground's infinite square well experiment: sliders for well width and grid
+      resolution, and live results for the selected energy, analytic error and solve time.
+    caption: The live app
 tour: 3
 ---

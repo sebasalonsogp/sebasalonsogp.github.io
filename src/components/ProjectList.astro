@@ -2,28 +2,38 @@
 import { site } from '../data/site';
 import { domains } from '../data/taxonomy';
 import type { Project } from '../lib/content';
-import { formatMonth } from '../lib/format';
+import { formatMonth, withBase } from '../lib/format';
 import ExternalLink from './ExternalLink.astro';
 import Section from './Section.astro';
 
 interface Props {
   projects: Project[];
+  /** Id of the project open on this route, marked as the current page. */
+  current?: string | undefined;
 }
 
-const { projects } = Astro.props;
+const { projects, current } = Astro.props;
 const live = projects.filter((p) => p.data.demoUrl).length;
 const fact = `${projects.length} solo builds · ${live} live demos`;
 ---
 
 <Section id="projects" title="Projects" fact={fact}>
   <ol class="index">
-    {projects.map(({ data, github }) => (
+    {projects.map(({ id, data, github }) => (
       <li class="row">
         <span class="r-year">
           <span class="sr-only">Last commit </span>
           <time datetime={github.lastCommit.slice(0, 7)}>{formatMonth(github.lastCommit)}</time>
         </span>
-        <h3 class="r-name">{data.title}</h3>
+        <h3 class="r-name">
+          <a
+            class="r-link"
+            href={withBase(`projects/${id}/`)}
+            aria-current={id === current ? 'page' : undefined}
+          >
+            {data.title}
+          </a>
+        </h3>
         <span class="r-dom">
           <i class="dot" style={`background:${domains[data.domain].color}`} aria-hidden="true" />
           {domains[data.domain].label}
@@ -68,6 +78,43 @@ const fact = `${projects.length} solo builds · ${live} live demos`;
 
   .row:first-child {
     border-top: 0;
+  }
+
+  /* The title link covers the row, so the whole row is one target. */
+  .row {
+    position: relative;
+    transition: background var(--dur-fast);
+  }
+
+  .r-link {
+    text-decoration: none;
+    transition: color var(--dur-fast);
+  }
+
+  .r-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .r-link:focus-visible {
+    outline: none;
+  }
+
+  .row:hover,
+  .row:has(.r-link:focus-visible),
+  .row:has(.r-link[aria-current='page']) {
+    background: color-mix(in srgb, var(--sol) 6%, transparent);
+  }
+
+  .row:has(.r-link:focus-visible) {
+    outline: 2px solid var(--sol);
+    outline-offset: -2px;
+  }
+
+  .row:hover .r-link,
+  .r-link[aria-current='page'] {
+    color: var(--sol);
   }
 
   .r-year {

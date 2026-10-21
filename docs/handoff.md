@@ -2,9 +2,9 @@
 
 ## Current state
 
-**Phase 1, slices 1.1–1.3 are done** on stacked branches: `feat/content-model` (1.1) →
-`feat/tokens-fonts` (1.2) → `feat/page-skeleton` (1.3), all on `docs/plan-v2`; none
-merged yet. Next is slice 1.4.
+**Phase 1, slices 1.1–1.4 are done** on stacked branches: `feat/content-model` (1.1) →
+`feat/tokens-fonts` (1.2) → `feat/page-skeleton` (1.3) → `feat/project-routes` (1.4),
+all on `docs/plan-v2`; none merged yet. Next is slice 1.5.
 The visual source of truth stays `references/concept/orbit-concept-v19.html` and
 `docs/design-spec.md`; the phased plan is `tasks/plan.md` (v2).
 
@@ -45,10 +45,26 @@ content migrated; each validation rule was shown to fail the build when broken.
   Copy email exercised via its selection fallback (the pane blocks clipboard); the
   clipboard success path is untested. `npm run verify` passes.
 
+## Slice 1.4 — project routes
+
+- `src/pages/projects/[id].astro` renders `PortfolioPage` with `initialProject`; the hero
+  shows `ProjectVisit` (readable visit panel) and carries `data-initial-project`.
+  Per-project title and description. Project rows link to their pages.
+- Media copied byte-for-byte from `references/concept/media` (Sebastian's choice):
+  images and the poster to `src/assets/projects/<id>/` (served as responsive WebP), the
+  video to `public/media/eigenflow/`. `src/lib/media.ts` resolves them in
+  `getProjects()`; a missing image or video fails the build (both shown). Image entries
+  now require `alt`, written from the screenshots.
+- Added `@types/node` 24.19.2 (dev) for the build-time file check.
+- Checked in the built preview at 1440×900, 390×844 and 320 px (no overflow): all 5 routes
+  load directly, row → page, prev/next wrap, video/poster/images return 200, no console
+  errors. `npm run verify` passes.
+
 ## Next task
 
-Phase 1, slice 1.4 — static `/projects/<id>/` routes via `PortfolioPage` with an
-initial project; make project rows link to them. Decide media first (see below).
+Phase 1, slice 1.5 — Playwright (Chromium, Firefox, WebKit) + `@axe-core/playwright`:
+sections and nav reachable, project routes load directly, no axe violations, resume and
+external links present.
 
 ## Open inputs and issues
 
@@ -60,8 +76,8 @@ initial project; make project rows link to them. Decide media first (see below).
 - **Phone:** `showPhone` is `true` (as in the approved concept). The number is stored in
   `src/data/site.ts`, so it becomes public with the repository in slice 1.6 whatever the
   flag says. Decide before 1.6.
-- **Media timing:** slice 1.4 asks for media on project routes, but copying media is
-  scheduled for Phase 4.2. Either copy the files in 1.4 or render 1.4 without media.
+- Eigenflow's page stacks three media items before the text on phones; Phase 4.2's
+  carousel (dots + lightbox) should replace the stack.
 - SVD Lens and Exoplanet share `lastCommit` 2026-09-15; ties sort by id, so Exoplanet
   orbits inside SVD Lens (the concept had the reverse). Real commit times from the sync
   script (Phase 8) would settle it.
@@ -71,12 +87,11 @@ initial project; make project rows link to them. Decide media first (see below).
 
 ## Media sources
 
-Copy from the project repositories: Eigenflow `docs/media/*`, Exoplanet
+In the repo now (copied from the concept's crops). Originals for later replacement live in
+the project repositories: Eigenflow `docs/media/*`, Exoplanet
 `docs/assets/dashboard-preview.png`, Quantum `assets/quantum-playground-demo.png`, Wine
-Journal `design/prototype-v3/checks/desktop-my-wines.png` (labeled as prototype). The
-concept's crops: Eigenflow experiment (80,120)–(1360,920), Quantum top 1440×900, Wine
-Journal top 1024×640; poster frame at 2 s of the Eigenflow video. File names must match the
-`media` entries in `src/content/projects/`.
+Journal `design/prototype-v3/checks/desktop-my-wines.png` (prototype). Still missing: SVD
+Lens (none) and real Wine Journal screenshots.
 
 ## Session start checklist
 

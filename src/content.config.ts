@@ -13,8 +13,8 @@ const skill = z.enum(skillNames, {
     `Unknown skill "${String(issue.input)}". Add it to a group in src/data/skill-groups.ts.`,
 });
 
-// File names only; images move to src/assets/projects/<id>/ and videos to public/media/<id>/
-// when media is copied into the repository (see docs/content.md).
+// File names only: images live in src/assets/projects/<id>/, videos in public/media/<id>/.
+// src/lib/media.ts resolves them and fails the build when a file is missing.
 const imageFile = z.string().regex(/^[a-z0-9-]+\.(jpe?g|png|webp|avif)$/, 'Expected an image file');
 const videoFile = z.string().regex(/^[a-z0-9-]+\.(webm|mp4)$/, 'Expected a video file');
 
@@ -22,6 +22,7 @@ const media = z.discriminatedUnion('type', [
   z.strictObject({
     type: z.literal('image'),
     src: imageFile,
+    alt: text,
     caption: text,
     fit: z.enum(['cover', 'contain']).default('cover'),
   }),

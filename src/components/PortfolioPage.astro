@@ -6,22 +6,42 @@ import ContactSection from './ContactSection.astro';
 import ExperienceList from './ExperienceList.astro';
 import Hero from './Hero.astro';
 import ProjectList from './ProjectList.astro';
+import ProjectVisit from './ProjectVisit.astro';
 import SiteFooter from './SiteFooter.astro';
 import SiteNav from './SiteNav.astro';
 import SkillGroups from './SkillGroups.astro';
 
-// One page for every route; /projects/<id>/ will pass the project to open (slice 1.4).
+// One page for every route: `/` and `/projects/<id>/`, which opens that project's visit.
 
+interface Props {
+  initialProject?: string | undefined;
+}
+
+const { initialProject } = Astro.props;
 const [projects, roles, education] = await Promise.all([getProjects(), getRoles(), getEducation()]);
+
+const index = initialProject ? projects.findIndex((p) => p.id === initialProject) : -1;
+if (initialProject && index < 0) throw new Error(`Unknown project ${initialProject}`);
+const visit = index >= 0 && {
+  project: projects[index]!,
+  previous: projects[(index - 1 + projects.length) % projects.length]!,
+  next: projects[(index + 1) % projects.length]!,
+  position: index + 1,
+  total: projects.length,
+};
+
+const title = visit
+  ? `${visit.project.data.title} — ${site.name}`
+  : `${site.name} — Backend and ML systems engineer`;
+const description = visit
+  ? visit.project.data.summary
+  : `${site.pitch.lead} ${site.pitch.emphasis} ${site.lede}`;
 ---
 
-<BaseLayout
-  title={`${site.name} — Backend and ML systems engineer`}
-  description={`${site.pitch.lead} ${site.pitch.emphasis} ${site.lede}`}
->
+<BaseLayout title={title} description={description}>
   <SiteNav slot="header" />
-  <Hero />
-  <ProjectList projects={projects} />
+  <Hero initialProject={initialProject}>{visit && <ProjectVisit {...visit} />}</Hero>
+  <ProjectList projects={projects} current={initialProject} />
   <ExperienceList roles={roles} education={education} />
   <SkillGroups projects={projects} roles={roles} />
   <ContactSection />

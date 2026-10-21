@@ -23,10 +23,16 @@ brief: Inject heat into a network and watch it spread. …
 log: FastAPI and NumPy build L = D − A, … 57 backend tests at 99% line coverage …
 media:
   - { type: video, src: eigenflow-demo.webm, poster: eigenflow-poster.jpg, caption: Demo recording }
-  - { type: image, src: eigenflow-experiment.jpg, caption: The bottleneck experiment }
+  - {
+      type: image,
+      src: eigenflow-experiment.jpg,
+      alt: Two four-node clusters joined by one weak bridge …,
+      caption: The bottleneck experiment,
+    }
   - {
       type: image,
       src: eigenflow-fiedler.jpg,
+      alt: The two clusters split into negative and positive groups …,
       caption: Fiedler partition and spectrum,
       fit: contain,
     }
@@ -39,8 +45,8 @@ Optional long-form write-up for the project page.
 Rules: `brief` is plain language for anyone; `log` is for engineers. Only real numbers from
 the repository. Prototype media must say so in the caption. Images live in
 `src/assets/projects/<id>/` (optimized by `astro:assets`); videos in `public/media/<id>/`.
-Until the files are copied in (see `docs/handoff.md`), `media` entries hold validated file
-names only and nothing renders them.
+`src/lib/media.ts` resolves the file names and a missing file fails the build. Images need
+`alt` text describing what the screenshot shows; the caption is the short visible label.
 
 Projects are ordered by `lastCommit` (newest first, ties broken by id); that order drives the
 orbits. `tour` positions must be unique. Read projects through `getProjects()` in

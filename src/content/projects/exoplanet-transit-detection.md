@@ -15,5 +15,10 @@ log: >-
   SVD-assisted Fourier and Box Least Squares searches are compared and the top candidates
   phase-folded. Began as an MTH 520 mini-project; checked with pytest, Ruff and mypy in CI.
 media:
-  - { type: image, src: exoplanet-dashboard.jpg, caption: The live dashboard }
+  - type: image
+    src: exoplanet-dashboard.jpg
+    alt: >-
+      Transit Lab dashboard: target KOI-13 b, 18,420 observations and a best BLS period of
+      1.76299 days, above the raw TESS light curve with its periodic dips.
+    caption: The live dashboard
 ---

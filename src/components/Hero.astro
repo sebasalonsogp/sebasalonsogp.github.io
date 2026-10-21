@@ -1,22 +1,40 @@
 ---
 import { site } from '../data/site';
+
+interface Props {
+  /** Project open on load (`/projects/<id>/`); its visit view is passed as the slot. */
+  initialProject?: string | undefined;
+}
+
+const { initialProject } = Astro.props;
 ---
 
 <!-- The explorer canvas (Phase 3) fills this section; its height is reserved now so the
      layout does not shift when the scene arrives. -->
-<section class="hero gut" id="hero" aria-labelledby="hero-heading">
-  <div class="intro wrap">
-    <p class="eyebrow">{site.eyebrow}</p>
-    <h1 id="hero-heading">
-      {site.pitch.lead} <em>{site.pitch.emphasis}</em>
-    </h1>
-    <p class="lede">{site.lede}</p>
-    <div class="ctas">
-      <a class="btn" href="#projects">
-        See the list instead
-      </a>
+<section
+  class:list={['hero gut', { visiting: initialProject }]}
+  id="hero"
+  aria-labelledby={initialProject ? 'visit-title' : 'hero-heading'}
+  data-initial-project={initialProject}
+>
+  {initialProject ? (
+    <div class="wrap visit-wrap">
+      <slot />
     </div>
-  </div>
+  ) : (
+    <div class="intro wrap">
+      <p class="eyebrow">{site.eyebrow}</p>
+      <h1 id="hero-heading">
+        {site.pitch.lead} <em>{site.pitch.emphasis}</em>
+      </h1>
+      <p class="lede">{site.lede}</p>
+      <div class="ctas">
+        <a class="btn" href="#projects">
+          See the list instead
+        </a>
+      </div>
+    </div>
+  )}
 </section>
 
 <style>
@@ -26,6 +44,16 @@ import { site } from '../data/site';
     align-items: center;
     height: clamp(660px, 92vh, 900px);
     border-bottom: 1px solid var(--rule);
+  }
+
+  .hero.visiting {
+    height: auto;
+    min-height: clamp(660px, 92vh, 900px);
+    padding-block: 104px var(--sp-7);
+  }
+
+  .visit-wrap {
+    width: 100%;
   }
 
   .intro {

@@ -1,0 +1,14 @@
+---
+import type { GetStaticPaths } from 'astro';
+import PortfolioPage from '../../components/PortfolioPage.astro';
+import { getProjects } from '../../lib/content';
+
+export const getStaticPaths = (async () => {
+  const projects = await getProjects();
+  return projects.map((project) => ({ params: { id: project.id } }));
+}) satisfies GetStaticPaths;
+
+const { id } = Astro.params;
+---
+
+<PortfolioPage initialProject={id} />

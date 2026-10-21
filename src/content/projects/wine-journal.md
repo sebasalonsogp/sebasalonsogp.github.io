@@ -17,6 +17,9 @@ log: >-
 media:
   - type: image
     src: wine-prototype.jpg
+    alt: >-
+      Wine Journal design prototype: the My wines page with search, type and sort filters
+      above cards for sample wines.
     caption: Design prototype with sample data, not the running app
 tour: 2
 ---

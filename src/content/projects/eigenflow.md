@@ -18,12 +18,19 @@ log: >-
   non-root Docker image.
 media:
   - { type: video, src: eigenflow-demo.webm, poster: eigenflow-poster.jpg, caption: Demo recording }
-  - { type: image, src: eigenflow-experiment.jpg, caption: The bottleneck experiment }
-  - {
-      type: image,
-      src: eigenflow-fiedler.jpg,
-      caption: Fiedler partition and spectrum,
-      fit: contain,
-    }
+  - type: image
+    src: eigenflow-experiment.jpg
+    alt: >-
+      Eigenflow's bottleneck experiment: two four-node clusters joined by one weak bridge, with
+      heat injected into the left cluster and sliders for bridge strength and simulation time.
+    caption: The bottleneck experiment
+  - type: image
+    src: eigenflow-fiedler.jpg
+    alt: >-
+      Eigenflow's Fiedler partition view: the two clusters split into negative and positive
+      groups, 9.2% of the heat across the bridge, and the Laplacian spectrum with algebraic
+      connectivity 0.048.
+    caption: Fiedler partition and spectrum
+    fit: contain
 tour: 1
 ---

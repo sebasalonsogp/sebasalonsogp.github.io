@@ -1,0 +1,332 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import { domains } from '../data/taxonomy';
+import type { Project } from '../lib/content';
+import { formatMonth, skillAnchor, withBase } from '../lib/format';
+import ExternalLink from './ExternalLink.astro';
+
+// The readable form of the explorer's visit panel: every part is plain HTML so a shared
+// /projects/<id>/ link works without JavaScript. Tabs, lightbox and autoplay come in Phase 4.
+
+interface Props {
+  project: Project;
+  previous: Project;
+  next: Project;
+  position: number;
+  total: number;
+}
+
+const { project, previous, next, position, total } = Astro.props;
+const { data, github, media } = project;
+const domain = domains[data.domain];
+const repoUrl = `https://github.com/${data.repo}`;
+const hasBody = Boolean(project.body?.trim());
+const { Content } = hasBody ? await render(project) : { Content: null };
+const posters = new Map(
+  await Promise.all(
+    media.flatMap((item) =>
+      item.type === 'video'
+        ? [getImage({ src: item.poster, width: 1200 }).then((img) => [item.src, img.src] as const)]
+        : [],
+    ),
+  ),
+);
+const projectPath = (id: string) => withBase(`projects/${id}/`);
+---
+
+<article class:list={['visit', { 'no-media': media.length === 0 }]} data-project={project.id}>
+  <div class="v-top">
+    <p class="v-meta eyebrow">
+      <i class="dot" style={`background:${domain.color}`} aria-hidden="true"></i>
+      {domain.label} · <time datetime={github.lastCommit}>{formatMonth(github.lastCommit)}</time>
+    </p>
+    <a class="v-back" href={withBase('')}>
+      ← Back to system
+    </a>
+  </div>
+
+  <div class="v-head">
+    <h1 id="visit-title">{data.title}</h1>
+    <p class="v-one">{data.summary}</p>
+  </div>
+
+  {media.length > 0 && (
+    <div class="media">
+      {media.map((item, i) => (
+        <figure>
+          <div
+            class:list={['screen', { contain: item.type === 'image' && item.fit === 'contain' }]}
+          >
+            {item.type === 'image' ? (
+              <Image
+                src={item.image}
+                alt={item.alt}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                widths={[480, 800, 1200]}
+                sizes="(max-width: 900px) calc(100vw - 32px), 600px"
+              />
+            ) : (
+              <video controls muted loop playsinline preload="none" poster={posters.get(item.src)}>
+                <source
+                  src={item.src}
+                  type={item.src.endsWith('.mp4') ? 'video/mp4' : 'video/webm'}
+                />
+              </video>
+            )}
+          </div>
+          <figcaption class="mono">{item.caption}</figcaption>
+        </figure>
+      ))}
+    </div>
+  )}
+
+  <section class="v-text" aria-labelledby="brief-heading">
+    <h2 id="brief-heading">The short version</h2>
+    <p>{data.brief}</p>
+  </section>
+  <section class="v-text" aria-labelledby="log-heading">
+    <h2 id="log-heading">Engineering log</h2>
+    <p>{data.log}</p>
+  </section>
+  {Content && (
+    <div class="v-text v-body">
+      <Content />
+    </div>
+  )}
+
+  <div class="v-actions">
+    {data.demoUrl ? (
+      <>
+        <ExternalLink class="btn btn-primary" href={data.demoUrl}>
+          Land: open the live demo ↗
+        </ExternalLink>
+        <ExternalLink class="btn btn-ghost" href={repoUrl}>
+          Source code ↗
+        </ExternalLink>
+      </>
+    ) : (
+      <ExternalLink class="btn" href={repoUrl}>
+        Read the source ↗
+      </ExternalLink>
+    )}
+  </div>
+
+  <ul class="v-stack" aria-label="Stack">
+    {data.tech.map((skill) => (
+      <li>
+        <a class="stk" href={`#${skillAnchor(skill)}`}>
+          {skill}
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <nav class="v-nav" aria-label="Other projects">
+    <a href={projectPath(previous.id)} rel="prev">
+      ← Previous<span class="sr-only">: {previous.data.title}</span>
+    </a>
+    <span>
+      {position} of {total}
+    </span>
+    <a href={projectPath(next.id)} rel="next">
+      Next world<span class="sr-only">: {next.data.title}</span> →
+    </a>
+  </nav>
+</article>
+
+<style>
+  .visit {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 26rem);
+    column-gap: 56px;
+    align-items: start;
+  }
+
+  .visit > * {
+    grid-column: 2;
+    margin: 0 0 18px;
+  }
+
+  .visit > .media {
+    grid-column: 1;
+    grid-row: 1 / span 12;
+  }
+
+  .visit.no-media {
+    grid-template-columns: minmax(0, 36rem);
+  }
+
+  .visit.no-media > * {
+    grid-column: 1;
+  }
+
+  .v-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px var(--sp-4);
+  }
+
+  .v-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  .dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .v-back {
+    padding: 6px 0;
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    color: var(--dim);
+    text-decoration: none;
+  }
+
+  .v-back:hover {
+    color: var(--ink);
+  }
+
+  .v-head {
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .v-one {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.45;
+  }
+
+  .media {
+    display: grid;
+    gap: var(--sp-5);
+  }
+
+  figure {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .screen {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 1px solid var(--faint);
+    border-radius: var(--radius-3);
+    background: var(--void-2);
+    box-shadow: 0 24px 70px rgb(0 0 0 / 0.6);
+  }
+
+  .screen :global(img),
+  .screen video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  .screen.contain :global(img) {
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .v-text h2 {
+    margin: 0 0 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--f-body);
+    font-size: var(--s-small);
+    font-weight: 500;
+  }
+
+  .v-text p,
+  .v-body :global(p) {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--ink) 84%, var(--dim));
+  }
+
+  .v-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  .v-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--rule);
+    list-style: none;
+  }
+
+  .stk {
+    display: inline-block;
+    padding: 3px 8px;
+    border: 1px solid var(--faint);
+    border-radius: var(--radius-1);
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    text-decoration: none;
+    transition: border-color var(--dur-fast);
+  }
+
+  .stk:hover {
+    border-color: var(--sol);
+  }
+
+  .v-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    color: var(--dim);
+  }
+
+  .v-nav a {
+    padding: 8px 0;
+    color: var(--dim);
+    text-decoration: none;
+  }
+
+  .v-nav a:hover {
+    color: var(--ink);
+  }
+
+  @media (max-width: 900px) {
+    .visit,
+    .visit.no-media {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .visit > *,
+    .visit > .media {
+      grid-column: 1;
+      grid-row: auto;
+    }
+  }
+</style>
