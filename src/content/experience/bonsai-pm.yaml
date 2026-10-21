@@ -1,0 +1,14 @@
+title: Project manager
+org: Bonsai Applied Computations Group
+orgShort: Bonsai
+place: Coral Gables, FL
+lane: data
+start: 2024-09
+end: 2025-05
+label: Project manager
+sublabel: BONSAI · 2024–25
+note: Marketing division in fall 2024, astrophysics division in spring 2025.
+bullets:
+  - Led a team of analysts processing 650,000+ social-media posts with OpenAI-assisted sentiment analysis and time-series visualizations of the 2024 U.S. presidential election.
+  - Led modernization of a MariaDB-backed astrophysical catalog of more than 7 million records, improving query performance and data access.
+skills: [OpenAI API, NLP, MariaDB, Team leadership]

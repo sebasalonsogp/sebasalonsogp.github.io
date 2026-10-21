@@ -1,0 +1,21 @@
+school: University of Miami
+place: Coral Gables, FL
+degrees:
+  - B.S. in Computer Science & Mathematics
+  - B.S.B.A. in Business Technology
+minor: Astrophysics
+honors: Cum laude
+gpa: '3.84'
+start: 2021-08
+end: 2025-05
+label: UNIVERSITY OF MIAMI · CUM LAUDE · MAY 2025
+sublabel: BS CS & MATH · BSBA BUSINESS TECHNOLOGY · ASTROPHYSICS MINOR
+coursework:
+  - data structures and algorithms
+  - operating systems
+  - networks
+  - database systems
+  - software engineering
+  - machine learning
+  - numerical analysis
+  - numerical linear algebra

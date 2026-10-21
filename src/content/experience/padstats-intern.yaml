@@ -1,0 +1,15 @@
+title: Software engineering intern
+org: PadStats
+orgShort: PadStats
+place: Miami, FL (hybrid)
+lane: eng
+start: 2024-06
+end: 2025-05
+highlight: true
+label: Engineering intern
+sublabel: PADSTATS · 2024–25
+note: Much of the platform and ML work listed under the founding role began here.
+bullets:
+  - Prepared a labeled training dataset for fine-tuning an OpenAI model.
+  - Designed the database architecture that generates labeled JSON training data for model development.
+skills: [OpenAI API, LLM fine-tuning, Database design]

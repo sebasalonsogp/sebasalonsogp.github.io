@@ -1,0 +1,38 @@
+title: Founding Software Engineer
+org: PadStats
+orgShort: PadStats
+place: Miami, FL (hybrid)
+lane: eng
+start: 2025-06
+end: 2026-06
+highlight: true
+label: Founding software engineer
+sublabel: PADSTATS · JUN 2025 – JUN 2026
+note: Work that started during the internship and carried into the full-time role.
+bullets:
+  - Architected and built a production property-intelligence platform on GCP with FastAPI, Cloud Run, PostgreSQL/PostGIS, BigQuery and Redis, behind valuation models, geospatial analytics and customer products.
+  - Turned ambiguous property-risk requirements from leadership into 11+ customer-facing APIs covering natural hazards, crime, census data, comparable properties and bundled reports.
+  - Trained a multi-task computer-vision model on 15K+ labeled real-estate images to predict room type, construction quality, furnishing and other property features.
+  - Served it through a FastAPI/PyTorch inference service and raised batch throughput 10–12x with async retrieval, bounded concurrency and batched GPU inference.
+  - Designed distributed serving for XGBoost, LightGBM and CatBoost models with registry-driven versioning by U.S. region, caching and failure isolation.
+  - Built an async ETL system that ingests crime data from 25 U.S. cities across ArcGIS, Socrata, CKAN, CSV, Excel and scraped sources, with validation, idempotent upserts and deduplication.
+  - Built an embedding-based classifier that maps noisy crime descriptions to FBI NIBRS codes, using Sentence Transformers, FAISS nearest-neighbor voting and confidence thresholds that send uncertain cases to human review.
+  - Standardized Docker, CI/CD and monitoring across APIs, ETL jobs and GPU workloads on Cloud Run and GKE.
+skills:
+  - Python
+  - FastAPI
+  - GCP
+  - Cloud Run
+  - GKE
+  - Docker
+  - PostgreSQL
+  - BigQuery
+  - Redis
+  - ETL
+  - PyTorch
+  - Computer vision
+  - XGBoost
+  - FAISS
+  - Sentence Transformers
+  - NLP
+  - Streamlit

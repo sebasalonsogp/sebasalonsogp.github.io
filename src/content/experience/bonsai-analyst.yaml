@@ -1,0 +1,14 @@
+title: Analyst
+org: Bonsai Applied Computations Group
+orgShort: Bonsai
+place: Coral Gables, FL
+lane: data
+start: 2024-01
+end: 2024-09
+label: Analyst
+sublabel: BONSAI
+note: Neuroscience division.
+bullets:
+  - Built computer-vision pipelines that automate processing and data extraction from microscope images.
+  - Wrote algorithms that rebuild 3D models from 2D images, and classified the structures with support vector machines.
+skills: [Python, Computer vision, SVM]

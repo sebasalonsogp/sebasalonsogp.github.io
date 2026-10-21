@@ -1,14 +1,13 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site';
+import { getProjects } from '../lib/content';
 
-const projects = (await getCollection('projects', ({ data }) => !data.draft)).sort(
-  (a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id),
-);
+const projects = await getProjects();
 ---
 
 <BaseLayout
-  title="Portfolio — in progress"
+  title={`${site.name} — in progress`}
   description="A personal portfolio focused on backend engineering, AI, machine learning, and data science."
 >
   <div class="shell">
@@ -31,8 +30,8 @@ const projects = (await getCollection('projects', ({ data }) => !data.draft)).so
             <li>
               <h3>{data.title}</h3>
               <p>{data.summary}</p>
-              <p class="technologies">{data.technologies.join(' · ')}</p>
-              {data.repositoryUrl && <a href={data.repositoryUrl}>Source code</a>}
+              <p class="technologies">{data.tech.join(' · ')}</p>
+              <a href={`https://github.com/${data.repo}`}>Source code</a>
             </li>
           ))}
         </ul>

@@ -1,0 +1,17 @@
+title: Machine learning research assistant
+org: University of Miami, College of Arts & Sciences
+orgShort: University of Miami
+place: Coral Gables, FL
+lane: research
+start: 2023-09
+end: 2025-05
+label: ML research assistant · UM
+sublabel: SEP 2023 – MAY 2025
+bullets:
+  - Built PyTorch workflows to train and evaluate ResNet and DenseNet models on MNIST, FashionMNIST, CIFAR-10 and CIFAR-100.
+  - Studied learned representations, training dynamics and neural collapse, and produced the statistical evidence and Matplotlib figures behind the paper’s claims about feature extractors and classifiers.
+  - Worked directly with a professor and a PhD researcher, with frequent sync meetings to review results and plan the next experiments.
+skills: [Python, PyTorch, Deep learning, Statistics, Matplotlib]
+link:
+  label: 'Research code: MLResearch'
+  url: https://github.com/sebasalonsogp/MLResearch
