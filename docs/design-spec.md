@@ -49,6 +49,22 @@ Scale: h1 `clamp(2.05rem, 3.7vw, 3.35rem)`, h2 `clamp(1.85rem, 3.2vw, 2.6rem)`, 
 lede 1.125rem, small 0.875rem, caption 0.75rem. Nothing under 12 px on desktop; on phones
 only chart data labels may reach 11 px. `text-wrap: balance` on headings.
 
+Fonts are self-hosted Latin subsets (Fontsource files, declared in
+`src/components/Fonts.astro`, `font-display: swap`); Newsreader and Schibsted Grotesk
+upright are preloaded.
+
+## Spacing, shape and motion tokens
+
+All tokens live in `src/styles/tokens.css`; values taken from the concept.
+
+- Space scale 4, 8, 12, 16, 24, 32, 48 px (`--sp-1`…`--sp-7`). Section padding 96 px
+  (72 px on phones), section header gap 36 px, scroll offset 48 px.
+- Radii 2 px (tags, inputs), 3 px (cards, resume card), 4 px (landing screen).
+- UI motion: fast 0.2 s (hover, color), base 0.4 s (fades), panel 0.6 s with delays 0.75 s
+  (panel) and 0.95 s (landing screen), easing `cubic-bezier(.2, .7, .2, 1)`. Reduced motion
+  sets all of these to 0 s. Camera timings are listed under "Visit and landing".
+- Breakpoints: phones ≤ 760 px; secondary 600, 900 and 1000 px.
+
 ## Layout
 
 - Content width 1120 px; side gutter `max(16px, env(safe-area-inset-*))`.

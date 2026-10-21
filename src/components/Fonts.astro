@@ -1,0 +1,29 @@
+---
+// Self-hosted Latin subsets from the Fontsource packages, emitted as hashed assets. Only the
+// faces visible on first paint (display and body, upright) are preloaded.
+import newsreader from '@fontsource-variable/newsreader/files/newsreader-latin-opsz-normal.woff2?url';
+import newsreaderItalic from '@fontsource-variable/newsreader/files/newsreader-latin-opsz-italic.woff2?url';
+import schibsted from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url';
+import plexMono400 from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
+import plexMono500 from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2?url';
+
+const faces = [
+  { family: 'Newsreader', style: 'normal', weight: '200 800', src: newsreader },
+  { family: 'Newsreader', style: 'italic', weight: '200 800', src: newsreaderItalic },
+  { family: 'Schibsted Grotesk', style: 'normal', weight: '400 900', src: schibsted },
+  { family: 'IBM Plex Mono', style: 'normal', weight: '400', src: plexMono400 },
+  { family: 'IBM Plex Mono', style: 'normal', weight: '500', src: plexMono500 },
+];
+
+const css = faces
+  .map(
+    ({ family, style, weight, src }) =>
+      `@font-face{font-family:'${family}';font-style:${style};font-weight:${weight};` +
+      `font-display:swap;src:url(${src}) format('woff2')}`,
+  )
+  .join('\n');
+---
+
+<link rel="preload" href={newsreader} as="font" type="font/woff2" crossorigin />
+<link rel="preload" href={schibsted} as="font" type="font/woff2" crossorigin />
+<style is:inline set:html={css} />

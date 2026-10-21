@@ -2,34 +2,43 @@
 
 ## Current state
 
-**Phase 1, slice 1.1 (content model) is done** on branch `feat/content-model`, branched from
-`docs/plan-v2` (not merged yet). Next is slice 1.2. The visual source of
-truth stays `references/concept/orbit-concept-v19.html` and `docs/design-spec.md`; the
-phased plan is `tasks/plan.md` (v2).
+**Phase 1, slices 1.1 and 1.2 are done** on stacked branches: `feat/content-model` (1.1)
+→ `feat/tokens-fonts` (1.2), both on `docs/plan-v2`; none merged yet. Next is slice 1.3.
+The visual source of truth stays `references/concept/orbit-concept-v19.html` and
+`docs/design-spec.md`; the phased plan is `tasks/plan.md` (v2).
 
-## What changed in slice 1.1
+## Slice 1.1 — content model
 
-- `src/content.config.ts`: strict Zod schemas for `projects` (Markdown), `experience` and
-  `education` (YAML). Unknown keys, unknown skills, bad `YYYY-MM` dates, `end` before
-  `start`, wrong media file types and repos missing from the snapshot all fail the build.
-- Content migrated from the concept: 5 projects, 7 roles, University of Miami, site profile
-  with earlier-work repos (`src/data/site.ts`), skill groups (`src/data/skill-groups.ts`,
-  35 skills), GitHub snapshot (`src/data/github.json`, hand-entered from the concept).
-- `src/lib/content.ts`: `getProjects()` (joins snapshot, newest commit first, unique tour
-  positions), `getRoles()`, `getEducation()`. The draft example is gone; the placeholder
-  page now lists the 5 real projects.
-- `docs/content.md` updated to match.
+Strict Zod collections (`projects`, `experience`, `education`) in `src/content.config.ts`;
+validated data modules `src/data/site.ts`, `src/data/skill-groups.ts` (35 skills) and
+`src/data/github.json` (hand-entered); access helpers in `src/lib/content.ts`. All concept
+content migrated; each validation rule was shown to fail the build when broken.
 
-Verification: `npm run verify` passes (0 errors/warnings/hints). Each validation rule was
-broken once on purpose and the build failed with a clear message; restoring it passed.
+## Slice 1.2 — tokens and fonts
+
+- `src/styles/tokens.css`: color, type scale, spacing, layout, radii and UI motion tokens
+  (reduced motion zeroes durations). New values recorded in `docs/design-spec.md`.
+- Fonts: `@fontsource-variable/newsreader`, `@fontsource-variable/schibsted-grotesk`,
+  `@fontsource/ibm-plex-mono` (5.3.0). `src/components/Fonts.astro` declares Latin-only
+  faces (Fontsource has no Latin-only CSS for variable fonts), so the build emits just 5
+  woff2 files; the two upright faces on first paint are preloaded.
+- `src/styles/global.css` rebuilt on the tokens; the placeholder page uses them.
+- Checked in the browser (built preview): fonts load from the site and apply to headings,
+  body and eyebrow; 1440×900, 390×844 and 320 px have no horizontal scroll; skip link shows
+  the `--sol` focus ring; no console errors. Reduced motion verified by reading the
+  stylesheet rule (the browser tool cannot emulate it).
+- `npm run verify` passes.
 
 ## Next task
 
-Phase 1, slice 1.2 — design tokens in `src/styles/tokens.css` and self-hosted fonts via
-Fontsource (see `tasks/plan.md`).
+Phase 1, slice 1.3 — page skeleton (nav, hero text, projects, experience list, skills
+lists, contact, footer) from the collections and `site.ts`.
 
 ## Open inputs and issues
 
+- **Font weight:** Newsreader with the opsz axis (as specified) is 129 KB per face vs 57 KB
+  weight-only. Revisit in Phase 8 if LCP needs it. No fallback metric overrides yet (CLS
+  check in Phase 8).
 - **Phone:** `showPhone` is `true` (as in the approved concept). The number is stored in
   `src/data/site.ts`, so it becomes public with the repository in slice 1.6 whatever the
   flag says. Decide before 1.6.

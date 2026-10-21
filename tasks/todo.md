@@ -15,7 +15,7 @@ before ending a session.
 ## Phase 1 — Content model, readable site, Pages pipeline (next)
 
 - [x] 1.1 Collections: projects, experience, education, skills groups, site profile; migrate real content.
-- [ ] 1.2 Tokens and self-hosted fonts.
+- [x] 1.2 Tokens and self-hosted fonts.
 - [ ] 1.3 Page skeleton: nav, hero text, projects, experience list, skills lists, contact, footer.
 - [ ] 1.4 Static `/projects/<id>/` routes.
 - [ ] 1.5 Playwright + axe harness with first tests.

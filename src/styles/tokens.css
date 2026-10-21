@@ -1,0 +1,80 @@
+/* Design tokens. Values come from docs/design-spec.md (taken from the approved concept);
+   change them there first. Breakpoints cannot be custom properties: phones are
+   max-width 760px (secondary: 600, 900, 1000). */
+
+:root {
+  color-scheme: dark;
+
+  /* Color: twilight sky, warm star */
+  --void: #030408;
+  --void-2: #0a0b12;
+  --ink: #e9eaf0;
+  --dim: #9297a8;
+  --faint: #2f3342;
+  --rule: #161923;
+  --sol: #ffc27a;
+  --sol-ink: #1b1307;
+  --cold: #b6bee6;
+  --d-backend: #c9a27a;
+  --d-ml: #b9a8d8;
+  --d-data: #6fa7c4;
+  --d-math: #c7d6e6;
+
+  /* Type */
+  --f-display: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --f-body: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --f-data: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --s-cap: 0.75rem;
+  --s-small: 0.875rem;
+  --s-body: 1rem;
+  --s-lede: 1.125rem;
+  --s-h3: 1.5rem;
+  --s-h2: clamp(1.85rem, 3.2vw, 2.6rem);
+  --s-h1: clamp(2.05rem, 3.7vw, 3.35rem);
+
+  /* Space */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --section-pad: 96px;
+  --section-head-gap: 36px;
+  --scroll-offset: 48px;
+
+  /* Layout */
+  --content-width: 1120px;
+  --gutter-left: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-right: max(16px, env(safe-area-inset-right, 0px));
+
+  /* Shape */
+  --radius-1: 2px;
+  --radius-2: 3px;
+  --radius-3: 4px;
+
+  /* Motion (UI only; camera timings live with the explorer) */
+  --dur-fast: 0.2s;
+  --dur-base: 0.4s;
+  --dur-panel: 0.6s;
+  --delay-panel: 0.75s;
+  --delay-landing: 0.95s;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (max-width: 760px) {
+  :root {
+    --section-pad: 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0s;
+    --dur-base: 0s;
+    --dur-panel: 0s;
+    --delay-panel: 0s;
+    --delay-landing: 0s;
+  }
+}

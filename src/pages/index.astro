@@ -48,53 +48,69 @@ const projects = await getProjects();
 
 <style>
   .shell {
-    width: min(100% - 3rem, 64rem);
+    max-width: var(--content-width);
     margin-inline: auto;
-    padding-block: clamp(3rem, 9vw, 7rem);
+    padding: var(--section-pad) var(--gutter-right) var(--section-pad) var(--gutter-left);
   }
 
   header {
     max-width: 48rem;
   }
 
-  .eyebrow,
   .technologies,
   footer {
-    color: var(--color-text-muted);
+    color: var(--dim);
+    font-size: var(--s-small);
   }
 
   .eyebrow {
-    font-size: 0.875rem;
-    letter-spacing: 0.04em;
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
   }
 
   h1 {
-    margin-block: 1.5rem;
-    font-size: clamp(2rem, 5vw, 4rem);
+    margin-block: var(--sp-5);
+    font-size: var(--s-h1);
+    font-weight: 380;
+    line-height: 1.07;
+    letter-spacing: -0.012em;
+  }
+
+  h2 {
+    font-size: var(--s-h2);
     line-height: 1.1;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: var(--s-h3);
+    margin-block-end: var(--sp-2);
   }
 
   .intro {
     max-width: 42ch;
-    margin-block-end: 2rem;
+    margin-block-end: var(--sp-6);
+    font-size: var(--s-lede);
+    color: var(--dim);
   }
 
   section {
-    margin-block-start: 5rem;
-    padding-block-start: 2rem;
-    border-block-start: 1px solid var(--color-border);
+    margin-block-start: var(--sp-7);
+    padding-block-start: var(--sp-6);
+    border-block-start: 1px solid var(--rule);
   }
 
   .projects {
     display: grid;
-    gap: 2rem;
+    gap: var(--sp-6);
     padding: 0;
     list-style: none;
   }
 
   footer {
-    margin-block-start: 4rem;
-    font-size: 0.875rem;
+    margin-block-start: var(--sp-7);
   }
 </style>
