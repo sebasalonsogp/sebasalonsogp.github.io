@@ -1,9 +1,9 @@
 name: CI
 
+# Pushes to main run these checks through deploy.yml, which publishes only when they pass.
 on:
   pull_request:
-  push:
-    branches: [main]
+  workflow_call:
   workflow_dispatch:
 
 permissions:

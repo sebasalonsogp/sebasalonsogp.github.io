@@ -4,7 +4,8 @@
 
 **Phase 1, slices 1.1–1.5 are done** on stacked branches: `feat/content-model` (1.1) →
 `feat/tokens-fonts` (1.2) → `feat/page-skeleton` (1.3) → `feat/project-routes` (1.4) →
-`test/playwright-harness` (1.5), all on `docs/plan-v2`; none merged yet. Next is 1.6.
+`test/playwright-harness` (1.5) → `deploy/github-pages` (1.6, local part), all on
+`docs/plan-v2`; none merged or pushed. There is no remote yet.
 The visual source of truth stays `references/concept/orbit-concept-v19.html` and
 `docs/design-spec.md`; the phased plan is `tasks/plan.md` (v2).
 
@@ -75,12 +76,23 @@ content migrated; each validation rule was shown to fail the build when broken.
   `ContactSection.astro`). The in-app browser had widened its 320 px viewport to 328 and
   hidden it, so the 320 px claims in slices 1.2–1.4 were wrong.
 
+## Slice 1.6 — Pages deploy (local part)
+
+- `astro.config.mjs`: `site: 'https://sebasalonsogp.github.io'`, `base: '/'`.
+- `src/pages/404.astro`: plain "This page fell past the event horizon." with a link home
+  (black hole in 7.3). Test checks the 404 status and the way back.
+- `deploy.yml` (check → build → deploy) reuses `ci.yml`; see `docs/deployment.md`.
+- `npm run verify` passes; `npm test` 17 × 3 = 51 passed.
+
 ## Next task
 
-Phase 1, slice 1.6 — create the GitHub repository (confirm the name
-`sebasalonsogp.github.io` with Sebastian first), set `site`/`base`, Pages workflow gated
-by verify + tests, resume PDF in `public/`, plain `404.html`, then check direct loads and
-refreshes of `/projects/<id>/` on the live URL.
+Finish slice 1.6. Needs Sebastian first: (1) confirm repository name
+`sebasalonsogp.github.io` (public, required for a free Pages user site), (2) the resume
+PDF for `public/Sebastian_Gonzales_Portillo_Resume.pdf`, (3) phone shown or hidden (the
+number becomes public with the repository either way unless removed from `site.ts`).
+Then: create the repository with `gh`, merge the stacked branches into `main`, push, set
+Pages source to GitHub Actions, watch the deploy, and check the live URL (home, a project
+direct load and refresh, 404, resume, one demo link).
 
 ## Open inputs and issues
 

@@ -26,15 +26,21 @@ export default defineConfig({
 Pages serves `/projects/<id>/index.html` for `/projects/<id>/` and `404.html` for unknown
 paths. No SPA rewrites are needed.
 
-## Workflow (`.github/workflows/deploy.yml`)
+## Workflows
 
-1. Trigger on push to `main` (and manual dispatch).
-2. **Check job:** `npm ci`, `npm run verify`, Playwright against `astro preview`.
-3. **Build job:** build and upload `dist/` with `actions/upload-pages-artifact`.
-4. **Deploy job:** `actions/deploy-pages` into the `github-pages` environment.
-   Permissions: `contents: read` for build; `pages: write` and `id-token: write` for deploy only.
-5. Pin actions to commit SHAs (existing CI policy). In repository settings, set Pages source
-   to "GitHub Actions" and require the check job on `main`.
+- `.github/workflows/ci.yml` — format, Astro + TypeScript checks, build, `npm audit`, and
+  Playwright + axe in Chromium, Firefox and WebKit. Runs on pull requests and manual
+  dispatch, and is reusable (`workflow_call`).
+- `.github/workflows/deploy.yml` — on push to `main` (and manual dispatch):
+  1. **check** calls `ci.yml`; nothing deploys unless it passes.
+  2. **build** runs `npm run build` and uploads `dist/` with
+     `actions/upload-pages-artifact` (v5.0.0).
+  3. **deploy** publishes with `actions/deploy-pages` (v5.0.1) into the `github-pages`
+     environment. Only this job gets `pages: write` and `id-token: write`.
+- Actions are pinned to commit SHAs. In repository settings, set Pages source to "GitHub
+  Actions"; optionally require the CI check on pull requests to `main`.
+- A build with `--base /portfolio/` was checked: every root-relative URL picks up the base,
+  so a project repository would only need the `base` line changed.
 
 ## After each deploy
 

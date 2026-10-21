@@ -19,7 +19,7 @@ before ending a session.
 - [x] 1.3 Page skeleton: nav, hero text, projects, experience list, skills lists, contact, footer.
 - [x] 1.4 Static `/projects/<id>/` routes.
 - [x] 1.5 Playwright + axe harness with first tests.
-- [ ] 1.6 GitHub Pages workflow (tests gate deploy), `noindex`, resume PDF, plain 404; verify direct loads live.
+- [ ] 1.6 GitHub Pages workflow (tests gate deploy), `noindex`, resume PDF, plain 404; verify direct loads live. _(Local work done: config, workflows, 404. Waiting on: repository name, resume PDF, phone decision.)_
 - [ ] Checkpoint: review the live readable site.
 
 ## Phase 2 — Sky and visual system

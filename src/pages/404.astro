@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site';
+import { withBase } from '../lib/format';
+
+// Plain for now; the black hole joins this page in Phase 7.3.
+---
+
+<BaseLayout title={`Page not found — ${site.name}`} description="This page does not exist.">
+  <section class="lost gut" aria-labelledby="lost-heading">
+    <div class="wrap">
+      <p class="eyebrow">404</p>
+      <h1 id="lost-heading">This page fell past the event horizon.</h1>
+      <a class="btn btn-primary" href={withBase('')}>
+        Back to the system
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lost {
+    display: grid;
+    align-items: center;
+    min-height: 100svh;
+  }
+
+  .wrap {
+    display: grid;
+    gap: 20px;
+    justify-items: start;
+    width: 100%;
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 18ch;
+    font-size: var(--s-h1);
+    font-weight: 380;
+    line-height: 1.07;
+    letter-spacing: -0.012em;
+  }
+</style>
