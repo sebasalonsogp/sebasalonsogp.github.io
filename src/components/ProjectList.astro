@@ -1,0 +1,209 @@
+---
+import { site } from '../data/site';
+import { domains } from '../data/taxonomy';
+import type { Project } from '../lib/content';
+import { formatMonth } from '../lib/format';
+import ExternalLink from './ExternalLink.astro';
+import Section from './Section.astro';
+
+interface Props {
+  projects: Project[];
+}
+
+const { projects } = Astro.props;
+const live = projects.filter((p) => p.data.demoUrl).length;
+const fact = `${projects.length} solo builds · ${live} live demos`;
+---
+
+<Section id="projects" title="Projects" fact={fact}>
+  <ol class="index">
+    {projects.map(({ data, github }) => (
+      <li class="row">
+        <span class="r-year">
+          <span class="sr-only">Last commit </span>
+          <time datetime={github.lastCommit.slice(0, 7)}>{formatMonth(github.lastCommit)}</time>
+        </span>
+        <h3 class="r-name">{data.title}</h3>
+        <span class="r-dom">
+          <i class="dot" style={`background:${domains[data.domain].color}`} aria-hidden="true" />
+          {domains[data.domain].label}
+        </span>
+        <p class="r-one">{data.summary}</p>
+        <span class:list={['r-status', { live: data.demoUrl }]}>
+          {data.demoUrl ? 'Live demo' : 'In development'}
+        </span>
+      </li>
+    ))}
+  </ol>
+
+  <div class="belt-note">
+    <h3 class="eyebrow">Earlier work</h3>
+    <ul>
+      {site.earlierWork.map(({ name, url, year }) => (
+        <li>
+          <ExternalLink href={url}>{name}</ExternalLink>
+          <span class="mono">{year}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</Section>
+
+<style>
+  .index {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1.1fr) 11.5rem minmax(0, 2fr) 7.5rem;
+    gap: 18px;
+    align-items: baseline;
+    padding: 20px 8px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .row:first-child {
+    border-top: 0;
+  }
+
+  .r-year {
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    letter-spacing: 0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--dim);
+  }
+
+  .r-name {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.25;
+  }
+
+  .r-dom {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+    font-size: var(--s-small);
+    color: var(--dim);
+  }
+
+  .dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .r-one {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--dim);
+  }
+
+  .r-status {
+    text-align: right;
+    font-size: var(--s-small);
+    color: var(--dim);
+  }
+
+  .r-status.live {
+    font-weight: 500;
+    color: var(--sol);
+  }
+
+  .belt-note {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-2) 18px;
+    align-items: baseline;
+    margin-top: 28px;
+    font-size: 0.95rem;
+    color: var(--dim);
+  }
+
+  .belt-note ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .belt-note :global(a) {
+    color: var(--ink);
+    text-decoration-color: var(--faint);
+  }
+
+  .belt-note :global(a:hover) {
+    color: var(--sol);
+  }
+
+  .belt-note .mono {
+    margin-left: var(--sp-1);
+  }
+
+  @media (max-width: 900px) {
+    .row {
+      grid-template-columns: 4.6rem minmax(0, 1fr) auto;
+      row-gap: var(--sp-1);
+    }
+
+    .r-dom {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .r-one {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    .r-status {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .belt-note {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'year status'
+        'name name'
+        'dom dom'
+        'one one';
+      row-gap: 6px;
+    }
+
+    .r-year {
+      grid-area: year;
+    }
+
+    .r-status {
+      grid-area: status;
+    }
+
+    .r-name {
+      grid-area: name;
+    }
+
+    .r-dom {
+      grid-area: dom;
+    }
+
+    .r-one {
+      grid-area: one;
+    }
+  }
+</style>

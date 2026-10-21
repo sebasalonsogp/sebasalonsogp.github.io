@@ -1,0 +1,91 @@
+---
+import { site } from '../data/site';
+import { withBase } from '../lib/format';
+import ExternalLink from './ExternalLink.astro';
+
+const links = [
+  { href: '#projects', label: 'Projects' },
+  { href: '#experience', label: 'Experience' },
+  { href: '#skills', label: 'Skills' },
+  { href: '#contact', label: 'Contact' },
+];
+---
+
+<header class="site-header gut">
+  <nav class="nav wrap" aria-label="Site">
+    <a class="mark" href="#hero">
+      {site.name}
+    </a>
+    <ul>
+      {links.map(({ href, label }) => (
+        <li>
+          <a href={href}>{label}</a>
+        </li>
+      ))}
+      <li>
+        <ExternalLink class="nav-cta" href={withBase(site.resumePath)}>
+          Resume
+        </ExternalLink>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 10;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding-block: 20px;
+  }
+
+  .mark {
+    font-family: var(--f-display);
+    font-size: 1.12rem;
+    text-decoration: none;
+  }
+
+  ul {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--s-small);
+  }
+
+  ul a {
+    color: var(--dim);
+    text-decoration: none;
+    transition: color var(--dur-fast);
+  }
+
+  ul a:hover {
+    color: var(--ink);
+  }
+
+  ul :global(.nav-cta) {
+    color: var(--ink);
+    border: 1px solid var(--faint);
+    border-radius: var(--radius-1);
+    padding: 6px 12px;
+  }
+
+  ul :global(.nav-cta:hover) {
+    border-color: var(--sol);
+  }
+
+  @media (max-width: 760px) {
+    ul {
+      display: none;
+    }
+  }
+</style>

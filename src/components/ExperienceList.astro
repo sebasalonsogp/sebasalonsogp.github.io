@@ -1,0 +1,179 @@
+---
+import { lanes } from '../data/taxonomy';
+import type { Education, Role } from '../lib/content';
+import { formatMonth, formatSpan, skillAnchor } from '../lib/format';
+import ExternalLink from './ExternalLink.astro';
+import Section from './Section.astro';
+
+interface Props {
+  roles: Role[];
+  education: Education[];
+}
+
+const { roles, education } = Astro.props;
+const newestFirst = [...roles].reverse();
+---
+
+<Section id="experience" title="Experience">
+  <ol class="roles">
+    {newestFirst.map(({ id, data }) => (
+      <li class="entry" id={`role-${id}`}>
+        <div class="meta">
+          <p class="eyebrow">{lanes[data.lane]}</p>
+          <h3>{data.title}</h3>
+          <p class="org">
+            {data.org} · {data.place}
+          </p>
+          <p class="mono">{formatSpan(data.start, data.end)}</p>
+        </div>
+        <div class="detail">
+          {data.note && <p class="note">{data.note}</p>}
+          <ul class="bullets">
+            {data.bullets.map((bullet) => (
+              <li>{bullet}</li>
+            ))}
+          </ul>
+          {data.skills.length > 0 && (
+            <ul class="chips" aria-label="Skills">
+              {data.skills.map((skill) => (
+                <li>
+                  <a class="chip" href={`#${skillAnchor(skill)}`}>
+                    {skill}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          {data.link && (
+            <p class="link">
+              <ExternalLink href={data.link.url}>{data.link.label} ↗</ExternalLink>
+            </p>
+          )}
+        </div>
+      </li>
+    ))}
+  </ol>
+
+  {education.map(({ id, data }) => (
+    <div class="entry education" id={`education-${id}`}>
+      <div class="meta">
+        <p class="eyebrow">Education</p>
+        <h3>{data.school}</h3>
+        <p class="org">
+          {[data.place, data.honors, data.gpa && `GPA ${data.gpa}`].filter(Boolean).join(' · ')}
+        </p>
+        <p class="mono">
+          {formatMonth(data.start)} – {formatMonth(data.end)}
+        </p>
+      </div>
+      <div class="detail">
+        <ul class="bullets">
+          {data.degrees.map((degree) => (
+            <li>{degree}</li>
+          ))}
+          {data.minor && <li>Minor in {data.minor.toLowerCase()}</li>}
+        </ul>
+        {data.coursework.length > 0 && (
+          <p class="note">Coursework: {data.coursework.join(', ')}.</p>
+        )}
+      </div>
+    </div>
+  ))}
+</Section>
+
+<style>
+  .roles {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .entry {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    gap: 14px 40px;
+    padding-block: 28px;
+    border-top: 1px solid var(--rule);
+    scroll-margin-top: var(--scroll-offset);
+  }
+
+  .roles > .entry:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .meta p {
+    margin: 0;
+  }
+
+  h3 {
+    margin: 6px 0 8px;
+    font-size: 1.9rem;
+    font-weight: 380;
+    line-height: 1.15;
+  }
+
+  .org,
+  .note {
+    font-size: 0.95rem;
+    color: var(--dim);
+  }
+
+  .meta .mono {
+    margin-top: var(--sp-1);
+  }
+
+  .note {
+    margin: 0;
+  }
+
+  .bullets {
+    display: grid;
+    gap: 6px;
+    margin: var(--sp-2) 0 0;
+    padding-left: 1.1em;
+    color: color-mix(in srgb, var(--ink) 86%, var(--dim));
+  }
+
+  .education .bullets {
+    margin: 0 0 var(--sp-3);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .chip {
+    display: inline-block;
+    padding: 4px 9px;
+    border: 1px solid var(--faint);
+    border-radius: var(--radius-1);
+    font-family: var(--f-data);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    transition:
+      border-color var(--dur-fast),
+      color var(--dur-fast);
+  }
+
+  .chip:hover {
+    border-color: var(--sol);
+    color: var(--sol);
+  }
+
+  .link {
+    margin: 14px 0 0;
+  }
+
+  @media (max-width: 760px) {
+    .entry {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

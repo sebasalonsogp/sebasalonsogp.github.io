@@ -1,0 +1,241 @@
+---
+import { site } from '../data/site';
+import { withBase } from '../lib/format';
+import ExternalLink from './ExternalLink.astro';
+import Section from './Section.astro';
+---
+
+<Section id="contact" title="Contact" fact={site.availability}>
+  <div class="ct-grid">
+    <div class="ct-info">
+      <div class="ct-item">
+        <p class="label">Email</p>
+        <p class="ct-addr" data-email-address>
+          {site.email}
+        </p>
+        <div class="ct-acts">
+          <button class="btn btn-primary" type="button" data-copy-email hidden>
+            Copy email
+          </button>
+          <a class="btn btn-ghost" href={`mailto:${site.email}`}>
+            Open in mail app
+          </a>
+          <span class="mono" data-copy-status aria-live="polite"></span>
+        </div>
+      </div>
+      <dl class="ct-dl">
+        {site.showPhone && (
+          <div>
+            <dt class="label">Phone</dt>
+            <dd class="ct-sel">{site.phone}</dd>
+          </div>
+        )}
+        <div>
+          <dt class="label">Location</dt>
+          <dd>{site.location}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="ct-side">
+      <ExternalLink class="ct-resume" href={withBase(site.resumePath)}>
+        <span class="ct-r-top">
+          <span class="mono">Resume · PDF</span>
+          <span class="ct-r-ico" aria-hidden="true">
+            ↓
+          </span>
+        </span>
+        <span class="ct-r-title">Download my resume</span>
+      </ExternalLink>
+      <ul class="ct-links">
+        <li>
+          <ExternalLink href={site.linkedin.url}>
+            <span>LinkedIn</span>
+            <span class="mono">{site.linkedin.handle} ↗</span>
+          </ExternalLink>
+        </li>
+        <li>
+          <ExternalLink href={site.github.url}>
+            <span>GitHub</span>
+            <span class="mono">{site.github.handle} ↗</span>
+          </ExternalLink>
+        </li>
+      </ul>
+    </div>
+  </div>
+</Section>
+
+<script>
+  // Progressive enhancement: without JavaScript the address and the mail link remain.
+  const button = document.querySelector<HTMLButtonElement>('[data-copy-email]');
+  const address = document.querySelector<HTMLElement>('[data-email-address]');
+  const status = document.querySelector<HTMLElement>('[data-copy-status]');
+
+  if (button && address && status) {
+    let timer: number | undefined;
+    const say = (message: string) => {
+      status.textContent = message;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => (status.textContent = ''), 2400);
+    };
+    const select = () => {
+      const range = document.createRange();
+      range.selectNodeContents(address);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      say('Selected. Press Ctrl+C or ⌘C to copy.');
+    };
+
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(address.textContent?.trim() ?? '');
+        say('Copied');
+      } catch {
+        select();
+      }
+    });
+  }
+</script>
+
+<style>
+  .ct-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 34rem);
+    gap: var(--sp-6);
+  }
+
+  .ct-info {
+    display: grid;
+    gap: 28px;
+  }
+
+  .ct-item {
+    display: grid;
+    gap: 10px;
+  }
+
+  .ct-item p {
+    margin: 0;
+  }
+
+  .label {
+    font-size: var(--s-small);
+    color: var(--dim);
+  }
+
+  .ct-addr {
+    font-family: var(--f-display);
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+    font-weight: 360;
+    letter-spacing: -0.01em;
+    word-break: break-all;
+    user-select: all;
+  }
+
+  .ct-acts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+  }
+
+  .ct-dl {
+    margin: 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .ct-dl div {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: var(--sp-3);
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .ct-dl dd {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  .ct-sel {
+    user-select: all;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ct-side {
+    display: grid;
+    gap: 20px;
+  }
+
+  .ct-side :global(.ct-resume) {
+    display: grid;
+    gap: var(--sp-2);
+    padding: 22px 22px 20px;
+    border: 1px solid var(--sol);
+    border-radius: var(--radius-2);
+    background: color-mix(in srgb, var(--sol) 8%, transparent);
+    text-decoration: none;
+    transition: background var(--dur-fast);
+  }
+
+  .ct-side :global(.ct-resume:hover) {
+    background: color-mix(in srgb, var(--sol) 15%, transparent);
+  }
+
+  .ct-r-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ct-r-top .mono {
+    color: var(--sol);
+  }
+
+  .ct-r-ico {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--sol);
+    color: var(--sol-ink);
+    font-weight: 600;
+  }
+
+  .ct-r-title {
+    font-family: var(--f-display);
+    font-size: 1.7rem;
+    font-weight: 380;
+    line-height: 1.15;
+  }
+
+  .ct-links {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--rule);
+  }
+
+  .ct-links li {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .ct-links :global(a) {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--sp-4);
+    padding: 18px 4px;
+    font-size: 1.15rem;
+    text-decoration: none;
+  }
+
+  .ct-links :global(a:hover span:first-child) {
+    color: var(--sol);
+  }
+</style>

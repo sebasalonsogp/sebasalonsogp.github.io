@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site';
+import { getEducation, getProjects, getRoles } from '../lib/content';
+import ContactSection from './ContactSection.astro';
+import ExperienceList from './ExperienceList.astro';
+import Hero from './Hero.astro';
+import ProjectList from './ProjectList.astro';
+import SiteFooter from './SiteFooter.astro';
+import SiteNav from './SiteNav.astro';
+import SkillGroups from './SkillGroups.astro';
+
+// One page for every route; /projects/<id>/ will pass the project to open (slice 1.4).
+
+const [projects, roles, education] = await Promise.all([getProjects(), getRoles(), getEducation()]);
+---
+
+<BaseLayout
+  title={`${site.name} — Backend and ML systems engineer`}
+  description={`${site.pitch.lead} ${site.pitch.emphasis} ${site.lede}`}
+>
+  <SiteNav slot="header" />
+  <Hero />
+  <ProjectList projects={projects} />
+  <ExperienceList roles={roles} education={education} />
+  <SkillGroups projects={projects} roles={roles} />
+  <ContactSection />
+  <SiteFooter slot="footer" />
+</BaseLayout>

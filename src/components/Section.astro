@@ -1,0 +1,55 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  /** Short fact shown opposite the heading, e.g. "5 solo builds · 4 live demos". */
+  fact?: string;
+}
+
+const { id, title, fact } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class="sec gut" id={id} aria-labelledby={headingId}>
+  <div class="wrap">
+    <div class="sec-top">
+      <h2 id={headingId}>{title}</h2>
+      {fact && <p class="fact">{fact}</p>}
+    </div>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .sec {
+    scroll-margin-top: var(--scroll-offset);
+    padding-block: var(--section-pad);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .sec-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--sp-2) var(--sp-5);
+    margin-bottom: var(--section-head-gap);
+    padding-bottom: var(--sp-4);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: var(--s-h2);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .fact {
+    margin: 0;
+    font-family: var(--f-data);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    color: var(--dim);
+  }
+</style>

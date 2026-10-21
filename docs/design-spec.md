@@ -145,6 +145,19 @@ one-liner.
   projects and roles with links; "Clear ×" or empty-sky click returns to overview. Filter
   All / Projects / Experience.
 
+## Readable equivalents (no graphics)
+
+The timeline and constellation enhance these lists, which are always in the HTML:
+
+- Experience: roles newest first, each with lane (eyebrow), title, org · place, dates ·
+  duration, note, bullets, skill chips linking to `#skill-<name>`, and the optional link;
+  then the education entry (school, place · honors · GPA, degrees, minor, coursework).
+- Skills: Python under "Core", then each group's skills, most used first, with the use
+  count (screen readers hear "used in N projects and M roles"); 3+ uses are bold. Header
+  fact "35 skills from 5 projects and 7 roles" (derived).
+- Hero: the tour button arrives with the tour (Phase 4.4); until then only "See the list
+  instead" shows. The footer's star-colors note arrives with the sky (Phase 2.1).
+
 ## Contact
 
 - Header "Contact" + "Open to backend and ML-platform roles".

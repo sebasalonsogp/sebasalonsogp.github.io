@@ -1,0 +1,85 @@
+---
+import { site } from '../data/site';
+---
+
+<!-- The explorer canvas (Phase 3) fills this section; its height is reserved now so the
+     layout does not shift when the scene arrives. -->
+<section class="hero gut" id="hero" aria-labelledby="hero-heading">
+  <div class="intro wrap">
+    <p class="eyebrow">{site.eyebrow}</p>
+    <h1 id="hero-heading">
+      {site.pitch.lead} <em>{site.pitch.emphasis}</em>
+    </h1>
+    <p class="lede">{site.lede}</p>
+    <div class="ctas">
+      <a class="btn" href="#projects">
+        See the list instead
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    align-items: center;
+    height: clamp(660px, 92vh, 900px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .intro {
+    width: 100%;
+    display: grid;
+    gap: 20px;
+    justify-items: start;
+  }
+
+  .intro > * {
+    max-width: 31rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: var(--s-h1);
+    font-weight: 380;
+    line-height: 1.07;
+    letter-spacing: -0.012em;
+  }
+
+  em {
+    font-style: italic;
+    font-weight: 340;
+    color: var(--sol);
+  }
+
+  .lede {
+    margin: 0;
+    max-width: 27rem;
+    font-size: var(--s-lede);
+    line-height: 1.55;
+    color: var(--dim);
+  }
+
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  @media (max-width: 760px) {
+    .hero {
+      align-items: start;
+      height: clamp(760px, 100svh, 880px);
+      padding-top: 88px;
+    }
+
+    .intro {
+      gap: 14px;
+    }
+
+    .lede {
+      font-size: var(--s-body);
+    }
+  }
+</style>

@@ -1,0 +1,82 @@
+---
+import type { Project, Role } from '../lib/content';
+import { skillAnchor } from '../lib/format';
+import { buildSkillIndex, type SkillUse } from '../lib/skills';
+import Section from './Section.astro';
+
+interface Props {
+  projects: Project[];
+  roles: Role[];
+}
+
+const { projects, roles } = Astro.props;
+const { core, groups, total } = buildSkillIndex(projects, roles);
+const fact = `${total} skills from ${projects.length} projects and ${roles.length} roles`;
+
+// Matches the constellation, where skills used three or more times are bold.
+const FREQUENT = 3;
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const uses = (skill: SkillUse) =>
+  [
+    skill.projects.length > 0 && plural(skill.projects.length, 'project'),
+    skill.roles.length > 0 && plural(skill.roles.length, 'role'),
+  ]
+    .filter(Boolean)
+    .join(' and ');
+const lists = [...(core ? [{ name: 'Core', skills: [core] }] : []), ...groups];
+---
+
+<Section id="skills" title="Skills" fact={fact}>
+  <div class="groups">
+    {lists.map((group) => (
+      <div class="group">
+        <h3 class="eyebrow">{group.name}</h3>
+        <ul>
+          {group.skills.map((skill) => (
+            <li id={skillAnchor(skill.name)} class:list={{ frequent: skill.count >= FREQUENT }}>
+              <span class="name">{skill.name}</span>
+              <span class="mono" aria-hidden="true">
+                {skill.count}
+              </span>
+              <span class="sr-only">, used in {uses(skill)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</Section>
+
+<style>
+  .groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: var(--sp-6) var(--sp-7);
+  }
+
+  ul {
+    display: grid;
+    gap: 2px;
+    margin: var(--sp-3) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--sp-4);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: var(--scroll-offset);
+  }
+
+  li:target .name {
+    color: var(--sol);
+  }
+
+  .frequent .name {
+    font-weight: 600;
+  }
+</style>

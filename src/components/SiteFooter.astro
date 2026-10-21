@@ -1,0 +1,59 @@
+---
+import { site } from '../data/site';
+import { withBase } from '../lib/format';
+import ExternalLink from './ExternalLink.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="foot gut">
+  <div class="wrap foot-in">
+    <span>
+      {site.name} · {site.location}
+    </span>
+    <nav aria-label="Elsewhere" class="foot-links">
+      <ExternalLink href={site.linkedin.url}>LinkedIn</ExternalLink>
+      <ExternalLink href={site.github.url}>GitHub</ExternalLink>
+      <ExternalLink href={withBase(site.resumePath)}>Resume</ExternalLink>
+      <a href="#hero">Back to the system ↑</a>
+    </nav>
+    <span class="foot-note">© {year}</span>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    padding-block: 36px 48px;
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    line-height: 1.8;
+    color: var(--dim);
+  }
+
+  .foot-in {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3) 28px;
+  }
+
+  .foot-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) 20px;
+  }
+
+  .foot-links :global(a) {
+    color: var(--dim);
+    text-decoration: none;
+  }
+
+  .foot-links :global(a:hover) {
+    color: var(--ink);
+  }
+
+  .foot-note {
+    flex-basis: 100%;
+  }
+</style>
