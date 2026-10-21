@@ -67,6 +67,19 @@ test.describe('home page', () => {
     );
   });
 
+  test('every resume link downloads the PDF', async ({ page }) => {
+    const hrefs = await page
+      .locator('a[href$=".pdf"]')
+      .evaluateAll((links) => links.map((a) => a.getAttribute('href')!));
+    expect(hrefs.length).toBeGreaterThan(0);
+    for (const href of new Set(hrefs)) {
+      const response = await page.request.get(href);
+      expect(response.status(), href).toBe(200);
+      expect(response.headers()['content-type'], href).toContain('application/pdf');
+      expect((await response.body()).subarray(0, 5).toString(), href).toBe('%PDF-');
+    }
+  });
+
   test('links that open a new tab are announced and use noopener', async ({ page }) => {
     const external = page.locator('a[target="_blank"]');
     expect(await external.count()).toBeGreaterThan(0);
