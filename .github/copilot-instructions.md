@@ -1,0 +1,1 @@
+Follow the repository's `AGENTS.md`. Before editing, read `docs/handoff.md`, `PRODUCT.md`, and the active task in `tasks/todo.md`. Maintain those shared files rather than duplicating instructions here.

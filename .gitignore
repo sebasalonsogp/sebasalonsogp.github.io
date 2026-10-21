@@ -1,0 +1,14 @@
+node_modules/
+.astro/
+dist/
+output/
+.playwright-cli/
+test-results/
+playwright-report/
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

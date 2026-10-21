@@ -1,0 +1,197 @@
+<style>
+  #portfolio-explorers { color-scheme: dark; }
+  #portfolio-explorers .space-preview { --space: #07080c; --ink: #f1f3f5; --quiet: #a3a8b7; --orbit: #33394c; --star: #ccd3ef; --violet: #aaa9ed; background: var(--space); color: var(--ink); font-family: 'Geist', 'Segoe UI', sans-serif; min-height: 570px; overflow: hidden; position: relative; }
+  #portfolio-explorers .space-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 20px; padding: 26px 26px 0; position: relative; z-index: 1; }
+  #portfolio-explorers h2 { margin: 0; font-size: 24px; font-weight: 500; letter-spacing: -.025em; line-height: 1.2; }
+  #portfolio-explorers .space-heading span { color: var(--quiet); font-size: 12px; }
+  #portfolio-explorers .sky { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #portfolio-explorers .sky circle { fill: var(--star); }
+  #portfolio-explorers .twinkling { animation: portfolio-twinkle 5.7s ease-in-out infinite alternate; }
+  #portfolio-explorers [data-stars="false"] .twinkling { animation-play-state: paused; opacity: .35; }
+  @keyframes portfolio-twinkle { from { opacity: .16; } to { opacity: .8; } }
+  #portfolio-explorers .scene { position: relative; height: 345px; margin-top: 8px; isolation: isolate; }
+  #portfolio-explorers .scene[data-spatial="true"] { touch-action: pan-y; cursor: grab; }
+  #portfolio-explorers .scene.dragging { cursor: grabbing; touch-action: none; }
+  #portfolio-explorers .orbits { width: 100%; height: 100%; position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  #portfolio-explorers .orbit-path { fill: none; stroke: var(--orbit); stroke-width: 1; }
+  #portfolio-explorers .orbit-path.selected { stroke: #7b7da7; }
+  #portfolio-explorers .sun { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #e2d9bb; transform: translate(-50%, -50%); pointer-events: none; }
+  #portfolio-explorers .planet { position: absolute; width: 46px; height: 46px; padding: 0; transform: translate(-50%, -50%); background: transparent; border: 0; color: var(--ink); font: inherit; z-index: 2; }
+  #portfolio-explorers .planet .sphere { display: block; position: absolute; left: 50%; top: 50%; width: var(--diameter); height: var(--diameter); border-radius: 50%; transform: translate(-50%, -50%); background: radial-gradient(circle at 27% 24%, var(--lit), var(--mid) 42%, #15151f 83%); }
+  #portfolio-explorers .planet .halo { position: absolute; inset: 3px; border: 1px solid transparent; border-radius: 50%; }
+  #portfolio-explorers .planet[aria-pressed="true"] .halo { border-color: var(--violet); }
+  #portfolio-explorers .planet:hover .halo { border-color: #626780; }
+  #portfolio-explorers .planet-label { position: absolute; left: 50%; top: 46px; transform: translateX(-50%); white-space: nowrap; font-size: 12px; line-height: 1.4; color: #b9bdcb; }
+  #portfolio-explorers .planet[aria-pressed="true"] .planet-label { color: var(--ink); }
+  #portfolio-explorers .scene-tools { min-height: 52px; padding: 0 26px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; position: relative; z-index: 3; }
+  #portfolio-explorers .scene-tools button, #portfolio-explorers .return-button { background: #10121a; border: 1px solid #373c4d; color: var(--ink); border-radius: 4px; min-height: 34px; padding: 5px 10px; font: inherit; font-size: 12px; }
+  #portfolio-explorers .scene-tools button:hover, #portfolio-explorers .return-button:hover { background: #202332; }
+  #portfolio-explorers .rotate-controls { display: flex; gap: 5px; }
+  #portfolio-explorers .zoom-control { display: flex; align-items: center; gap: 7px; color: var(--quiet); font-size: 12px; }
+  #portfolio-explorers input[type="range"] { width: 80px; accent-color: var(--violet); }
+  #portfolio-explorers .motion-control { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--quiet); min-height: 34px; }
+  #portfolio-explorers input[type="checkbox"] { accent-color: var(--violet); }
+  #portfolio-explorers .view-note { color: var(--quiet); font-size: 12px; }
+  #portfolio-explorers .project-detail { min-height: 96px; position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 7px 26px 0; border-top: 1px solid #2a2e3c; }
+  #portfolio-explorers .project-detail h3 { margin: 0 0 7px; font-size: 18px; font-weight: 500; line-height: 1.25; }
+  #portfolio-explorers .project-detail p { margin: 0; color: var(--quiet); font-size: 12px; line-height: 1.5; }
+  #portfolio-explorers .return-button { flex-shrink: 0; }
+  #portfolio-explorers .return-button[hidden] { display: none; }
+  #portfolio-explorers .prototype-note { color: #969cac; margin: 0; padding: 0 26px 20px; font-size: 11px; line-height: 1.4; position: relative; }
+  @media (max-width: 470px) {
+    #portfolio-explorers .space-preview { min-height: 610px; }
+    #portfolio-explorers .space-heading { padding: 23px 17px 0; }
+    #portfolio-explorers .scene { height: 335px; }
+    #portfolio-explorers .scene-tools { padding: 0 17px; min-height: 88px; gap: 7px 10px; }
+    #portfolio-explorers .project-detail { margin: 5px 17px 0; min-height: 102px; }
+    #portfolio-explorers .project-detail h3 { font-size: 16px; }
+    #portfolio-explorers .planet-label { font-size: 11px; }
+    #portfolio-explorers .prototype-note { padding: 0 17px 18px; }
+    #portfolio-explorers .scene-tools button { min-height: 40px; }
+  }
+  @media (prefers-reduced-motion: reduce) { #portfolio-explorers .twinkling { animation: none; opacity: .4; } }
+</style>
+<div id="portfolio-explorers" class="viz-carousel viz-dotted-background" aria-label="Portfolio explorer interaction comparison">
+  <section data-variant="Orbital map" aria-label="Fixed orbital map">
+    <div class="space-preview" data-mode="map" data-stars="true">
+      <svg class="sky" aria-hidden="true"></svg>
+      <div class="space-heading"><h2>Projects in orbit</h2><span>Select a planet</span></div>
+      <div class="scene" aria-label="Five projects in a fixed orbital arrangement"><svg class="orbits" aria-hidden="true"></svg><div class="sun" aria-hidden="true"></div></div>
+      <div class="scene-tools"><span class="view-note">Fixed perspective</span><label class="motion-control"><input type="checkbox" class="stars-control" checked>Twinkling stars</label></div>
+      <div class="project-detail" aria-live="polite"><div><h3>La Liga Quant Simulator</h3><p>Selected project</p></div></div>
+      <p class="prototype-note">Interaction study · project names are examples from the Stitch reference</p>
+    </div>
+  </section>
+  <section data-variant="Spatial explorer" aria-label="Rotatable spatial explorer" hidden>
+    <div class="space-preview" data-mode="spatial" data-stars="true">
+      <svg class="sky" aria-hidden="true"></svg>
+      <div class="space-heading"><h2>Projects in orbit</h2><span>Drag to rotate · select a planet</span></div>
+      <div class="scene" data-spatial="true" aria-label="Five projects in a rotatable three-dimensional orbital arrangement"><svg class="orbits" aria-hidden="true"></svg><div class="sun" aria-hidden="true"></div></div>
+      <div class="scene-tools"><div class="rotate-controls"><button type="button" data-rotate="-1" aria-label="Rotate view left">Rotate left</button><button type="button" data-rotate="1" aria-label="Rotate view right">Rotate right</button></div><label class="zoom-control">Zoom<input type="range" class="zoom-input" min="0.75" max="1.35" step="0.05" value="1"></label><label class="motion-control"><input type="checkbox" class="stars-control" checked>Twinkling stars</label></div>
+      <div class="project-detail" aria-live="polite"><div><h3>La Liga Quant Simulator</h3><p>Selected project</p></div><button type="button" class="return-button" hidden>Full system</button></div>
+      <p class="prototype-note">Interaction study · project names are examples from the Stitch reference</p>
+    </div>
+  </section>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('portfolio-explorers');
+  const ns = 'http://www.w3.org/2000/svg';
+  const projects = [
+    { name: 'La Liga Quant Simulator', short: 'La Liga', radius: .24, angle: 3.8, size: 19, lit: '#d4cff9', mid: '#7166ad' },
+    { name: 'Exoplanet Detector', short: 'Exoplanets', radius: .42, angle: .48, size: 24, lit: '#c3d7e4', mid: '#527b93' },
+    { name: 'SVD Lab', short: 'SVD', radius: .61, angle: 2.65, size: 19, lit: '#e0decd', mid: '#8b8677' },
+    { name: 'Quantum Lab', short: 'Quantum', radius: .8, angle: 5.55, size: 25, lit: '#c9b7cb', mid: '#896a86' },
+    { name: 'Spectral Graph Lab', short: 'Graphs', radius: 1, angle: 4.1, size: 23, lit: '#c7d9cf', mid: '#587a71' }
+  ];
+  const views = [];
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let saved = window.openai?.widgetState?.privateContent;
+  function persist() {
+    if (!window.openai?.setWidgetState) return;
+    const privateContent = Object.fromEntries(views.map(v => [v.mode, { selected: v.selected, yaw: v.yaw, pitch: v.pitch, zoom: v.zoom, stars: v.stars }]));
+    window.openai.setWidgetState({ modelContent: { comparison: 'Orbital map versus spatial explorer', selectedProjects: views.map(v => ({ view: v.mode, project: projects[v.selected].name })) }, privateContent }).catch(() => {});
+  }
+  for (const preview of root.querySelectorAll('.space-preview')) {
+    const scene = preview.querySelector('.scene');
+    const orbitSvg = preview.querySelector('.orbits');
+    const sky = preview.querySelector('.sky');
+    const mode = preview.dataset.mode;
+    const state = { mode, selected: 0, yaw: mode === 'spatial' ? .25 : 0, pitch: .5, zoom: 1, stars: !reduced.matches, focused: false };
+    const restore = data => {
+      if (!data || typeof data !== 'object') return;
+      if (Number.isInteger(data.selected) && projects[data.selected]) state.selected = data.selected;
+      if (Number.isFinite(data.yaw)) state.yaw = data.yaw;
+      if (Number.isFinite(data.pitch)) state.pitch = Math.max(.35, Math.min(1.12, data.pitch));
+      if (Number.isFinite(data.zoom)) state.zoom = Math.max(.75, Math.min(1.35, data.zoom));
+      if (typeof data.stars === 'boolean') state.stars = data.stars && !reduced.matches;
+    };
+    restore(saved?.[mode]);
+    views.push(state);
+    sky.setAttribute('viewBox', '0 0 736 570');
+    sky.setAttribute('preserveAspectRatio', 'none');
+    for (let i = 0; i < 95; i++) {
+      const dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('cx', String((i * 233.3 + 31) % 736));
+      dot.setAttribute('cy', String((i * 173.9 + 19) % 570));
+      dot.setAttribute('r', i % 11 === 0 ? '1.1' : '.55');
+      dot.setAttribute('opacity', i % 11 === 0 ? '.7' : '.3');
+      if (i % 4 === 0) { dot.classList.add('twinkling'); dot.style.animationDelay = `${-(i % 7)}s`; dot.style.animationDuration = `${4 + i % 5}s`; }
+      sky.append(dot);
+    }
+    const paths = projects.map(() => { const path = document.createElementNS(ns, 'path'); path.classList.add('orbit-path'); orbitSvg.append(path); return path; });
+    const buttons = projects.map((p, i) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'planet cursor-interaction';
+      button.setAttribute('aria-label', `Select ${p.name}`);
+      button.innerHTML = '<span class="halo" aria-hidden="true"></span><span class="sphere" aria-hidden="true"></span><span class="planet-label"></span>';
+      button.querySelector('.planet-label').textContent = p.short;
+      button.style.setProperty('--lit', p.lit);
+      button.style.setProperty('--mid', p.mid);
+      button.addEventListener('click', () => {
+        state.selected = i;
+        if (mode === 'spatial') { state.focused = true; state.yaw = Math.PI / 2 - p.angle; state.pitch = .5; state.zoom = 1.1; }
+        render(); persist();
+      });
+      scene.append(button);
+      return button;
+    });
+    function point(radius, angle, width, height) {
+      const maxR = Math.min(width * .36, mode === 'spatial' ? 205 : 235);
+      const theta = angle + (mode === 'spatial' ? state.yaw : 0);
+      const x = Math.cos(theta) * radius * maxR;
+      const z = Math.sin(theta) * radius * maxR;
+      const pitch = mode === 'spatial' ? state.pitch : .73;
+      const depth = z * Math.cos(pitch);
+      const perspective = mode === 'spatial' ? 620 / (620 - depth) : 1;
+      return { x: width / 2 + x * perspective * state.zoom, y: height * (mode === 'spatial' ? .4 : .46) + z * Math.sin(pitch) * perspective * state.zoom, depth, scale: perspective };
+    }
+    function render() {
+      const width = scene.clientWidth;
+      const height = scene.clientHeight;
+      if (!width) return;
+      orbitSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      projects.forEach((p, i) => {
+        let path = '';
+        for (let step = 0; step <= 96; step++) { const q = point(p.radius, step / 96 * Math.PI * 2, width, height); path += `${step ? 'L' : 'M'}${q.x.toFixed(1)},${q.y.toFixed(1)} `; }
+        paths[i].setAttribute('d', path + 'Z');
+        paths[i].classList.toggle('selected', state.selected === i);
+        const q = point(p.radius, p.angle, width, height);
+        buttons[i].style.left = `${q.x}px`;
+        buttons[i].style.top = `${q.y}px`;
+        buttons[i].querySelector('.planet-label').style.top = q.y < height * (mode === 'spatial' ? .4 : .46) - 15 ? '-15px' : '46px';
+        buttons[i].style.setProperty('--diameter', `${p.size * (mode === 'spatial' ? q.scale : 1)}px`);
+        buttons[i].style.zIndex = String(250 + Math.round(q.depth));
+        buttons[i].setAttribute('aria-pressed', String(state.selected === i));
+      });
+      const sun = preview.querySelector('.sun'); sun.style.left = `${width / 2}px`; sun.style.top = `${height * (mode === 'spatial' ? .4 : .46)}px`;
+      preview.querySelector('.project-detail h3').textContent = projects[state.selected].name;
+      preview.querySelector('.project-detail p').textContent = mode === 'spatial' && state.focused ? 'Selected world · camera brought forward' : 'Selected project';
+      preview.dataset.stars = String(state.stars);
+      preview.querySelector('.stars-control').checked = state.stars;
+      const zoom = preview.querySelector('.zoom-input'); if (zoom) zoom.value = String(state.zoom);
+      const back = preview.querySelector('.return-button'); if (back) back.hidden = !state.focused;
+    }
+    state.render = render;
+    state.restore = restore;
+    preview.querySelector('.stars-control').addEventListener('change', e => { state.stars = e.target.checked; render(); persist(); });
+    if (mode === 'spatial') {
+      preview.querySelectorAll('[data-rotate]').forEach(button => button.addEventListener('click', () => { state.yaw += Number(button.dataset.rotate) * .3; render(); persist(); }));
+      preview.querySelector('.zoom-input').addEventListener('input', e => { state.zoom = Number(e.target.value); render(); });
+      preview.querySelector('.zoom-input').addEventListener('change', persist);
+      preview.querySelector('.return-button').addEventListener('click', () => { state.focused = false; state.yaw = .25; state.pitch = .5; state.zoom = 1; render(); persist(); });
+      let drag = null;
+      scene.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; drag = { x: e.clientX, y: e.clientY, yaw: state.yaw, pitch: state.pitch }; scene.setPointerCapture(e.pointerId); scene.classList.add('dragging'); });
+      scene.addEventListener('pointermove', e => { if (!drag) return; state.yaw = drag.yaw + (e.clientX - drag.x) * .008; state.pitch = Math.max(.35, Math.min(1.12, drag.pitch + (e.clientY - drag.y) * .004)); render(); });
+      const endDrag = () => { if (!drag) return; drag = null; scene.classList.remove('dragging'); persist(); };
+      scene.addEventListener('pointerup', endDrag); scene.addEventListener('pointercancel', endDrag);
+    }
+    new ResizeObserver(render).observe(scene);
+    render();
+    if (globalThis.Tweak) { const tweak = new Tweak({ container: preview, onChange: render }); tweak.addToggle(state, 'stars', { label: 'Twinkling stars' }); }
+  }
+  window.addEventListener('openai:set_globals', e => { const data = e.detail?.globals?.widgetState?.privateContent; if (!data) return; views.forEach(v => { v.restore(data[v.mode]); v.render(); }); });
+  reduced.addEventListener('change', e => { if (e.matches) views.forEach(v => { v.stars = false; v.render(); }); });
+})();
+</script>

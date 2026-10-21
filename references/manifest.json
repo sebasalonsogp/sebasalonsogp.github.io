@@ -1,0 +1,25 @@
+{
+  "description": "Unchanged source references. Paths relative to references/.",
+  "archive": {
+    "name": "stitch_design_system_component_library.zip",
+    "sha256": "7a5d3623cecf9d937c8f123a959b7e5e9014422999d810d02d655efb42d1d482"
+  },
+  "files": [
+    {
+      "path": "stitch/code.html",
+      "sha256": "d5981570e15e38abd8fac57ea9539577bccdbd0b7a8557847ba4630a154662b6"
+    },
+    {
+      "path": "stitch/screen.png",
+      "sha256": "879d90b91f137fa3d5239a9ce389a7b0d3e39b428afe3210a4967349edd0642c"
+    },
+    {
+      "path": "stitch/DESIGN.md",
+      "sha256": "f1d906bf229782f153ff93d1d52758e908da95659c15c57f61ab5551a12bea57"
+    },
+    {
+      "path": "interaction-studies/explorer-comparison.html",
+      "sha256": "e6a4cb8d7288fedb9374ab3644877a8b84e89f9ee8aa7773904f008ac4953971"
+    }
+  ]
+}

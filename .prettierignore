@@ -1,0 +1,10 @@
+node_modules/
+.astro/
+dist/
+output/
+.playwright-cli/
+test-results/
+playwright-report/
+package-lock.json
+references/stitch/
+references/interaction-studies/*.html
