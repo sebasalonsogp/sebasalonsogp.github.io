@@ -30,7 +30,7 @@ The user approved the interactive concept and the phased plan (v2). Continue in 
 
 ## Verify and finish a slice
 
-- Run `npm run verify` after code/config changes. For docs-only changes, formatting and checking links are sufficient.
+- Run `npm run verify` and `npm test` (Playwright + axe in three browsers) after code/config changes. For docs-only changes, formatting and checking links are sufficient.
 - Use real-browser inspection for visual work at 1440×900 and 390×844, keyboard only, and reduced motion. Source code containing an animation is not evidence of visual quality.
 - Add Playwright coverage for meaningful behavior as it is introduced (visit/return/history, lightbox, playback, selection). Do not fabricate test counts or add tests that only repeat constants or markup.
 - Do not disable checks or silently weaken an acceptance criterion to obtain a pass. Record exact failures and limitations.

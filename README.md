@@ -28,7 +28,10 @@ npm run build         # Static production output in dist/
 npm run preview       # Serve the production build locally
 npm run verify        # Formatting + checking + build
 npm run format        # Apply formatting
+npm test              # Build, serve and run Playwright + axe in Chromium, Firefox, WebKit
 ```
+
+First run only: `npx playwright install chromium firefox webkit`.
 
 Dependencies are added by the phase that uses them (fonts and Playwright in Phase 1, Three.js in Phase 3).
 

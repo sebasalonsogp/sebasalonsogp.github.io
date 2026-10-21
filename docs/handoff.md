@@ -2,9 +2,9 @@
 
 ## Current state
 
-**Phase 1, slices 1.1–1.4 are done** on stacked branches: `feat/content-model` (1.1) →
-`feat/tokens-fonts` (1.2) → `feat/page-skeleton` (1.3) → `feat/project-routes` (1.4),
-all on `docs/plan-v2`; none merged yet. Next is slice 1.5.
+**Phase 1, slices 1.1–1.5 are done** on stacked branches: `feat/content-model` (1.1) →
+`feat/tokens-fonts` (1.2) → `feat/page-skeleton` (1.3) → `feat/project-routes` (1.4) →
+`test/playwright-harness` (1.5), all on `docs/plan-v2`; none merged yet. Next is 1.6.
 The visual source of truth stays `references/concept/orbit-concept-v19.html` and
 `docs/design-spec.md`; the phased plan is `tasks/plan.md` (v2).
 
@@ -60,13 +60,38 @@ content migrated; each validation rule was shown to fail the build when broken.
   load directly, row → page, prev/next wrap, video/poster/images return 200, no console
   errors. `npm run verify` passes.
 
+## Slice 1.5 — test harness
+
+- `@playwright/test` 1.64.1 and `@axe-core/playwright` 4.14.0; `playwright.config.ts`
+  builds and serves the production output on port 4322 and runs Chromium, Firefox and
+  WebKit (4 workers locally, 2 in CI; unbounded workers caused random timeouts).
+  `npm test` runs it; CI installs the browsers and runs it after the existing checks.
+- `tests/e2e`: home (sections, nav scrolls, skip link, skill links, contact paths, new-tab
+  links, copy email, 320 px, no-JS content), projects (row → page, direct loads, next wraps,
+  media loads, 320 px), a11y (axe WCAG 2.2 AA on home and every project page). Projects are
+  discovered from the page, not hard-coded. 16 tests × 3 browsers = 48, passing twice in a
+  row (1.4 min).
+- The suite found a real bug: at 320 px the contact column overflowed by 8 px (fixed in
+  `ContactSection.astro`). The in-app browser had widened its 320 px viewport to 328 and
+  hidden it, so the 320 px claims in slices 1.2–1.4 were wrong.
+
 ## Next task
 
-Phase 1, slice 1.5 — Playwright (Chromium, Firefox, WebKit) + `@axe-core/playwright`:
-sections and nav reachable, project routes load directly, no axe violations, resume and
-external links present.
+Phase 1, slice 1.6 — create the GitHub repository (confirm the name
+`sebasalonsogp.github.io` with Sebastian first), set `site`/`base`, Pages workflow gated
+by verify + tests, resume PDF in `public/`, plain `404.html`, then check direct loads and
+refreshes of `/projects/<id>/` on the live URL.
 
 ## Open inputs and issues
+
+- **WebKit + WebM:** Playwright's Windows WebKit never fires `load` on a page with a real
+  WebM video (any markup; Chromium is fine), so tests wait for `domcontentloaded`. Confirm
+  the Eigenflow page on real Safari/iOS in Phase 8.3; an MP4 (H.264) source in Phase 4.2
+  would be the safe fallback. WebKit also keeps links out of the Tab order (Safari
+  default), so the skip-link test focuses the link directly there.
+- **axe "incomplete" (needs a human):** `color-contrast` on some elements (measure in 2.3)
+  and `video-caption` for the Eigenflow demo; no captions are needed if the recording is
+  silent. Confirm.
 
 - **Font weight:** Newsreader with the opsz axis (as specified) is 129 KB per face vs 57 KB
   weight-only. Revisit in Phase 8 if LCP needs it. No fallback metric overrides yet (CLS

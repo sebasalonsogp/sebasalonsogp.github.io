@@ -167,6 +167,7 @@ import Section from './Section.astro';
 
   .ct-side {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 20px;
   }
 
@@ -227,9 +228,10 @@ import Section from './Section.astro';
 
   .ct-links :global(a) {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: baseline;
-    gap: var(--sp-4);
+    gap: 2px var(--sp-4);
     padding: 18px 4px;
     font-size: 1.15rem;
     text-decoration: none;
