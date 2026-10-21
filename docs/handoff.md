@@ -2,12 +2,25 @@
 
 ## Current state
 
-**Phase 1 is built and live** at https://sebasalonsogp.github.io/ (`noindex`), from the
-public repository `sebasalonsogp/sebasalonsogp.github.io`, branch `main`. Every push to
-`main` runs the CI checks (verify, audit, Playwright + axe in three browsers) and deploys
-only if they pass. **Next: the Phase 1 checkpoint**, where Sebastian reviews copy and
-structure on the live URL, then Phase 2. The visual source of truth stays
-`references/concept/orbit-concept-v19.html` and `docs/design-spec.md`.
+**Phase 1 is live** at https://sebasalonsogp.github.io/ (`noindex`) from `main` of the
+public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
+checkpoint by moving on. **Phase 2 is in progress:** slices 2.1 (sky) and 2.2 (motion
+policy) are done on branch `feat/sky-motion`; next is 2.3 (visual pass), then the Phase 2
+checkpoint. Every push to `main` runs the CI checks and deploys only if they pass.
+
+## Slices 2.1 + 2.2 — sky and motion policy
+
+- `src/features/motion/motion.ts`: reduced-motion state + `ambientLoop` (30 fps cap,
+  pauses in hidden tabs, one still frame under reduced motion).
+- `src/features/sky/stars.ts` (seeded, pure star field) and `sky.ts` (two-canvas
+  renderer, CSS-transform parallax, `setYaw` for the explorer); `Sky.astro` in the layout.
+  Footer gained "Star colors follow real stellar temperatures."
+- Measured: twinkle changes ~4,900 star-layer pixels in 400 ms; cost ~1.3 ms (desktop) /
+  1.6 ms (phone viewport) per frame in GPU Chromium on this machine, ~3.1 ms without GPU.
+  10-second clips (1440×900, 390×844) were sent to Sebastian. Initial JS 2.4 KB gzip.
+- `tests/e2e/sky.spec.ts`: painted and non-blocking, twinkle, scroll parallax, pause and
+  resume on visibility, reduced motion still and parallax-free, seeded. 24 tests × 3
+  browsers = 72 passing. `npm run verify` passes.
 
 ## Slice 1.1 — content model
 
@@ -91,8 +104,9 @@ content migrated; each validation rule was shown to fail the build when broken.
 
 ## Next task
 
-Phase 1 checkpoint: Sebastian reviews https://sebasalonsogp.github.io/ on desktop and
-phone. After approval, Phase 2 slice 2.1 (sky module).
+Phase 2, slice 2.3 — visual pass: type rules (mono only for dates and data), section
+headings, "How to read" popovers, buttons, focus rings, scroll margins; measure text
+contrast ≥ 4.5:1 over the sky (axe left color-contrast "incomplete").
 
 ## Open inputs and issues
 
@@ -104,6 +118,9 @@ phone. After approval, Phase 2 slice 2.1 (sky module).
 - **axe "incomplete" (needs a human):** `color-contrast` on some elements (measure in 2.3)
   and `video-caption` for the Eigenflow demo; no captions are needed if the recording is
   silent. Confirm.
+- **Sky cost on real hardware:** confirm < 2 ms/frame on a mid-range laptop and a phone
+  in Phase 8.2; this machine is likely faster than mid-range.
+- `npm test` fails to start if another `astro preview` is running (Astro allows one).
 - **Font weight:** Newsreader with the opsz axis (as specified) is 129 KB per face vs 57 KB
   weight-only. Revisit in Phase 8 if LCP needs it. No fallback metric overrides yet (CLS
   check in Phase 8).

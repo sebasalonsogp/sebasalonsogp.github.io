@@ -12,7 +12,7 @@ before ending a session.
 - [x] Interactive concept approved (`references/concept/orbit-concept-v19.html`).
 - [x] Design spec written (`docs/design-spec.md`).
 
-## Phase 1 — Content model, readable site, Pages pipeline (next)
+## Phase 1 — Content model, readable site, Pages pipeline ✓
 
 - [x] 1.1 Collections: projects, experience, education, skills groups, site profile; migrate real content.
 - [x] 1.2 Tokens and self-hosted fonts.
@@ -20,12 +20,12 @@ before ending a session.
 - [x] 1.4 Static `/projects/<id>/` routes.
 - [x] 1.5 Playwright + axe harness with first tests.
 - [x] 1.6 GitHub Pages workflow (tests gate deploy), `noindex`, resume PDF, plain 404; verify direct loads live.
-- [ ] Checkpoint: review the live readable site.
+- [x] Checkpoint: review the live readable site (approved by moving on to Phase 2).
 
-## Phase 2 — Sky and visual system
+## Phase 2 — Sky and visual system (in progress)
 
-- [ ] 2.1 Sky module (stars, twinkle, haze 0.024, parallax).
-- [ ] 2.2 Shared motion policy (reduced motion, visibility pause, fps cap).
+- [x] 2.1 Sky module (stars, twinkle, haze 0.024, parallax).
+- [x] 2.2 Shared motion policy (reduced motion, visibility pause, fps cap).
 - [ ] 2.3 Visual pass: type rules, headings, help popovers, focus.
 - [ ] Checkpoint: look and feel.
 

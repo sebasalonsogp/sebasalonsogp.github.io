@@ -81,7 +81,13 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
   envelope, amplitude stronger toward the bottom (horizon).
 - Milky Way band: diagonal, haze strength 0.024 with cool colors `#9AA6CC` / `#B3A8D6`.
 - Parallax: horizontal with explorer yaw (±40 px), vertical with scroll (up to 55 px).
-- 30 fps cap; paused when hidden; reduced motion draws one static frame.
+- 30 fps cap; paused when hidden; reduced motion draws one static frame with no parallax.
+- Implementation (`src/features/sky/`, `src/features/motion/`): seed 7; two canvases, a
+  static layer (haze + faint stars) painted once and a star layer where only each bright
+  star's square is repainted per frame; parallax moves both with a CSS transform. Sized to
+  the large viewport (`100lvh`) so phone toolbars do not regenerate the stars. Measured
+  cost: ~1.3–1.6 ms per frame in GPU-rasterized Chromium (~3.1 ms in software rendering);
+  script alone ~0.35 ms.
 
 ## Hero and explorer
 
@@ -167,7 +173,7 @@ The timeline and constellation enhance these lists, which are always in the HTML
   count (screen readers hear "used in N projects and M roles"); 3+ uses are bold. Header
   fact "35 skills from 5 projects and 7 roles" (derived).
 - Hero: the tour button arrives with the tour (Phase 4.4); until then only "See the list
-  instead" shows. The footer's star-colors note arrives with the sky (Phase 2.1).
+  instead" shows.
 
 ## Contact
 

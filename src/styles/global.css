@@ -61,6 +61,13 @@ canvas {
   max-width: 100%;
 }
 
+/* Page content sits above the fixed sky canvas. */
+body > main,
+body > footer {
+  position: relative;
+  z-index: 1;
+}
+
 main:focus {
   outline: none;
 }

@@ -31,7 +31,7 @@ npm run format        # Apply formatting
 npm test              # Build, serve and run Playwright + axe in Chromium, Firefox, WebKit
 ```
 
-First run only: `npx playwright install chromium firefox webkit`.
+First run only: `npx playwright install chromium firefox webkit`. Astro allows one `astro preview` at a time, so stop any other preview server before `npm test` (or `npx astro preview stop`).
 
 Dependencies are added by the phase that uses them (fonts and Playwright in Phase 1, Three.js in Phase 3).
 

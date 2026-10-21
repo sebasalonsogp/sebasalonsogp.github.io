@@ -41,8 +41,8 @@ content collections + github.json + site.ts
 
 ```text
 src/features/
-  motion/       reduced motion, visibility, fps cap (shared)
-  sky/          2D canvas starfield
+  motion/       reduced motion, visibility, fps cap (shared; in use)
+  sky/          2D canvas starfield (in use)
   explorer/     Three.js scene, bodies, labels, camera, visit state machine
   landing/      preview screen + lightbox
   timeline/     selection + playback over build-time SVG
