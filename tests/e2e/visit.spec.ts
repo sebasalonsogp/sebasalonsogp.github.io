@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import {
+  asIfGpu,
   hero,
   mediaCounts,
   projectList,
@@ -124,6 +125,7 @@ test.describe('visits with motion', () => {
   test('the camera flies, then arrives (explore → flying → visit → returning → explore)', async ({
     page,
   }) => {
+    await asIfGpu(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     test.skip(!(await supportsWebGL2(page)), 'No WebGL2 in this browser');

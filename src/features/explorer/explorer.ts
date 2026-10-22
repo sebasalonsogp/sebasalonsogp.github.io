@@ -8,6 +8,7 @@
 // `data-mode` (explore | flying | visit | returning).
 
 import { PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
+import { isSoftwareRenderer } from '../gpu';
 import { ambientLoop, reducedMotion } from '../motion/motion';
 import { setSkyYaw } from '../sky/sky';
 import { createBodies } from './bodies';
@@ -130,6 +131,11 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   }
   renderer.setClearColor(0x000000, 0);
   hero.prepend(canvas);
+  // On a software renderer the system holds still as with reduced motion: frames are drawn on
+  // demand (drag, hover, selection), flights are instant and orbits do not drift.
+  const software = isSoftwareRenderer(renderer.getContext());
+  hero.dataset.renderer = software ? 'software' : 'gpu';
+  const still = () => reducedMotion.matches || software;
 
   const projects = data.projects;
   const homeHref = data.homeHref;
@@ -281,7 +287,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   function draw(seconds: number) {
     const step = last === undefined ? 0 : Math.min(MAX_STEP, Math.max(0, seconds - last));
     last = seconds;
-    if (!reducedMotion.matches) {
+    if (!still()) {
       const visiting = mode === 'flying' || mode === 'visit';
       timeScale += ((visiting ? 0 : 1) - timeScale) * (1 - Math.exp(-step * TIME_EASE));
       simTime += step * timeScale;
@@ -312,6 +318,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   const loop = ambientLoop(draw, {
     fps: FPS,
     active: () => onScreen && !lost,
+    still: () => software,
     onState: (state) => setState(lost ? 'unavailable' : state),
   });
 
@@ -354,7 +361,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       returnTo: tourButton,
       history: tour.index === 0 ? 'push' : 'replace',
     });
-    const dwell = (reducedMotion.matches ? 0 : TOUR_FLIGHT_MS) + TOUR_READ_MS;
+    const dwell = (still() ? 0 : TOUR_FLIGHT_MS) + TOUR_READ_MS;
     panel.showTour(tour.index, data.tour.length, dwell);
     tour.timer = window.setTimeout(() => {
       if (!tour) return;
@@ -387,14 +394,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       from: { ...cam, target: [...cam.target] as [number, number, number] },
       yawTo,
       start: performance.now(),
-      duration:
-        instant || reducedMotion.matches
-          ? 0
-          : hop
-            ? HOP_MS
-            : kind === 'planet'
-              ? FLY_MS
-              : RETURN_MS,
+      duration: instant || still() ? 0 : hop ? HOP_MS : kind === 'planet' ? FLY_MS : RETURN_MS,
       hop,
     };
     setMode(kind === 'planet' ? 'flying' : 'returning');

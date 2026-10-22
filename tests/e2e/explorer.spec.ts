@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { withoutWebGL2 } from './helpers';
+import { asIfGpu, setRendererName, withoutWebGL2 } from './helpers';
 
 const EXPLORER_CHUNK = /\/_astro\/explorer\.[^/]+\.js$/;
 
@@ -9,6 +9,8 @@ const supportsWebGL2 = (page: Page) =>
 const hero = (page: Page) => page.locator('#hero');
 
 test.describe('explorer shell', () => {
+  test.beforeEach(async ({ page }) => asIfGpu(page));
+
   test('loads after the page and fills the hero', async ({ page }) => {
     await page.goto('/');
     if (!(await supportsWebGL2(page))) {
@@ -303,5 +305,27 @@ test.describe('explorer without WebGL2', () => {
     await expect(page.getByRole('button', { name: 'Take the 60-second tour' })).toBeHidden();
     await expect(page.locator('h1')).toBeVisible();
     await expect(page.locator('#projects .row a')).not.toHaveCount(0);
+  });
+});
+
+test.describe('explorer on a software renderer', () => {
+  test('holds still, draws on demand and still opens visits at once', async ({ page }) => {
+    await setRendererName(page, 'Google SwiftShader');
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    test.skip(!(await supportsWebGL2(page)), 'No WebGL2 in this browser');
+    await expect(hero(page)).toHaveAttribute('data-renderer', 'software', { timeout: 10_000 });
+    await expect(hero(page)).toHaveAttribute('data-explorer', 'static');
+    // No drift: the planet labels, placed every drawn frame, stay put for a second.
+    const positions = () =>
+      page
+        .locator('.planet-label')
+        .evaluateAll((labels) => labels.map((l) => (l as HTMLElement).style.transform));
+    const first = await positions();
+    await page.waitForTimeout(1000);
+    expect(await positions()).toEqual(first);
+    // A visit arrives without a flight.
+    await page.locator('.planet-label').first().click();
+    await expect(hero(page)).toHaveAttribute('data-mode', 'visit');
   });
 });

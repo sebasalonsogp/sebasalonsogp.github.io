@@ -67,6 +67,30 @@ export const visitTitle = (page: Page) => page.locator('#explorer-visit-title');
 export const supportsWebGL = (page: Page) =>
   page.evaluate(() => Boolean(document.createElement('canvas').getContext('webgl')));
 
+/**
+ * Makes WebGL report `name` as its renderer (or hide it, with null): headless browsers often
+ * render on the CPU, where the explorer and black hole hold still on purpose.
+ */
+export const setRendererName = (page: Page, name: string | null) =>
+  page.addInitScript((rendererName) => {
+    for (const proto of [WebGLRenderingContext.prototype, WebGL2RenderingContext.prototype]) {
+      const getExtension = proto.getExtension as (name: string) => unknown;
+      proto.getExtension = function (this: WebGLRenderingContext, ext: string) {
+        if (ext === 'WEBGL_debug_renderer_info' && rendererName === null) return null;
+        return getExtension.call(this, ext);
+      } as typeof proto.getExtension;
+      const getParameter = proto.getParameter as (p: number) => unknown;
+      proto.getParameter = function (this: WebGLRenderingContext, param: number) {
+        if (param === this.RENDERER || param === 0x9246 /* UNMASKED_RENDERER_WEBGL */) {
+          return rendererName ?? 'Test GPU';
+        }
+        return getParameter.call(this, param);
+      } as typeof proto.getParameter;
+    }
+  }, name);
+/** For tests about motion: the renderer is not recognised as software, so it animates. */
+export const asIfGpu = (page: Page) => setRendererName(page, null);
+
 export const supportsWebGL2 = (page: Page) =>
   page.evaluate(() => Boolean(document.createElement('canvas').getContext('webgl2')));
 
@@ -75,7 +99,8 @@ export const supportsWebGL2 = (page: Page) =>
  * Reduced motion (the default here) makes every flight instant.
  */
 export async function ready(page: Page, { motion = false } = {}) {
-  if (!motion) await page.emulateMedia({ reducedMotion: 'reduce' });
+  if (motion) await asIfGpu(page);
+  else await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   test.skip(!(await supportsWebGL2(page)), 'No WebGL2 in this browser');

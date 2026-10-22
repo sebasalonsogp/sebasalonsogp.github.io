@@ -24,6 +24,8 @@ export interface LoopOptions {
   fps?: number;
   /** Extra condition, e.g. "the hero is on screen". Call `kick()` when it changes. */
   active?: () => boolean;
+  /** Draw single frames as with reduced motion, e.g. on a software renderer. */
+  still?: () => boolean;
   /** Reports changes between running, paused (hidden or inactive) and static (reduced motion). */
   onState?: (state: LoopState) => void;
 }
@@ -42,7 +44,7 @@ export interface AmbientLoop {
  */
 export function ambientLoop(
   draw: (seconds: number) => void,
-  { fps = AMBIENT_FPS, active = () => true, onState }: LoopOptions = {},
+  { fps = AMBIENT_FPS, active = () => true, still = () => false, onState }: LoopOptions = {},
 ): AmbientLoop {
   const interval = 1000 / fps;
   let frame = 0;
@@ -50,7 +52,11 @@ export function ambientLoop(
   let state: LoopState | undefined;
 
   const evaluate = (): LoopState =>
-    document.hidden || !active() ? 'paused' : reducedMotion.matches ? 'static' : 'running';
+    document.hidden || !active()
+      ? 'paused'
+      : reducedMotion.matches || still()
+        ? 'static'
+        : 'running';
 
   const report = (next: LoopState) => {
     if (next !== state) onState?.((state = next));

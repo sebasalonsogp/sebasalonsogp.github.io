@@ -7,6 +7,7 @@
 // (`data-pending`) while it mounts; the first frame reveals it. Without WebGL, if the shader
 // fails (mount returns null) or the context is lost, the figure is hidden: no backdrop.
 
+import { isSoftwareRenderer } from '../gpu';
 import { ambientLoop, type LoopState } from '../motion/motion';
 import { DISK_INNER, DISK_OUTER, FRAGMENT, VERTEX } from './shader';
 
@@ -23,8 +24,6 @@ const GIVE_UP_MS = 40;
 const HOPELESS_MS = 160;
 /** Frames timed per resolution; their median decides. */
 const PROBES = 3;
-/** Renderers that run on the CPU: they get a still frame without being timed. */
-const SOFTWARE_RENDERER = /SwiftShader|llvmpipe|softpipe|Basic Render|Software/i;
 /** Disk time: starts at 6 (a settled-looking disk) and turns at half speed. */
 const TIME_OFFSET = 6;
 const TIME_SCALE = 0.5;
@@ -71,11 +70,6 @@ function compile(gl: WebGLRenderingContext): Program | null {
   };
 }
 
-function rendererName(gl: WebGLRenderingContext): string {
-  const info = gl.getExtension('WEBGL_debug_renderer_info');
-  return `${gl.getParameter(gl.RENDERER)} ${info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : ''}`;
-}
-
 export function mountBlackHole(figure: HTMLElement): BlackHole | null {
   const canvas = figure.querySelector('canvas');
   const gl = canvas?.getContext('webgl', {
@@ -87,7 +81,8 @@ export function mountBlackHole(figure: HTMLElement): BlackHole | null {
   let program = compile(gl);
   if (!program) return null;
 
-  const software = SOFTWARE_RENDERER.test(rendererName(gl));
+  // Software renderers get a still frame without being timed.
+  const software = isSoftwareRenderer(gl);
   let quality = software ? MIN_QUALITY : 1;
   /** One still frame instead of an animation (slow GPU or software renderer). */
   let still = software;
