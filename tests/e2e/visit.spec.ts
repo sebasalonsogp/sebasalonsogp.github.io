@@ -295,3 +295,51 @@ test.describe('routes and history', () => {
     await expect(page.locator('.planet-label').first()).toBeVisible();
   });
 });
+
+test.describe('tour', () => {
+  test.beforeEach(async ({ page }) => ready(page));
+
+  /** Tour stops from the embedded data, with their titles. */
+  const tourStops = (page: Page) =>
+    page.evaluate(() => {
+      const data = JSON.parse(
+        document.querySelector('script[data-explorer-system]')!.textContent!,
+      ) as {
+        tour: string[];
+        projects: { id: string; title: string }[];
+      };
+      return data.tour.map((id) => ({ id, title: data.projects.find((p) => p.id === id)!.title }));
+    });
+
+  test('visits the tour stops in order, then stops on any interaction', async ({ page }) => {
+    test.slow();
+    const stops = await tourStops(page);
+    test.skip(stops.length < 2, 'Fewer than two tour stops');
+    await page.getByRole('button', { name: 'Take the 60-second tour' }).click();
+    await expect(title(page)).toHaveText(stops[0]!.title);
+    await expect(page.locator('.tour-label')).toHaveText(`Tour · 1 of ${stops.length}`);
+    await expect(page.getByRole('button', { name: 'Stop tour' })).toBeFocused();
+    const length = await page.evaluate(() => history.length);
+
+    // Reduced motion: 6.5 s per stop.
+    await expect(title(page)).toHaveText(stops[1]!.title, { timeout: 9_000 });
+    await expect(page).toHaveURL((url) => url.pathname === `/projects/${stops[1]!.id}/`);
+    expect(await page.evaluate(() => history.length)).toBe(length);
+
+    await page.getByRole('button', { name: 'Next world →' }).click();
+    await expect(page.locator('.tourbar')).toBeHidden();
+    const after = await title(page).textContent();
+    await page.waitForTimeout(7_000);
+    await expect(title(page)).toHaveText(after!);
+  });
+
+  test('Stop tour ends it and moves focus to the project title', async ({ page }) => {
+    const stops = await tourStops(page);
+    test.skip(stops.length === 0, 'No tour');
+    await page.getByRole('button', { name: 'Take the 60-second tour' }).click();
+    await page.getByRole('button', { name: 'Stop tour' }).click();
+    await expect(page.locator('.tourbar')).toBeHidden();
+    await expect(title(page)).toBeFocused();
+    await expect(hero(page)).toHaveAttribute('data-mode', 'visit');
+  });
+});

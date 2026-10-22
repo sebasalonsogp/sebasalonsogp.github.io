@@ -564,3 +564,54 @@
   font-size: var(--s-small);
   color: var(--dim);
 }
+
+/* Tour progress inside the visit panel. */
+.explorer-visit .tourbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px var(--sp-3);
+  align-items: center;
+  font-family: var(--f-data);
+  font-size: var(--s-cap);
+  color: var(--dim);
+}
+
+.explorer-visit .tourbar button {
+  font-family: var(--f-body);
+}
+
+.explorer-visit .tourbar[hidden] {
+  display: none;
+}
+
+.explorer-visit .tourbar .track {
+  grid-column: 1 / -1;
+  height: 2px;
+  overflow: hidden;
+  background: var(--rule);
+}
+
+.explorer-visit .tourbar .track i {
+  display: block;
+  height: 100%;
+  background: var(--sol);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.explorer-visit .tourbar .track i.is-running {
+  animation: tour-fill linear forwards;
+}
+
+@keyframes tour-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* The label still says which stop it is; the bar does not move. */
+@media (prefers-reduced-motion: reduce) {
+  .explorer-visit .tourbar .track {
+    display: none;
+  }
+}

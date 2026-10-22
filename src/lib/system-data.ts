@@ -43,6 +43,10 @@ export async function toSystemData(projects: readonly Project[]): Promise<System
     homeTitle,
     siteName: site.name,
     earlierWork: years.length ? `Earlier work · ${span}` : '',
+    tour: projects
+      .filter(({ data }) => data.tour !== undefined)
+      .sort((a, b) => a.data.tour! - b.data.tour!)
+      .map(({ id }) => id),
     projects: await Promise.all(
       projects.map(async ({ id, data, github, media }): Promise<SystemProject> => ({
         id,

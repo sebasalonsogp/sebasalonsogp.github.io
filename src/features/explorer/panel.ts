@@ -9,6 +9,9 @@ import type { SystemProject } from './system';
 export interface PanelHandlers {
   onBack(): void;
   onStep(direction: 1 | -1): void;
+  onStopTour(): void;
+  /** Any other use of the panel (tabs), which stops a running tour. */
+  onInteract(): void;
 }
 
 export interface VisitPanel {
@@ -17,6 +20,10 @@ export interface VisitPanel {
   show(project: SystemProject, position: number, total: number): void;
   hide(): void;
   focusTitle(): void;
+  /** Tour progress: stop `index` (0-based) of `total`, filling the bar over `dwellMs`. */
+  showTour(index: number, total: number, dwellMs: number): void;
+  hideTour(): void;
+  focusStopTour(): void;
   dispose(): void;
 }
 
@@ -53,6 +60,18 @@ export function createVisitPanel(hero: HTMLElement, handlers: PanelHandlers): Vi
   back.type = 'button';
   back.append(el('kbd', undefined, 'Esc'));
   top.append(meta, back);
+
+  const tourBar = el('div', 'tourbar');
+  tourBar.hidden = true;
+  const tourLabel = el('span', 'tour-label');
+  tourLabel.setAttribute('aria-live', 'polite');
+  const stopTour = el('button', 'v-back', 'Stop tour');
+  stopTour.type = 'button';
+  const track = el('div', 'track');
+  track.setAttribute('aria-hidden', 'true');
+  const fill = el('i');
+  track.append(fill);
+  tourBar.append(tourLabel, stopTour, track);
 
   const title = el('h2', 'v-title');
   title.id = 'explorer-visit-title';
@@ -93,7 +112,7 @@ export function createVisitPanel(hero: HTMLElement, handlers: PanelHandlers): Vi
   previous.type = next.type = 'button';
   nav.append(previous, count, next);
 
-  panel.append(top, title, one, media, tabs, body, actions, stack, nav);
+  panel.append(top, tourBar, title, one, media, tabs, body, actions, stack, nav);
   hero.append(panel);
 
   let project: SystemProject | undefined;
@@ -113,6 +132,7 @@ export function createVisitPanel(hero: HTMLElement, handlers: PanelHandlers): Vi
 
   const onTabClick = (event: Event) => {
     const key = (event.currentTarget as HTMLElement).id.replace('explorer-tab-', '') as Tab;
+    handlers.onInteract();
     setTab(key);
   };
   const onTabKey = (event: KeyboardEvent) => {
@@ -127,6 +147,8 @@ export function createVisitPanel(hero: HTMLElement, handlers: PanelHandlers): Vi
   const onBack = () => handlers.onBack();
   const onPrevious = () => handlers.onStep(-1);
   const onNext = () => handlers.onStep(1);
+  const onStopTour = () => handlers.onStopTour();
+  stopTour.addEventListener('click', onStopTour);
   back.addEventListener('click', onBack);
   previous.addEventListener('click', onPrevious);
   next.addEventListener('click', onNext);
@@ -173,12 +195,29 @@ export function createVisitPanel(hero: HTMLElement, handlers: PanelHandlers): Vi
     focusTitle() {
       title.focus({ preventScroll: true });
     },
+    showTour(index, total, dwellMs) {
+      tourBar.hidden = false;
+      tourLabel.textContent = `Tour · ${index + 1} of ${total}`;
+      // Restart the fill animation for this stop.
+      fill.classList.remove('is-running');
+      void fill.offsetWidth;
+      fill.style.animationDuration = `${dwellMs}ms`;
+      fill.classList.add('is-running');
+    },
+    hideTour() {
+      tourBar.hidden = true;
+      fill.classList.remove('is-running');
+    },
+    focusStopTour() {
+      stopTour.focus({ preventScroll: true });
+    },
     dispose() {
       for (const button of Object.values(tabButtons)) {
         button.removeEventListener('click', onTabClick);
         button.removeEventListener('keydown', onTabKey);
       }
       back.removeEventListener('click', onBack);
+      stopTour.removeEventListener('click', onStopTour);
       previous.removeEventListener('click', onPrevious);
       next.removeEventListener('click', onNext);
       panel.remove();

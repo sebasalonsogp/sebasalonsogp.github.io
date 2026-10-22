@@ -55,7 +55,12 @@ function mediaElement(item: SystemMedia, full: boolean): HTMLElement {
   return img;
 }
 
-export function createLanding(hero: HTMLElement, panelMedia: HTMLButtonElement): Landing {
+export function createLanding(
+  hero: HTMLElement,
+  panelMedia: HTMLButtonElement,
+  /** Called when the visitor uses the previews (dots, lightbox), e.g. to stop a tour. */
+  onInteract: () => void = () => {},
+): Landing {
   // Desktop screen.
   const figure = el('figure', 'landing');
   const screen = el('button', 'ld-screen');
@@ -123,6 +128,7 @@ export function createLanding(hero: HTMLElement, panelMedia: HTMLButtonElement):
 
   const openLightbox = (event: Event) => {
     if (!items.length) return;
+    onInteract();
     returnFocus = event.currentTarget as HTMLElement;
     lightboxIndex = index;
     showLightboxItem();
@@ -178,7 +184,10 @@ export function createLanding(hero: HTMLElement, panelMedia: HTMLButtonElement):
               const dot = el('button', 'ld-dot');
               dot.type = 'button';
               dot.setAttribute('aria-label', `Preview ${i + 1} of ${items.length}`);
-              dot.addEventListener('click', () => showItem(i));
+              dot.addEventListener('click', () => {
+                onInteract();
+                showItem(i);
+              });
               return dot;
             })
           : []),

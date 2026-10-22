@@ -298,8 +298,9 @@ test.describe('explorer without WebGL2', () => {
     await page.waitForTimeout(2500);
     expect(chunkRequests).toEqual([]);
     await expect(page.locator('#hero canvas.system')).toHaveCount(0);
-    // No instructions for a system that is not there.
+    // No instructions or tour for a system that is not there.
     await expect(page.getByText('Drag to turn · Select a world')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Take the 60-second tour' })).toBeHidden();
     await expect(page.locator('h1')).toBeVisible();
     await expect(page.locator('#projects .row a')).not.toHaveCount(0);
   });

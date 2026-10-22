@@ -65,6 +65,11 @@ const key = [
     }
     <p class="lede">{site.lede}</p>
     <div class="ctas">
+      {system.tour.length > 0 && (
+        <button class="btn btn-primary tour-btn" type="button" data-tour-start>
+          Take the 60-second tour
+        </button>
+      )}
       <a class="btn" href="#projects">
         See the list instead
       </a>
@@ -147,7 +152,8 @@ const key = [
     pointer-events: none;
   }
 
-  .hero:not([data-planets]) .hint {
+  .hero:not([data-planets]) .hint,
+  .hero:not([data-planets]) .tour-btn {
     display: none;
   }
 

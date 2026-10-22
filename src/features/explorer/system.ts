@@ -14,6 +14,8 @@ export interface SystemData {
   siteName: string;
   /** Belt label, e.g. "Earlier work · 2023–25"; empty when there is no earlier work. */
   earlierWork: string;
+  /** Project ids for the guided tour, in order (from each project's `tour` position). */
+  tour: string[];
   projects: SystemProject[];
 }
 

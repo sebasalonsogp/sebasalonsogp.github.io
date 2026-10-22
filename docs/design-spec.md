@@ -161,6 +161,15 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
   (arrows, Esc, focus trap). Video: muted loop autoplay; poster only for reduced motion.
 - Tour: Eigenflow → Wine Journal → Quantum Playground, 8.5 s each, progress bar, stops on
   any interaction.
+- Tour implemented in 4.4 (`explorer.ts`, `panel.ts`): stops come from each project's
+  `tour` position, so content decides the order. Each stop is a 2 s flight allowance plus
+  6.5 s of reading (6.5 s total under reduced motion, where the flight is instant). The panel
+  shows a tour bar ("Tour · n of N", announced politely; "Stop tour"; a fill bar that
+  reduced motion hides). Starting moves focus to "Stop tour"; "Stop tour" keeps the visit
+  and focuses the title. The first stop pushes a history entry and later stops replace it,
+  so Back leaves the tour in one step. Any other visit, Esc / back, previous / next, a drag
+  on the scene, a tab, the landing dots or the lightbox stops it. After the last stop it
+  returns to the system and focuses the tour button.
 - Implemented in 4.1 (`explorer.ts`, `panel.ts`, `camera.ts`): modes explore → flying →
   visit → returning (hero `data-mode`); transitions start from wherever the camera is, so
   they can be interrupted; hop when moving between planets. Visit pose (concept): planet at
@@ -239,8 +248,8 @@ The timeline and constellation enhance these lists, which are always in the HTML
 - Skills: Python under "Core", then each group's skills, most used first, with the use
   count (screen readers hear "used in N projects and M roles"); 3+ uses are bold. Header
   fact "35 skills from 5 projects and 7 roles" (derived).
-- Hero: the tour button arrives with the tour (Phase 4.4); until then only "See the list
-  instead" shows.
+- Hero: "Take the 60-second tour" (primary) shows only once the explorer mounts and only
+  if some project has a `tour` position; "See the list instead" always shows.
 
 ## Contact
 

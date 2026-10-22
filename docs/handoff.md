@@ -6,9 +6,9 @@
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
 slices are live and the Phase 3 checkpoint is approved. **Phase 4 has started:** slices 4.1
-(visit), 4.2 (landing) and 4.3 (routes) are done on stacked branches `feat/visit` →
-`feat/landing` → `feat/routes`, not yet merged. Visits now have shareable URLs, so
-the Phase 4 work can deploy whenever Sebastian wants; next is 4.4 (tour). Every push to `main` runs the CI checks and deploys only if they pass.
+(visit), 4.2 (landing) and 4.3 (routes) are live (`main` b0735cd). Slice 4.4 (tour) is
+done on `feat/tour`, not yet merged; next is 4.5 (journey tests), then the Phase 4
+checkpoint. Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -217,11 +217,25 @@ content migrated; each validation rule was shown to fail the build when broken.
   during the panel fade measured half-transparent text). 57 tests × 3 browsers: 167 passed,
   1 skipped.
 
+## Slice 4.4 — tour
+
+- Hero button "Take the 60-second tour" (shown with the explorer); embedded data gained
+  `tour` (ids by `tour` position). `explorer.ts` runs the stops; `panel.ts` adds the tour
+  bar; `landing.ts` and the panel tabs report interactions so they stop the tour. Timing
+  and stop rules in `docs/design-spec.md`.
+- Checked: full tour at 1440×900 (URL replaced per stop, end returns to `/` with focus on
+  the button); at 375×812 by keyboard (Enter starts, focus on "Stop tour", Esc mid-tour
+  returns to `/` with focus on the button and nothing restarts, no horizontal scroll);
+  reduced motion at 390×844 (track hidden, next stop after ~6.9 s).
+- Tests: tour in `visit.spec.ts` (order and label, history replaced, interaction stops it,
+  "Stop tour" focuses the title); the no-WebGL2 test checks the button stays hidden.
+  59 tests × 3 browsers: 173 passed, 1 skipped.
+
 ## Next task
 
-Phase 4, slice 4.4 — tour: "Take the 60-second tour" visits Eigenflow → Wine Journal →
-Quantum Playground (from the `tour` field), 8.5 s each with a progress bar; any interaction
-stops it.
+Phase 4, slice 4.5 — journey tests (plan: visit, land, return, then visit; Back/Forward,
+direct load, tour stop, reduced motion), then the Phase 4 checkpoint (merge `feat/tour`
+and deploy on Sebastian's go-ahead).
 
 ## Open inputs and issues
 

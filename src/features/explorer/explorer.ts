@@ -53,6 +53,9 @@ const HIT_EXTRA = 10;
 const BELT_LABEL_SAMPLES = 48;
 /** Delay before visiting from the project list, while the page scrolls up to the hero. */
 const SCROLL_SETTLE_MS = 500;
+/** Tour: time at each stop after the flight (ms) and the flight allowance (none when instant). */
+const TOUR_READ_MS = 6500;
+const TOUR_FLIGHT_MS = 2000;
 
 type Mode = 'explore' | 'flying' | 'visit' | 'returning';
 
@@ -321,8 +324,58 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   const panel = createVisitPanel(hero, {
     onBack: () => back(),
     onStep: (direction) => step(direction),
+    onStopTour: () => {
+      stopTour();
+      panel.focusTitle();
+    },
+    onInteract: () => stopTour(),
   });
-  const landing = createLanding(hero, panel.media);
+  const landing = createLanding(hero, panel.media, () => stopTour());
+
+  // Guided tour: visits the tour projects in order; any interaction stops it.
+  const tourButton = hero.querySelector<HTMLButtonElement>('[data-tour-start]');
+  let tour: { index: number; timer: number } | null = null;
+
+  function stopTour() {
+    if (!tour) return;
+    window.clearTimeout(tour.timer);
+    tour = null;
+    panel.hideTour();
+  }
+
+  const tourStep = () => {
+    if (!tour) return;
+    const id = data.tour[tour.index];
+    if (!id) {
+      tour = null;
+      panel.hideTour();
+      back();
+      tourButton?.focus({ preventScroll: true });
+      return;
+    }
+    visit(id, {
+      tour: true,
+      focus: false,
+      returnTo: tourButton,
+      history: tour.index === 0 ? 'push' : 'replace',
+    });
+    const dwell = (reducedMotion.matches ? 0 : TOUR_FLIGHT_MS) + TOUR_READ_MS;
+    panel.showTour(tour.index, data.tour.length, dwell);
+    tour.timer = window.setTimeout(() => {
+      if (!tour) return;
+      tour.index += 1;
+      tourStep();
+    }, dwell);
+  };
+
+  const onTourStart = () => {
+    stopTour();
+    if (!data.tour.length) return;
+    tour = { index: 0, timer: 0 };
+    tourStep();
+    panel.focusStopTour();
+  };
+  tourButton?.addEventListener('click', onTourStart);
 
   const startTransition = (kind: Transition['kind'], id?: string, instant = false) => {
     const hop = kind === 'planet' && (mode === 'visit' || mode === 'flying') && current !== id;
@@ -347,6 +400,8 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   };
 
   interface VisitOptions {
+    /** Part of the guided tour (any other visit stops it). */
+    tour?: boolean;
     returnTo?: HTMLElement | null;
     focus?: boolean;
     /** push a new entry (default), replace the current one (hops), or leave history alone. */
@@ -358,6 +413,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   const visit = (id: string, options: VisitOptions = {}) => {
     const project = projects[indexOf.get(id) ?? -1];
     if (!project) return;
+    if (!options.tour) stopTour();
     const fromExplore = mode === 'explore' || mode === 'returning';
     if (fromExplore) returnTo = options.returnTo ?? (document.activeElement as HTMLElement | null);
     const how = options.history ?? 'push';
@@ -390,6 +446,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
    * otherwise it pushes the home URL; popstate calls it with `history: 'none'`.
    */
   function back(options: { history?: 'auto' | 'none' } = {}) {
+    stopTour();
     if (mode !== 'visit' && mode !== 'flying') return;
     if ((options.history ?? 'auto') === 'auto') {
       if (routeState().fromHome) {
@@ -493,6 +550,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
 
   const onDown = (event: PointerEvent) => {
     if (event.button !== 0) return;
+    stopTour();
     drag = {
       pointer: event.pointerId,
       x: event.clientX,
@@ -623,6 +681,8 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       window.clearTimeout(scrollTimer);
       visibility.disconnect();
       size.disconnect();
+      stopTour();
+      tourButton?.removeEventListener('click', onTourStart);
       document.removeEventListener('keydown', onKey);
       window.removeEventListener('popstate', onPopState);
       hero.removeEventListener('click', onLabelClick);
