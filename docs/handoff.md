@@ -391,7 +391,7 @@ content migrated; each validation rule was shown to fail the build when broken.
   404 tests waited for it. They now skip without WebGL (`supportsWebGL` in `helpers.ts`), as
   the explorer tests already did; checked locally in Firefox with `webgl.disabled` (7 skipped,
   4 passed, including the no-WebGL fallback). Also seen once on CI: `visits › a project row
-  scrolls up and opens the visit` timed out in Chromium and passed on retry (watch it in
+scrolls up and opens the visit` timed out in Chromium and passed on retry (watch it in
   Phase 8).
 
 ## Next task
