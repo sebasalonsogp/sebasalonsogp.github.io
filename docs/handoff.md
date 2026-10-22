@@ -11,7 +11,8 @@ live** (`main` a41cd97, deploy run 39778943782) and its checkpoint is approved. 
 has started:** Phase 6 is live (`main` 61f943a, deploy run 39783890725) and its checkpoint is
 approved. **Phase 7 is live** (`main` 66ac6ae) and its checkpoint is approved. CI now runs in the
 Playwright container (`main` 93ffdce). **Phase 8 has started:** 8.1 (accessibility audit)
-is on `feat/a11y-audit` except the screen-reader pass. Every push to `main` runs the CI checks and deploys only if they pass.
+is on `feat/a11y-audit` except the screen-reader pass; 8.2 (performance budgets) is on
+`feat/performance` (stacked on it). Neither is merged. Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -412,11 +413,33 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
   visit while paused (fails without the fix).
 - Outstanding: the NVDA / VoiceOver pass (needs Sebastian or a machine with them).
 
+## Slice 8.2 — performance budgets
+
+- `scripts/check-budgets.mjs` (`npm run budgets`, in `verify` and CI) and
+  `scripts/lighthouse.mjs` (`npm run lighthouse`, CI step with a job-summary table). Uses the
+  `lighthouse` package directly: `@lhci/cli` 0.15.1 adds 17 advisories (11 high) and CI runs
+  `npm audit --audit-level=high`.
+- Sizes: initial JS 9.6 KB gzip (404: 3.9 KB); explorer 140 KB gzip; heaviest visit
+  (Eigenflow) 1.52 MB.
+- Lighthouse first measured LCP 3.3 s (home) and 3.1 s / CLS 0.28 (Eigenflow). Fixed:
+  stylesheets inlined (two render-blocking requests, ~600 ms); the project-page hand-off no
+  longer paints the intro (it set the LCP at the moment the explorer mounted); the static
+  visit is top-aligned and its meta row stacks on phones (a font swap made the row wrap and
+  shifted the page, CLS 0.27). Throttling is applied during the run: simulated throttling
+  times an explorer label on project pages, because unthrottled the explorer takes over
+  before the visit paints.
+- Now (median of 3): home LCP ~0.9–1.2 s, CLS 0.003; Eigenflow LCP ~2.0–2.25 s, CLS 0
+  (locally and in CI). Eigenflow has ~0.25–0.45 s of LCP headroom.
+- Found, not fixed: on software WebGL (CI; GPU-less or blocklisted machines) the explorer's
+  60 fps loop never lets the main thread idle, so Lighthouse cannot compute TBT or a score
+  there (printed as n/a). The black hole already falls back to a still frame on software
+  renderers; the explorer should too (8.3). With a GPU, TBT is ~0.15–0.8 s.
+
 ## Next task
 
-Finish 8.1 with a screen-reader pass (Sebastian), then Phase 8, slice 8.2 — performance
-budgets (LCP ≤ 2.5 s, CLS ≤ 0.1 throttled mobile; initial JS ≤ 60 KB gzip; explorer ≤ 200 KB
-gzip; media per visit ≤ 2 MB) and Lighthouse CI in the workflow.
+8.1 screen-reader pass (Sebastian). Then Phase 8, slice 8.3 — cross-browser and device pass
+(Chromium, Firefox, Safari desktop and iOS, Android Chrome), including the explorer on
+software renderers and real-device performance (sky, explorer, black hole).
 
 ## Open inputs and issues
 
@@ -431,9 +454,9 @@ gzip; media per visit ≤ 2 MB) and Lighthouse CI in the workflow.
 - **Sky cost on real hardware:** confirm < 2 ms/frame on a mid-range laptop and a phone
   in Phase 8.2; this machine is likely faster than mid-range.
 - `npm test` fails to start if another `astro preview` is running (Astro allows one).
-- **Font weight:** Newsreader with the opsz axis (as specified) is 129 KB per face vs 57 KB
-  weight-only. Revisit in Phase 8 if LCP needs it. No fallback metric overrides yet (CLS
-  check in Phase 8).
+- **Font weight:** kept the opsz Newsreader (budgets pass with applied throttling); switching
+  to weight-only would improve PageSpeed Insights' simulated LCP (home ~3.2 → ~2.4 s) at the
+  cost of a wider hero. Sebastian's call (8.2).
 - **Streamlit demos sleep:** the Quantum Playground demo showed Streamlit's "gone to
   sleep" screen when opened. Idle Community Cloud apps sleep, so visitors may have to wake
   them. Consider a keep-alive or a note near the demo buttons.

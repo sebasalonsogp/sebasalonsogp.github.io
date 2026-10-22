@@ -57,6 +57,11 @@ src/features/
   blackhole/    lensing shader in raw WebGL, adaptive resolution (in use)
 ```
 
+- Performance budgets (Phase 8.2) are enforced in CI: `scripts/check-budgets.mjs` (initial
+  JS ≤ 60 KB gzip per page, explorer chunk ≤ 200 KB gzip, media per visit ≤ 2 MB; also in
+  `npm run verify`) and `scripts/lighthouse.mjs` (mobile, slow 4G, 4× CPU, applied
+  throttling, median of 3: LCP ≤ 2.5 s, CLS ≤ 0.1 on `/` and the heaviest project page).
+  Stylesheets are inlined (`build.inlineStylesheets: 'always'`).
 - Each feature is a plain `<script>` that dynamically imports its module when needed
   (explorer after first paint; black hole when Contact nears the viewport).
 - Semantic HTML owns text, links and focus; canvases are `aria-hidden`.

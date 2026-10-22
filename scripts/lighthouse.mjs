@@ -42,6 +42,9 @@ const chrome = await launch({
   chromeFlags: ['--headless=new', '--no-sandbox', '--disable-dev-shm-usage'],
 });
 const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
+/** Median formatted, or "n/a" when Lighthouse could not measure it in every run. */
+const measured = (values, format) =>
+  values.every((v) => Number.isFinite(v)) ? format(median(values)) : 'n/a';
 const summary = [];
 let failed = false;
 try {
@@ -77,8 +80,16 @@ try {
       path,
       lcp: Math.round(median(runs.map((r) => r.lcp))),
       cls: +median(runs.map((r) => r.cls)).toFixed(3),
-      tbt: Math.round(median(runs.map((r) => r.tbt))),
-      score: Math.round(median(runs.map((r) => r.score)) * 100),
+      // TBT (and so the score) needs the main thread to go idle; on CI's software WebGL the
+      // explorer never lets it, so they can be missing. The budgets are LCP and CLS.
+      tbt: measured(
+        runs.map((r) => r.tbt),
+        (v) => `${Math.round(v)} ms`,
+      ),
+      score: measured(
+        runs.map((r) => r.score),
+        (v) => String(Math.round(v * 100)),
+      ),
     };
     // A metric that could not be measured is a failure, not a pass.
     const ok =
@@ -90,7 +101,7 @@ try {
     summary.push(page);
     console.log(
       `${ok ? 'ok  ' : 'OVER'} ${path.padEnd(22)} LCP ${page.lcp} ms (≤ ${BUDGETS.lcp})` +
-        `  CLS ${page.cls} (≤ ${BUDGETS.cls})  TBT ${page.tbt} ms  score ${page.score}`,
+        `  CLS ${page.cls} (≤ ${BUDGETS.cls})  TBT ${page.tbt}  score ${page.score}`,
     );
   }
 } finally {
@@ -108,7 +119,7 @@ if (process.env.GITHUB_STEP_SUMMARY) {
       '',
       `| Page | LCP (≤ ${BUDGETS.lcp} ms) | CLS (≤ ${BUDGETS.cls}) | TBT | Score |`,
       '| --- | --- | --- | --- | --- |',
-      ...summary.map((p) => `| ${p.path} | ${p.lcp} ms | ${p.cls} | ${p.tbt} ms | ${p.score} |`),
+      ...summary.map((p) => `| ${p.path} | ${p.lcp} ms | ${p.cls} | ${p.tbt} | ${p.score} |`),
       '',
     ].join('\n'),
   );

@@ -62,7 +62,11 @@ home, a project page and 404 at 1440 and 390 px: all ≥ 4.5:1; worst 5.12:1 aga
 
 Fonts are self-hosted Latin subsets (Fontsource files, declared in
 `src/components/Fonts.astro`, `font-display: swap`); Newsreader and Schibsted Grotesk
-upright are preloaded.
+upright are preloaded. Kept in 8.2 after measuring: the opsz Newsreader files (132 / 147 KB)
+meet the budgets with applied throttling; the weight-only files (58 / 64 KB) would bring the
+home page's simulated Lighthouse LCP from ~3.2 s to ~2.4 s but draw the hero wider (it wraps
+in three lines, not four). Layout must not depend on font metrics: rows that hold
+fallback-width text side by side stack on phones (the project page's meta row).
 
 ## Spacing, shape and motion tokens
 
