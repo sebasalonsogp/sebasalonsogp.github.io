@@ -268,6 +268,11 @@ test.describe('timeline playback', () => {
   });
 
   const play = (page: Page) => page.locator('[data-play]');
+  /**
+   * Presses Play without the "stable" check: that check waits on animation frames, which the
+   * fake clock can starve in WebKit (seen on CI). The button does not move.
+   */
+  const pressPlay = (page: Page) => play(page).click({ force: true });
   const label = (page: Page) => page.locator('[data-play-label]');
   const svg = (page: Page) => page.locator('#timeline-chart');
   /** Role entries in the order they started. */
@@ -299,7 +304,7 @@ test.describe('timeline playback', () => {
     test.slow();
     const ids = await order(page);
     const fullBars = await barEnds(page);
-    await play(page).click();
+    await pressPlay(page);
     await expect(play(page)).toHaveText('Stop');
     await expect(svg(page)).toHaveClass(/is-playing/);
     expect(await shownEntries(page)).toEqual(['timeline-intro']);
@@ -325,12 +330,12 @@ test.describe('timeline playback', () => {
     const ids = await order(page);
     const fullBars = await barEnds(page);
     const start = async () => {
-      await play(page).click();
+      await pressPlay(page);
       await advanceUntil(page, showing(page, ids[0]!));
     };
 
     await start();
-    await play(page).click();
+    await pressPlay(page);
     await expect(play(page)).toHaveText('Play the timeline');
     await expect(svg(page)).not.toHaveClass(/is-playing/);
     expect(await barEnds(page)).toEqual(fullBars);
@@ -350,7 +355,7 @@ test.describe('timeline playback', () => {
 
   test('hovering a role does not interrupt it', async ({ page }) => {
     const ids = await order(page);
-    await play(page).click();
+    await pressPlay(page);
     await advanceUntil(page, showing(page, ids[0]!));
     const target = await roleTarget(page, ids.at(-1)!);
     await page.mouse.move(target.x, target.y);
@@ -361,7 +366,7 @@ test.describe('timeline playback', () => {
 
   test('scrolling the chart away stops it', async ({ page }) => {
     const ids = await order(page);
-    await play(page).click();
+    await pressPlay(page);
     await advanceUntil(page, showing(page, ids[0]!));
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await expect(svg(page)).not.toHaveClass(/is-playing/);
@@ -372,7 +377,7 @@ test.describe('timeline playback', () => {
   }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     const ids = await order(page);
-    await play(page).click();
+    await pressPlay(page);
     await page.clock.runFor(100);
     expect(await shownEntries(page)).toEqual([ids[0]]);
     await expect(page.locator('[data-play-bar] .track')).toBeHidden();
