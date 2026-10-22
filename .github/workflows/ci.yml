@@ -17,6 +17,12 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Playwright's image ships the browsers and their system libraries, so no step depends on
+    # the Ubuntu package mirror (its slowness cancelled two deploys). Keep the tag equal to
+    # @playwright/test in package.json; the digest pins it like the actions' SHAs.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:7852dc5a7d72f5fe458a597d690f6c42fbc8e9e26ddfa95f8e6ef552558d9bbf
+      options: --user 1001 --ipc=host
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -37,7 +43,9 @@ jobs:
         run: npm run build
       - name: Audit dependencies
         run: npm audit --audit-level=high
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox webkit
+      # A no-op while the image matches @playwright/test; if they drift, it fetches the
+      # browsers from Playwright's CDN (never the apt mirror) or fails loudly.
+      - name: Check Playwright browsers
+        run: npx playwright install chromium firefox webkit
       - name: Run browser tests (Chromium, Firefox, WebKit + axe)
         run: npm test
