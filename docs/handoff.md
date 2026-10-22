@@ -5,8 +5,9 @@
 **Phase 1 is live** at https://sebasalonsogp.github.io/ (`noindex`) from `main` of the
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** slices 3.1
-(scene shell) and 3.2 (bodies from data) are done on branches `feat/explorer-shell` →
-`feat/explorer-bodies`, not yet merged. Next is 3.3 (labels and interaction). Every push to `main` runs the CI checks and deploys only if they pass.
+(scene shell), 3.2 (bodies) and 3.3 (labels and interaction) are done on stacked branches
+`feat/explorer-shell` → `feat/explorer-bodies` → `feat/explorer-interaction`, not yet
+merged (Phase 3 deploys together at the checkpoint). Next is 3.4 (hero key popover). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -141,11 +142,25 @@ content migrated; each validation rule was shown to fail the build when broken.
   difference with and without the canvas, blurred in JS so WebKit works), project pages
   without the explorer. 34 tests × 3 browsers: 101 passed, 1 skipped.
 
+## Slice 3.3 — labels and interaction
+
+- `labels.ts`: HTML label layer (planet links, star and belt labels, highlight ring) placed
+  each frame from projected positions. `explorer.ts`: drag/tilt, hover, click to open a
+  project, idle drift, project-row and label-focus highlights, orbit highlight in
+  `bodies.ts`; the explorer's yaw drives the sky (`setSkyYaw` in `sky.ts`). The embedded
+  data is now `{ star, earlierWork, projects[] }` with each project's `href`.
+- Checked in the browser at 1440×900 and 390×844 (labels match the concept; belt label shows
+  on phones, hidden at 1440×900 by the concept's bottom-edge rule) and keyboard order
+  (intro, then labels). The belt label first clipped on phones (measured while hidden); fixed.
+- Tests: labels link to each project in list order, label hover/focus and row hover
+  highlight, drag turns the system, clicking a planet opens its page. 39 tests × 3
+  browsers: 116 passed, 1 skipped. Explorer chunk 139 KB gzip; initial JS ~4 KB.
+
 ## Next task
 
-Phase 3, slice 3.3 — HTML labels over the canvas (collision-avoiding), drag to rotate, hover
-highlight, click to select, idle slow rotation (0.012 rad/s, feeds the sky's yaw parallax),
-project-list hover highlights the planet; labels and list stay real buttons/links.
+Phase 3, slice 3.4 — hero key popover ("How to read the system": Surface, Orbit, Ring, Size,
+Moons, Belt) and the bottom hint "Drag to turn · Select a world · Esc to return"; then the
+Phase 3 checkpoint, which merges the explorer branches into `main` and deploys.
 
 ## Open inputs and issues
 

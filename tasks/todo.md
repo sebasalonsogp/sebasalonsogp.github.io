@@ -33,7 +33,7 @@ before ending a session.
 
 - [x] 3.1 Three.js scene shell with lazy load and fallback.
 - [x] 3.2 Data-driven bodies: star, orbits, procedural planets, rings, moons, belt.
-- [ ] 3.3 HTML labels, drag, hover, select, list ↔ planet highlight.
+- [x] 3.3 HTML labels, drag, hover, select, list ↔ planet highlight.
 - [ ] 3.4 Hero key popover.
 - [ ] Checkpoint: explore on desktop and phone.
 

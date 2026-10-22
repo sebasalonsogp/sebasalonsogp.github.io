@@ -4,9 +4,20 @@
 
 export type Domain = 'backend' | 'ml' | 'data' | 'math';
 
-/** What the page hands the explorer, in orbit order (most recent commit first). */
+/** Everything the page hands the explorer (embedded as JSON in the hero). */
+export interface SystemData {
+  /** Star label, e.g. "Sebastian". */
+  star: string;
+  /** Belt label, e.g. "Earlier work · 2023–25"; empty when there is no earlier work. */
+  earlierWork: string;
+  projects: SystemProject[];
+}
+
+/** A project as the explorer sees it, in orbit order (most recent commit first). */
 export interface SystemProject {
   id: string;
+  /** The project's page (`/projects/<id>/`, with the site base). */
+  href: string;
   short: string;
   domain: Domain;
   lastCommit: string;

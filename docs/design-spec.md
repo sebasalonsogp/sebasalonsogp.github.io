@@ -130,6 +130,19 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
   `max(1.1 units, 26 px)`, halo ×3.4.
 - Project pages do not mount the explorer until Phase 4 can frame a visit (the system would
   sit behind the visit panel's text).
+- Labels (`labels.ts`, slice 3.3) are HTML over the canvas: planet labels are links to the
+  project pages (name 12.5 px body weight 500; "Mon YYYY · live" in mono at 12 px, desktop
+  only, instead of the concept's 10.5 px, per the type rule), placed outside the planet,
+  flipped to stay on screen and nudged down to avoid each other. "SEBASTIAN" (mono, --sol)
+  sits under the star; "Earlier work · 2023–25" (years from the earlier repos) at the front of
+  the belt, kept on screen horizontally and hidden within 70 px of the hero's bottom. Small
+  label text carries `--halo`. Keyboard order: intro first, then the planet labels.
+- Interaction: drag turns the system (0.0055 rad/px; mouse also tilts, 0.004 rad/px, pitch
+  0.06–1.15; touch turns only, vertical swipes scroll); a press moving < 5 px is a click;
+  hit radius `max(r + 10, 18)` px. Hover, label focus or project-row hover highlights the
+  planet: --sol ring at r + 7 px, label and orbit in --sol (orbit 0.5 opacity). Clicking a
+  planet opens its project page until Phase 4 adds the in-place visit. Idle yaw drift
+  0.012 rad/s (paused while dragging or hovering, off with reduced motion) also turns the sky.
 
 ## Visit and landing
 

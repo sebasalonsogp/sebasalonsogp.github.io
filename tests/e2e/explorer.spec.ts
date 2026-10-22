@@ -18,7 +18,9 @@ test.describe('explorer shell', () => {
 
     const canvas = page.locator('#hero canvas.system');
     await expect(canvas).toHaveAttribute('aria-hidden', 'true');
-    await expect(canvas).toHaveCSS('pointer-events', 'none');
+    // Interactive (drag, hover, click) while vertical touch swipes still scroll the page.
+    await expect(canvas).toHaveCSS('pointer-events', 'auto');
+    await expect(canvas).toHaveCSS('touch-action', 'pan-y');
     // The canvas covers the hero's padding box and its drawing buffer matches it at the
     // capped device pixel ratio.
     const size = await page.evaluate(() => {
@@ -96,9 +98,9 @@ test.describe('explorer system', () => {
     const system = await page.evaluate(() =>
       (
         JSON.parse(document.querySelector('script[data-explorer-system]')!.textContent!) as {
-          id: string;
-        }[]
-      ).map((p) => p.id),
+          projects: { id: string }[];
+        }
+      ).projects.map((p) => p.id),
     );
     // Orbit order (innermost = most recent commit) is the list order.
     expect(system).toEqual(listed);
@@ -183,6 +185,87 @@ test.describe('explorer system', () => {
     await page.waitForTimeout(2500);
     await expect(page.locator('#hero canvas.system')).toHaveCount(0);
     await expect(hero(page)).not.toHaveAttribute('data-explorer', /.+/);
+  });
+});
+
+test.describe('explorer labels and interaction', () => {
+  // Reduced motion stops orbits and drift, so positions only change when we act.
+  test.use({ reducedMotion: 'reduce' });
+
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    test.skip(!(await supportsWebGL2(page)), 'No WebGL2 in this browser');
+    await expect(hero(page)).toHaveAttribute('data-explorer', 'static', { timeout: 10_000 });
+  });
+
+  const label = (page: Page, id: string) => page.locator(`.planet-label[data-project="${id}"]`);
+
+  const labelX = (page: Page, id: string) =>
+    label(page, id).evaluate((el) => el.getBoundingClientRect().left);
+
+  /** Centre of a label's planet, read from the highlight ring shown while the label is hovered. */
+  const planetOf = async (page: Page, id: string) => {
+    const ring = page.locator('.highlight-ring');
+    await label(page, id).hover();
+    await expect(ring).toBeVisible();
+    const box = (await ring.boundingBox())!;
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  };
+
+  test('every planet has a label linking to its project page', async ({ page }) => {
+    const hrefs = await page
+      .locator('#projects .row a')
+      .evaluateAll((links) => links.map((a) => a.getAttribute('href')));
+    const labels = page.locator('.planet-label');
+    await expect(labels).toHaveCount(hrefs.length);
+    expect(await labels.evaluateAll((els) => els.map((a) => a.getAttribute('href')))).toEqual(
+      hrefs,
+    );
+    await expect(page.locator('.star-label')).toHaveText(/sebastian/i);
+  });
+
+  test('hovering or focusing a label highlights its planet', async ({ page }) => {
+    const ring = page.locator('.highlight-ring');
+    await expect(ring).toBeHidden();
+    const id = (await page.locator('.planet-label').first().getAttribute('data-project'))!;
+    await label(page, id).hover();
+    await expect(ring).toBeVisible();
+    await expect(label(page, id)).toHaveClass(/is-highlighted/);
+    await page.mouse.move(5, 5);
+    await expect(ring).toBeHidden();
+
+    await label(page, id).focus();
+    await expect(ring).toBeVisible();
+  });
+
+  test('hovering a project row highlights its planet', async ({ page }) => {
+    const row = page.locator('[data-project-row]').nth(1);
+    const id = (await row.getAttribute('data-project-row'))!;
+    await row.hover();
+    await expect(label(page, id)).toHaveClass(/is-highlighted/);
+  });
+
+  test('dragging the sky turns the system', async ({ page }) => {
+    const id = (await page.locator('.planet-label').first().getAttribute('data-project'))!;
+    const before = await labelX(page, id);
+    const box = (await page.locator('#hero canvas.system').boundingBox())!;
+    const start = { x: box.x + box.width * 0.9, y: box.y + box.height * 0.2 };
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x - 120, start.y, { steps: 8 });
+    await page.mouse.up();
+    await expect.poll(() => labelX(page, id)).not.toBeCloseTo(before, 0);
+  });
+
+  test('clicking a planet opens its project page', async ({ page }) => {
+    const first = page.locator('.planet-label').first();
+    const href = (await first.getAttribute('href'))!;
+    const id = (await first.getAttribute('data-project'))!;
+    const planet = await planetOf(page, id);
+    await page.mouse.move(5, 5);
+    await page.mouse.click(planet.x, planet.y);
+    await expect(page).toHaveURL((url) => url.pathname === href);
   });
 });
 

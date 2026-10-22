@@ -45,6 +45,7 @@ const STAR_RADIUS = 1.1;
 const STAR_MIN_RADIUS_PX = 26;
 const STAR_HALO = 3.4;
 const ORBIT_OPACITY = 0.22;
+const ORBIT_HIGHLIGHT_OPACITY = 0.5;
 const ORBIT_SEGMENTS = 160;
 const BELT_COUNT = 340;
 const BELT_SEED = 99;
@@ -58,9 +59,20 @@ export interface ViewMetrics {
   dpr: number;
 }
 
+export interface PlanetState {
+  id: string;
+  /** World position, updated by `update`. */
+  position: Vector3;
+  radius: number;
+}
+
 export interface Bodies {
   group: Group;
   planetCount: number;
+  /** Live planet positions for labels and hit testing. */
+  planets: readonly PlanetState[];
+  /** Accent-colours one planet's orbit (hover, focus or list highlight). */
+  setHighlight(id: string | null): void;
   /** Positions everything for simulation time `t` and accumulated spin `spin` (radians). */
   update(t: number, spin: number, camera: PerspectiveCamera, view: ViewMetrics): void;
   dispose(): void;
@@ -150,13 +162,23 @@ export function createBodies(layout: SystemLayout): Bodies {
   );
   group.add(star);
 
-  // Orbits.
-  const orbitMaterial = use(
-    new LineBasicMaterial({ color: new Color(DIM), transparent: true, opacity: ORBIT_OPACITY }),
+  // Orbits, one material each so a highlighted orbit can turn --sol.
+  const orbits = new Map(
+    layout.planets.map((planet) => {
+      const material = use(
+        new LineBasicMaterial({
+          color: new Color(DIM),
+          transparent: true,
+          opacity: ORBIT_OPACITY,
+          depthWrite: false,
+        }),
+      );
+      group.add(new LineLoop(keep(circle(planet.orbit)), material));
+      return [planet.id, material];
+    }),
   );
-  orbitMaterial.depthWrite = false;
-  for (const planet of layout.planets)
-    group.add(new LineLoop(keep(circle(planet.orbit)), orbitMaterial));
+  const dimColor = new Color(DIM);
+  const solColor = new Color(`rgb(${SOL.join(',')})`);
 
   // Belt.
   const beltMaterial = use(
@@ -232,6 +254,18 @@ export function createBodies(layout: SystemLayout): Bodies {
   return {
     group,
     planetCount: planets.length,
+    planets: planets.map(({ layout: p, mesh }) => ({
+      id: p.id,
+      position: mesh.position,
+      radius: p.radius,
+    })),
+    setHighlight(id) {
+      for (const [key, material] of orbits) {
+        const on = key === id;
+        material.color.copy(on ? solColor : dimColor);
+        material.opacity = on ? ORBIT_HIGHLIGHT_OPACITY : ORBIT_OPACITY;
+      }
+    },
     update(t, spin, camera, view) {
       camera.updateMatrixWorld();
 

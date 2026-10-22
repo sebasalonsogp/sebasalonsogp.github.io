@@ -20,7 +20,7 @@ const fact = `${projects.length} solo builds · ${live} live demos`;
 <Section id="projects" title="Projects" fact={fact}>
   <ol class="index">
     {projects.map(({ id, data, github }) => (
-      <li class="row">
+      <li class="row" data-project-row={id}>
         <span class="r-year">
           <span class="sr-only">Last commit </span>
           <time datetime={github.lastCommit.slice(0, 7)}>{formatMonth(github.lastCommit)}</time>

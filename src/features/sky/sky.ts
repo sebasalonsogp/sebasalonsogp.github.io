@@ -69,6 +69,13 @@ function paintStatic(ctx: CanvasRenderingContext2D, field: StarField, dpr: numbe
   }
 }
 
+let mounted: SkyController | undefined;
+
+/** Turns the page's sky with the explorer (no-op until the sky is mounted). */
+export function setSkyYaw(yaw: number): void {
+  mounted?.setYaw(yaw);
+}
+
 export function mountSky(root: HTMLElement): SkyController {
   const layer = root.querySelector<HTMLElement>('[data-sky-layer]');
   const staticCanvas = root.querySelector<HTMLCanvasElement>('[data-sky-static]');
@@ -153,7 +160,7 @@ export function mountSky(root: HTMLElement): SkyController {
   };
   window.addEventListener('resize', onResize);
 
-  return {
+  const controller: SkyController = {
     setYaw(next) {
       yaw = next;
     },
@@ -161,6 +168,9 @@ export function mountSky(root: HTMLElement): SkyController {
       loop.dispose();
       window.clearTimeout(resizeTimer);
       window.removeEventListener('resize', onResize);
+      if (mounted === controller) mounted = undefined;
     },
   };
+  mounted = controller;
+  return controller;
 }
