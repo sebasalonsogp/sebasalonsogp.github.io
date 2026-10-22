@@ -205,9 +205,11 @@ export const beltFragment = /* glsl */ `
 precision highp float;
 
 uniform vec3 uColor;
+/** Dims the belt during a visit. */
+uniform float uAlphaScale;
 varying float vAlpha;
 
 void main() {
-  gl_FragColor = vec4(uColor, vAlpha);
+  gl_FragColor = vec4(uColor, vAlpha * uAlphaScale);
 }
 `;

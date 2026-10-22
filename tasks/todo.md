@@ -29,17 +29,17 @@ before ending a session.
 - [x] 2.3 Visual pass: type rules, headings, focus, contrast over the sky (popovers move to 3.4, 5.2, 6.2).
 - [x] Checkpoint: look and feel (approved).
 
-## Phase 3 — Solar-system explorer (in progress)
+## Phase 3 — Solar-system explorer ✓
 
 - [x] 3.1 Three.js scene shell with lazy load and fallback.
 - [x] 3.2 Data-driven bodies: star, orbits, procedural planets, rings, moons, belt.
 - [x] 3.3 HTML labels, drag, hover, select, list ↔ planet highlight.
 - [x] 3.4 Hero key popover.
-- [ ] Checkpoint: explore on desktop and phone.
+- [x] Checkpoint: explore on desktop and phone (approved).
 
-## Phase 4 — Visit, land, return
+## Phase 4 — Visit, land, return (in progress)
 
-- [ ] 4.1 Visit state machine and panel.
+- [x] 4.1 Visit state machine and panel.
 - [ ] 4.2 Landing previews, video, lightbox.
 - [ ] 4.3 Routes, history, direct load, focus.
 - [ ] 4.4 Tour.

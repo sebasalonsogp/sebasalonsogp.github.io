@@ -37,6 +37,8 @@ export interface ScreenFrame {
 export interface Labels {
   update(frame: ScreenFrame): void;
   setHighlight(id: string | null): void;
+  /** Labels show while exploring and hide during flights and visits. */
+  setVisible(visible: boolean): void;
   /** Re-measures label sizes (after fonts load or the layout changes). */
   measure(): void;
   dispose(): void;
@@ -118,6 +120,10 @@ export function createLabels(
 
   return {
     measure,
+    setVisible(visible) {
+      layer.classList.toggle('is-hidden', !visible);
+      for (const { link } of planets.values()) link.tabIndex = visible ? 0 : -1;
+    },
     setHighlight(id) {
       highlight = id;
       for (const [key, { link }] of planets) link.classList.toggle('is-highlighted', key === id);

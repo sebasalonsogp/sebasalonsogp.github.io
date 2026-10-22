@@ -46,6 +46,9 @@ const STAR_MIN_RADIUS_PX = 26;
 const STAR_HALO = 3.4;
 const ORBIT_OPACITY = 0.22;
 const ORBIT_HIGHLIGHT_OPACITY = 0.5;
+/** During a visit the other orbits and the belt recede (concept: orbits 0.12, belt 0.25 / 0.55). */
+const ORBIT_VISIT_OPACITY = 0.12;
+const BELT_VISIT_SCALE = 0.25 / 0.55;
 const ORBIT_SEGMENTS = 160;
 const BELT_COUNT = 340;
 const BELT_SEED = 99;
@@ -74,7 +77,12 @@ export interface Bodies {
   /** Accent-colours one planet's orbit (hover, focus or list highlight). */
   setHighlight(id: string | null): void;
   /** Positions everything for simulation time `t` and accumulated spin `spin` (radians). */
-  update(t: number, spin: number, camera: PerspectiveCamera, view: ViewMetrics): void;
+  /** Dims orbits and belt while a planet is being visited. */
+  setVisiting(visiting: boolean): void;
+  /** Moves bodies to simulation time `t` with accumulated spin `spin` (radians). */
+  place(t: number, spin: number): void;
+  /** Updates what depends on the camera (lighting, star size, belt grain size). */
+  updateView(camera: PerspectiveCamera, view: ViewMetrics): void;
   dispose(): void;
 }
 
@@ -188,6 +196,7 @@ export function createBodies(layout: SystemLayout): Bodies {
       uniforms: {
         uFocal: { value: 1 },
         uMinSize: { value: 0.8 },
+        uAlphaScale: { value: 1 },
         uColor: { value: DIM_SRGB },
       },
       transparent: true,
@@ -247,6 +256,20 @@ export function createBodies(layout: SystemLayout): Bodies {
     return { layout: planet, mesh, ...(ring ? { ring } : {}), moons };
   });
 
+  let highlighted: string | null = null;
+  let visiting = false;
+  const paintOrbits = () => {
+    for (const [key, material] of orbits) {
+      const on = key === highlighted;
+      material.color.copy(on ? solColor : dimColor);
+      material.opacity = on
+        ? ORBIT_HIGHLIGHT_OPACITY
+        : visiting
+          ? ORBIT_VISIT_OPACITY
+          : ORBIT_OPACITY;
+    }
+  };
+
   const light = new Vector3();
   const toStar = (position: Vector3, camera: PerspectiveCamera) =>
     light.copy(position).negate().transformDirection(camera.matrixWorldInverse);
@@ -260,13 +283,28 @@ export function createBodies(layout: SystemLayout): Bodies {
       radius: p.radius,
     })),
     setHighlight(id) {
-      for (const [key, material] of orbits) {
-        const on = key === id;
-        material.color.copy(on ? solColor : dimColor);
-        material.opacity = on ? ORBIT_HIGHLIGHT_OPACITY : ORBIT_OPACITY;
+      highlighted = id;
+      paintOrbits();
+    },
+    setVisiting(on) {
+      visiting = on;
+      beltMaterial.uniforms.uAlphaScale!.value = on ? BELT_VISIT_SCALE : 1;
+      paintOrbits();
+    },
+    place(t, spin) {
+      belt.rotation.y = -t * layout.belt.speed;
+      for (const { layout: p, mesh, ring, moons } of planets) {
+        const a = p.phase + p.speed * t;
+        mesh.position.set(Math.cos(a) * p.orbit, 0, Math.sin(a) * p.orbit);
+        ring?.position.copy(mesh.position);
+        mesh.material.uniforms.uSpin!.value = (mesh.userData.spinOffset as number) + spin;
+        moons.forEach((moon, i) => {
+          const [x, y, z] = moonOffset(p, i, t);
+          moon.position.set(mesh.position.x + x, y, mesh.position.z + z);
+        });
       }
     },
-    update(t, spin, camera, view) {
+    updateView(camera, view) {
       camera.updateMatrixWorld();
 
       const depth = camera.position.length();
@@ -274,22 +312,15 @@ export function createBodies(layout: SystemLayout): Bodies {
       const starRadius = Math.max(STAR_RADIUS, STAR_MIN_RADIUS_PX / pxPerUnit);
       star.scale.setScalar(starRadius * STAR_HALO * 2);
 
-      belt.rotation.y = -t * layout.belt.speed;
       beltMaterial.uniforms.uFocal!.value = view.focal * view.dpr;
       // WebGL may skip points under a pixel, so the belt's smallest grains are 1 CSS px.
       beltMaterial.uniforms.uMinSize!.value = view.dpr;
 
-      for (const { layout: p, mesh, ring, moons } of planets) {
-        const a = p.phase + p.speed * t;
-        mesh.position.set(Math.cos(a) * p.orbit, 0, Math.sin(a) * p.orbit);
-        ring?.position.copy(mesh.position);
-        mesh.material.uniforms.uSpin!.value = (mesh.userData.spinOffset as number) + spin;
+      for (const { mesh, moons } of planets) {
         (mesh.material.uniforms.uLight!.value as Vector3).copy(toStar(mesh.position, camera));
-        moons.forEach((moon, i) => {
-          const [x, y, z] = moonOffset(p, i, t);
-          moon.position.set(mesh.position.x + x, y, mesh.position.z + z);
+        for (const moon of moons) {
           (moon.material.uniforms.uLight!.value as Vector3).copy(toStar(moon.position, camera));
-        });
+        }
       }
     },
     dispose() {

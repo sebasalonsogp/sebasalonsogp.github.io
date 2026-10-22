@@ -5,8 +5,9 @@
 **Phase 1 is live** at https://sebasalonsogp.github.io/ (`noindex`) from `main` of the
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
-slices (3.1 shell, 3.2 bodies, 3.3 labels and interaction, 3.4 key popover) are done and
-deployed together for the Phase 3 checkpoint (explore the system on desktop and phone). Every push to `main` runs the CI checks and deploys only if they pass.
+slices are live and the Phase 3 checkpoint is approved. **Phase 4 has started:** slice 4.1
+(visit state machine and panel) is done on branch `feat/visit`, not yet merged. Next is
+4.2 (landing previews). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -166,10 +167,28 @@ content migrated; each validation rule was shown to fail the build when broken.
 - Tests: hint and key appear only with the explorer, six terms, Escape returns focus, click
   outside closes. 41 tests × 3 browsers: 122 passed, 1 skipped.
 
+## Slice 4.1 — visit state machine and panel
+
+- `camera.ts`: visit pose, side-lit yaw, interruptible eased transitions with the hop arc.
+  `panel.ts`: the visit panel (tabs, actions, stack, previous/next). `explorer.ts`: modes,
+  orbital slow-down, dimming, focus return, triggers (planet, label, project row, Esc,
+  back, prev/next). `explorer.css` now holds all styles for script-created elements
+  (moved out of `Hero.astro`). Embedded data gained title, summary, brief, log, tech,
+  demo and repo URLs.
+- Browser checks (Playwright, real flights) at 1440×900 and 390×844: visit, tabs, hop,
+  Esc, list visit with scroll. Found and fixed: focus did not return after Esc (labels were
+  hidden during the return); the panel class clashed with the static page's `.visit`
+  (renamed `explorer-visit`). Phone layout matches the concept (planet above the sheet).
+- Tests: `visit.spec.ts` (label, planet and row visits, tabs, prev/next wrap, Esc and back
+  focus, inert panel, axe on the open panel, mode sequence with motion); the slice 1.4 row
+  test now runs without WebGL2 (where rows still open the static page). 48 tests × 3
+  browsers: 143 passed, 1 skipped. Explorer chunk 141 KB gzip.
+
 ## Next task
 
-Phase 3 checkpoint: Sebastian explores the live system on desktop and phone. After approval,
-Phase 4 slice 4.1 (visit state machine and panel).
+Phase 4, slice 4.2 — landing previews: with media the planet moves up-left and the 16:10
+screen fades in below (captions, dots), video autoplays muted (poster with reduced motion),
+lightbox with arrows, Esc and focus trap; phones show the preview inside the panel.
 
 ## Open inputs and issues
 

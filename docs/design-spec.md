@@ -107,8 +107,8 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
   PadStats. Each planet is one of my projects."; CTAs "Take the 60-second tour" (primary),
   "See the list instead".
 - Bottom hint: "Drag to turn · Select a world · Esc to return" and "How to read the
-  system" popover (Surface, Orbit, Ring, Size, Moons, Belt). Built in 3.4 as
-  "Drag to turn · Select a world" until visits add Esc (Phase 4); body face per the type rule.
+  system" popover (Surface, Orbit, Ring, Size, Moons, Belt). Body face per the type rule (the
+  Esc part was added with visits in 4.1).
   Hint and popover show only once the explorer has mounted (no WebGL, no JavaScript: hidden).
   The popover is the reusable `HowToRead` component (native `<details>`, Escape and outside
   click close it, one open at a time); on phones the hint row stacks so it opens from the left.
@@ -161,6 +161,19 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
   (arrows, Esc, focus trap). Video: muted loop autoplay; poster only for reduced motion.
 - Tour: Eigenflow → Wine Journal → Quantum Playground, 8.5 s each, progress bar, stops on
   any interaction.
+- Implemented in 4.1 (`explorer.ts`, `panel.ts`, `camera.ts`): modes explore → flying →
+  visit → returning (hero `data-mode`); transitions start from wherever the camera is, so
+  they can be interrupted; hop when moving between planets. Visit pose (concept): planet at
+  33% / 50% (phone 50% / 26%), on-screen radius `min(0.27·H, 0.2·W)` (phone
+  `min(0.19·H, 0.34·W)`), pitch 0.14, yaw chosen so the planet is side-lit. Orbital motion
+  eases to a stop during visits (rate 3/s); other orbits dim to 0.12 and the belt to 0.25;
+  the visited orbit is --sol. Intro, hint and labels step aside; labels come back as the
+  return starts, so focus returns at once to whatever opened the visit (label, row link or
+  the page). Planet clicks, labels and project rows open the visit in place; modified clicks
+  (new tab) keep the link. Until 4.3 the URL does not change. Drag still turns the camera
+  around a visited planet (no tilt). The panel is an `<aside>`, inert when closed; tabs
+  are an ARIA tablist with arrow keys. Not ported: the concept's slower spin for the visited
+  planet.
 
 ## Project pages (readable visit)
 

@@ -75,3 +75,73 @@ export function applyPose(
   );
   camera.updateProjectionMatrix();
 }
+
+/** The visit view: the planet large on one side, room for the panel on the other. */
+export function visitPose(
+  planet: readonly [number, number, number],
+  planetRadius: number,
+  width: number,
+  height: number,
+): CameraPose {
+  const phone = width < PHONE_MAX_WIDTH;
+  // Planet's on-screen radius (CSS px).
+  const screenRadius = phone
+    ? Math.min(0.19 * height, 0.34 * width)
+    : Math.min(0.27 * height, 0.2 * width);
+  return {
+    target: planet,
+    yaw: 0,
+    pitch: 0.14,
+    distance: (focalLength(width, height) * planetRadius) / screenRadius,
+    cx: phone ? 0.5 : 0.33,
+    cy: phone ? 0.26 : 0.5,
+  };
+}
+
+const TAU = Math.PI * 2;
+
+/** Signed shortest difference `a - b` between two angles, in (-π, π]. */
+export function angleDelta(a: number, b: number): number {
+  return ((((a - b) % TAU) + TAU * 1.5) % TAU) - Math.PI;
+}
+
+/** Yaw that shows a planet lit from the side (star off to one side), nearest the current yaw. */
+export function yawFor(planet: readonly [number, number, number], currentYaw: number): number {
+  const theta = Math.atan2(planet[2], planet[0]);
+  const behindStar = Math.atan2(-Math.cos(theta), -Math.sin(theta));
+  const a = behindStar + 0.95;
+  const b = behindStar - 0.95;
+  return Math.abs(angleDelta(a, currentYaw)) < Math.abs(angleDelta(b, currentYaw)) ? a : b;
+}
+
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+/**
+ * Camera between `from` and `to` at progress `k` (0–1): eased, with a slight lift in pitch and
+ * a zoom-out arc (larger when hopping between planets), as in the concept.
+ */
+export function interpolatePose(
+  from: CameraPose,
+  to: CameraPose,
+  yawTo: number,
+  k: number,
+  hop: boolean,
+): CameraPose {
+  const e = easeInOutCubic(Math.min(1, Math.max(0, k)));
+  const arc = Math.sin(Math.PI * Math.min(1, k));
+  return {
+    target: [
+      lerp(from.target[0], to.target[0], e),
+      lerp(from.target[1], to.target[1], e),
+      lerp(from.target[2], to.target[2], e),
+    ],
+    yaw: from.yaw + angleDelta(yawTo, from.yaw) * e,
+    pitch: lerp(from.pitch, to.pitch, e) + 0.12 * arc,
+    distance: Math.exp(
+      lerp(Math.log(from.distance), Math.log(to.distance), e) + (hop ? 1.2 : 0.15) * arc,
+    ),
+    cx: lerp(from.cx, to.cx, e),
+    cy: lerp(from.cy, to.cy, e),
+  };
+}

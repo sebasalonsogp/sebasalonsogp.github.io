@@ -204,15 +204,6 @@ test.describe('explorer labels and interaction', () => {
   const labelX = (page: Page, id: string) =>
     label(page, id).evaluate((el) => el.getBoundingClientRect().left);
 
-  /** Centre of a label's planet, read from the highlight ring shown while the label is hovered. */
-  const planetOf = async (page: Page, id: string) => {
-    const ring = page.locator('.highlight-ring');
-    await label(page, id).hover();
-    await expect(ring).toBeVisible();
-    const box = (await ring.boundingBox())!;
-    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-  };
-
   test('every planet has a label linking to its project page', async ({ page }) => {
     const hrefs = await page
       .locator('#projects .row a')
@@ -256,16 +247,6 @@ test.describe('explorer labels and interaction', () => {
     await page.mouse.move(start.x - 120, start.y, { steps: 8 });
     await page.mouse.up();
     await expect.poll(() => labelX(page, id)).not.toBeCloseTo(before, 0);
-  });
-
-  test('clicking a planet opens its project page', async ({ page }) => {
-    const first = page.locator('.planet-label').first();
-    const href = (await first.getAttribute('href'))!;
-    const id = (await first.getAttribute('data-project'))!;
-    const planet = await planetOf(page, id);
-    await page.mouse.move(5, 5);
-    await page.mouse.click(planet.x, planet.y);
-    await expect(page).toHaveURL((url) => url.pathname === href);
   });
 });
 

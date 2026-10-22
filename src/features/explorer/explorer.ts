@@ -1,15 +1,26 @@
 // Explorer: renderer, camera, resize, render loop that pauses when the hero is off screen or
 // the tab is hidden, context-loss handling and disposal; the system's bodies built from the
-// page's data; HTML labels; drag to turn, hover, click to open a project, idle drift. The
-// hero's `data-explorer` attribute reports the state:
-// loading | running | paused | static | unavailable.
+// page's data; HTML labels; drag to turn, hover, idle drift; and visits (Phase 4.1):
+// explore → flying → visit → returning, with an in-page visit panel.
+// The hero reports `data-explorer` (loading | running | paused | static | unavailable) and
+// `data-mode` (explore | flying | visit | returning).
 
 import { PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
 import { ambientLoop, reducedMotion } from '../motion/motion';
 import { setSkyYaw } from '../sky/sky';
 import { createBodies } from './bodies';
-import { applyPose, explorePose, focalLength, PHONE_MAX_WIDTH } from './camera';
+import {
+  applyPose,
+  explorePose,
+  focalLength,
+  interpolatePose,
+  PHONE_MAX_WIDTH,
+  visitPose,
+  yawFor,
+  type CameraPose,
+} from './camera';
 import { createLabels, type ScreenFrame, type ScreenPlanet } from './labels';
+import { createVisitPanel } from './panel';
 import { layoutSystem, type SystemData } from './system';
 
 const MAX_DPR = 2;
@@ -20,6 +31,12 @@ const SPIN_SPEED = 0.12;
 const MAX_STEP = 0.05;
 /** Slow turn of the whole system while nobody interacts (radians per second). */
 const IDLE_YAW_SPEED = 0.012;
+/** How fast orbital motion eases to a stop during a visit and back afterwards (per second). */
+const TIME_EASE = 3;
+/** Camera transitions (ms), from the design spec. */
+const FLY_MS = 1900;
+const HOP_MS = 2300;
+const RETURN_MS = 1500;
 /** Drag sensitivity (radians per CSS px) and pitch limits, from the concept. */
 const YAW_PER_PX = 0.0055;
 const PITCH_PER_PX = 0.004;
@@ -31,14 +48,18 @@ const DRAG_THRESHOLD = 5;
 const HIT_MIN = 18;
 const HIT_EXTRA = 10;
 const BELT_LABEL_SAMPLES = 48;
+/** Delay before visiting from the project list, while the page scrolls up to the hero. */
+const SCROLL_SETTLE_MS = 500;
 
-function readSystem(hero: HTMLElement): SystemData {
-  const source = hero.querySelector('script[data-explorer-system]')?.textContent;
-  return source ? (JSON.parse(source) as SystemData) : { star: '', earlierWork: '', projects: [] };
-}
+type Mode = 'explore' | 'flying' | 'visit' | 'returning';
 
-export interface ExplorerController {
-  dispose(): void;
+interface Transition {
+  kind: 'planet' | 'explore';
+  from: CameraPose;
+  yawTo: number;
+  start: number;
+  duration: number;
+  hop: boolean;
 }
 
 interface Drag {
@@ -49,6 +70,19 @@ interface Drag {
   pitch: number;
   moved: boolean;
   mouse: boolean;
+}
+
+function readSystem(hero: HTMLElement): SystemData {
+  const source = hero.querySelector('script[data-explorer-system]')?.textContent;
+  return source ? (JSON.parse(source) as SystemData) : { star: '', earlierWork: '', projects: [] };
+}
+
+/** A plain left click, not one meant to open the link in a new tab or window. */
+const isPlainClick = (event: MouseEvent) =>
+  event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+
+export interface ExplorerController {
+  dispose(): void;
 }
 
 export function mountExplorer(hero: HTMLElement): ExplorerController | null {
@@ -76,10 +110,11 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   hero.prepend(canvas);
 
   const data = readSystem(hero);
-  const hrefs = new Map(data.projects.map((p) => [p.id, p.href]));
+  const projects = data.projects;
+  const indexOf = new Map(projects.map((p, i) => [p.id, i]));
   const scene = new Scene();
   const camera = new PerspectiveCamera();
-  const layout = layoutSystem(data.projects);
+  const layout = layoutSystem(projects);
   const bodies = createBodies(layout);
   scene.add(bodies.group);
   hero.dataset.planets = String(bodies.planetCount);
@@ -90,6 +125,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   let onScreen = true;
   let lost = false;
   let simTime = 0;
+  let timeScale = 1;
   let spin = 0;
   let last: number | undefined;
   let yaw = explorePose(1, 1, layout.extent).yaw;
@@ -101,6 +137,18 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   let shownHighlight: string | null | undefined;
   let screen: ScreenPlanet[] = [];
   let pending = 0;
+
+  let mode: Mode = 'explore';
+  let current: string | null = null;
+  let transition: Transition | null = null;
+  let returnTo: HTMLElement | null = null;
+  let cam: CameraPose = explorePose(1, 1, layout.extent);
+
+  const setMode = (next: Mode) => {
+    mode = next;
+    hero.dataset.mode = next;
+  };
+  setMode('explore');
 
   // With reduced motion nothing animates, so changes (drag, hover, resize) draw one frame.
   const invalidate = () => {
@@ -117,7 +165,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   });
 
   const setHighlight = () => {
-    const id = hoverId ?? externalId;
+    const id = mode === 'explore' ? (hoverId ?? externalId) : current;
     if (id === shownHighlight) return;
     shownHighlight = id;
     bodies.setHighlight(id);
@@ -133,6 +181,18 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     renderer.setSize(width, height, false);
     focal = focalLength(width, height);
     labels.measure();
+  };
+
+  // Camera poses for the current moment.
+  const planetAt = (id: string) => bodies.planets[indexOf.get(id) ?? 0]!;
+  const explorePoseNow = (): CameraPose => {
+    const pose = explorePose(width, height, layout.extent);
+    return { ...pose, yaw, pitch: pitch ?? pose.pitch };
+  };
+  const visitPoseNow = (id: string): CameraPose => {
+    const planet = planetAt(id);
+    const { x, y, z } = planet.position;
+    return { ...visitPose([x, y, z], planet.radius, width, height), yaw };
   };
 
   // Screen projection for labels and hit testing.
@@ -180,16 +240,36 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     const step = last === undefined ? 0 : Math.min(MAX_STEP, Math.max(0, seconds - last));
     last = seconds;
     if (!reducedMotion.matches) {
-      simTime += step;
+      const visiting = mode === 'flying' || mode === 'visit';
+      timeScale += ((visiting ? 0 : 1) - timeScale) * (1 - Math.exp(-step * TIME_EASE));
+      simTime += step * timeScale;
       spin += step * SPIN_SPEED;
-      if (!drag && !hoverId) yaw += step * IDLE_YAW_SPEED;
+      if (mode === 'explore' && !drag && !hoverId) yaw += step * IDLE_YAW_SPEED;
     }
-    const pose = explorePose(width, height, layout.extent);
-    applyPose(camera, { ...pose, yaw, pitch: pitch ?? pose.pitch }, width, height);
-    setSkyYaw(yaw);
-    bodies.update(simTime, spin, camera, { focal, dpr: renderer.getPixelRatio() });
+    bodies.place(simTime, spin);
+
+    if (transition) {
+      const t = transition;
+      const k = t.duration ? (performance.now() - t.start) / t.duration : 1;
+      const to = t.kind === 'planet' && current ? visitPoseNow(current) : explorePoseNow();
+      cam = interpolatePose(t.from, to, t.yawTo, k, t.hop);
+      if (k >= 1) {
+        transition = null;
+        yaw = t.yawTo;
+        setMode(t.kind === 'planet' ? 'visit' : 'explore');
+        setHighlight();
+      }
+    } else {
+      cam = mode === 'visit' && current ? visitPoseNow(current) : explorePoseNow();
+    }
+
+    applyPose(camera, cam, width, height);
+    setSkyYaw(cam.yaw);
+    bodies.updateView(camera, { focal, dpr: renderer.getPixelRatio() });
     renderer.render(scene, camera);
-    labels.update(screenFrame());
+    const frame = screenFrame();
+    // Labels follow the camera back while returning, so focus can return to one immediately.
+    if (mode === 'explore' || mode === 'returning') labels.update(frame);
   }
 
   const loop = ambientLoop(draw, {
@@ -198,7 +278,105 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     onState: (state) => setState(lost ? 'unavailable' : state),
   });
 
-  // Pointer interaction: drag to turn, hover to highlight, click a planet to open it.
+  // Visits.
+  const panel = createVisitPanel(hero, {
+    onBack: () => back(),
+    onStep: (direction) => step(direction),
+  });
+
+  const startTransition = (kind: Transition['kind'], id?: string) => {
+    const hop = kind === 'planet' && (mode === 'visit' || mode === 'flying') && current !== id;
+    const yawTo = kind === 'planet' && id ? yawFor(visitPoseNow(id).target, cam.yaw) : cam.yaw;
+    transition = {
+      kind,
+      from: { ...cam, target: [...cam.target] as [number, number, number] },
+      yawTo,
+      start: performance.now(),
+      duration: reducedMotion.matches ? 0 : hop ? HOP_MS : kind === 'planet' ? FLY_MS : RETURN_MS,
+      hop,
+    };
+    setMode(kind === 'planet' ? 'flying' : 'returning');
+    invalidate();
+  };
+
+  const visit = (id: string, options: { returnTo?: HTMLElement | null; focus?: boolean } = {}) => {
+    const project = projects[indexOf.get(id) ?? -1];
+    if (!project) return;
+    if (mode === 'explore' || mode === 'returning') {
+      returnTo = options.returnTo ?? (document.activeElement as HTMLElement | null);
+    }
+    startTransition('planet', id);
+    current = id;
+    hoverId = null;
+    canvas.classList.remove('is-over-planet');
+    labels.setVisible(false);
+    bodies.setVisiting(true);
+    setHighlight();
+    hero.classList.add('is-visiting');
+    panel.show(project, (indexOf.get(id) ?? 0) + 1, projects.length);
+    if (options.focus !== false) panel.focusTitle();
+  };
+
+  function back() {
+    if (mode !== 'visit' && mode !== 'flying') return;
+    startTransition('explore');
+    current = null;
+    labels.setVisible(true);
+    bodies.setVisiting(false);
+    setHighlight();
+    hero.classList.remove('is-visiting');
+    panel.hide();
+    const target = returnTo;
+    returnTo = null;
+    if (target?.isConnected && target !== document.body) target.focus({ preventScroll: true });
+  }
+
+  function step(direction: 1 | -1) {
+    if (!current) return;
+    const i = indexOf.get(current) ?? 0;
+    visit(projects[(i + direction + projects.length) % projects.length]!.id);
+  }
+
+  const onKey = (event: KeyboardEvent) => {
+    if (event.key !== 'Escape' || (mode !== 'visit' && mode !== 'flying')) return;
+    event.preventDefault();
+    back();
+  };
+  document.addEventListener('keydown', onKey);
+
+  // Planet labels and project rows open the visit in place; modified clicks keep the link.
+  const onLabelClick = (event: MouseEvent) => {
+    const link = (event.target as HTMLElement).closest<HTMLAnchorElement>('.planet-label');
+    if (!link?.dataset.project || !isPlainClick(event)) return;
+    event.preventDefault();
+    visit(link.dataset.project, { returnTo: link });
+  };
+  hero.addEventListener('click', onLabelClick);
+
+  let scrollTimer = 0;
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-project-row]')];
+  const onRowClick = (event: MouseEvent) => {
+    const row = event.currentTarget as HTMLElement;
+    const id = row.dataset.projectRow;
+    if (!id || !isPlainClick(event)) return;
+    event.preventDefault();
+    const link = row.querySelector<HTMLElement>('a');
+    const offset = hero.getBoundingClientRect().top;
+    const far = Math.abs(offset) > 60;
+    if (far) {
+      window.scrollTo({
+        top: window.scrollY + offset,
+        behavior: reducedMotion.matches ? 'auto' : 'smooth',
+      });
+    }
+    window.clearTimeout(scrollTimer);
+    scrollTimer = window.setTimeout(
+      () => visit(id, { returnTo: link }),
+      far && !reducedMotion.matches ? SCROLL_SETTLE_MS : 0,
+    );
+  };
+
+  // Pointer interaction: drag to turn, hover to highlight, click a planet to visit it.
   const local = (event: PointerEvent) => {
     const box = canvas.getBoundingClientRect();
     return [event.clientX - box.left, event.clientY - box.top] as const;
@@ -219,13 +397,12 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
 
   const onDown = (event: PointerEvent) => {
     if (event.button !== 0) return;
-    const pose = explorePose(width, height, layout.extent);
     drag = {
       pointer: event.pointerId,
       x: event.clientX,
       y: event.clientY,
       yaw,
-      pitch: pitch ?? pose.pitch,
+      pitch: pitch ?? explorePose(width, height, layout.extent).pitch,
       moved: false,
       mouse: event.pointerType === 'mouse',
     };
@@ -239,9 +416,9 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
         drag.moved = true;
         canvas.classList.add('is-dragging');
       }
-      if (drag.moved) {
+      if (drag.moved && !transition) {
         yaw = drag.yaw - dx * YAW_PER_PX;
-        if (drag.mouse) {
+        if (drag.mouse && mode === 'explore') {
           pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, drag.pitch + dy * PITCH_PER_PX));
         }
         invalidate();
@@ -249,9 +426,9 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       return;
     }
     const id = pick(...local(event))?.id ?? null;
-    if (id !== hoverId) {
+    canvas.classList.toggle('is-over-planet', Boolean(id) && id !== current);
+    if (mode === 'explore' && id !== hoverId) {
       hoverId = id;
-      canvas.classList.toggle('is-over-planet', Boolean(id));
       setHighlight();
     }
   };
@@ -262,8 +439,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     canvas.classList.remove('is-dragging');
     if (wasClick && event.type === 'pointerup') {
       const target = pick(...local(event));
-      const href = target && hrefs.get(target.id);
-      if (href) window.location.assign(href);
+      if (target && target.id !== current) visit(target.id);
     }
   };
   const onLeave = () => {
@@ -279,7 +455,6 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   canvas.addEventListener('pointerleave', onLeave);
 
   // Hovering or focusing a project row highlights its planet.
-  const rows = [...document.querySelectorAll<HTMLElement>('[data-project-row]')];
   const onRowEnter = (event: Event) => {
     externalId = (event.currentTarget as HTMLElement).dataset.projectRow ?? null;
     setHighlight();
@@ -293,6 +468,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     row.addEventListener('pointerleave', onRowLeave);
     row.addEventListener('focusin', onRowEnter);
     row.addEventListener('focusout', onRowLeave);
+    row.addEventListener('click', onRowClick);
   }
 
   const visibility = new IntersectionObserver(([entry]) => {
@@ -328,14 +504,18 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   canvas.addEventListener('webglcontextrestored', onRestored);
 
   resize();
+  cam = explorePoseNow();
   loop.kick();
 
   return {
     dispose() {
       loop.dispose();
       cancelAnimationFrame(pending);
+      window.clearTimeout(scrollTimer);
       visibility.disconnect();
       size.disconnect();
+      document.removeEventListener('keydown', onKey);
+      hero.removeEventListener('click', onLabelClick);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
@@ -346,17 +526,21 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
         row.removeEventListener('pointerleave', onRowLeave);
         row.removeEventListener('focusin', onRowEnter);
         row.removeEventListener('focusout', onRowLeave);
+        row.removeEventListener('click', onRowClick);
       }
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
+      panel.dispose();
       labels.dispose();
       bodies.dispose();
       scene.clear();
       renderer.dispose();
       canvas.remove();
       setSkyYaw(0);
+      hero.classList.remove('is-visiting');
       delete hero.dataset.explorer;
       delete hero.dataset.planets;
+      delete hero.dataset.mode;
     },
   };
 }

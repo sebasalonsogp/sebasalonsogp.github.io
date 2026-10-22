@@ -2,7 +2,19 @@ import { expect, test } from '@playwright/test';
 import { hasHorizontalScroll, open, projectPaths } from './helpers';
 
 test.describe('project routes', () => {
-  test('each project row opens its page', async ({ page }) => {
+  test('without the 3D scene, each project row opens its page', async ({ page }) => {
+    // With WebGL2 the row opens the visit in place (visit.spec.ts); without it, the link.
+    await page.addInitScript(() => {
+      const original = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (
+        this: HTMLCanvasElement,
+        type: string,
+        ...rest: unknown[]
+      ) {
+        if (type === 'webgl2') return null;
+        return (original as (...args: unknown[]) => unknown).call(this, type, ...rest);
+      } as typeof HTMLCanvasElement.prototype.getContext;
+    });
     const paths = await projectPaths(page);
     expect(paths.length).toBeGreaterThan(0);
 

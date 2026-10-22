@@ -19,6 +19,14 @@ export interface SystemProject {
   /** The project's page (`/projects/<id>/`, with the site base). */
   href: string;
   short: string;
+  title: string;
+  summary: string;
+  /** Plain-language write-up and engineering log for the visit panel. */
+  brief: string;
+  log: string;
+  tech: string[];
+  demoUrl?: string;
+  repoUrl: string;
   domain: Domain;
   lastCommit: string;
   loc: number;
