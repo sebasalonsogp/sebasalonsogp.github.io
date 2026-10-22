@@ -138,10 +138,13 @@ const key = [
     overflow-x: clip;
   }
 
+  /* Top-aligned, not centred: when web fonts swap in, a centred visit would slide as a whole
+     (CLS 0.27 measured on a throttled phone). */
   .hero.visiting {
     height: auto;
     min-height: clamp(660px, 92vh, 900px);
     padding-block: 104px var(--sp-7);
+    align-items: start;
   }
 
   /* Instructions for the system: shown only once the explorer has mounted (it sets

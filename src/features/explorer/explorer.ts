@@ -678,6 +678,9 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   // visit without flying (and without moving focus on page load).
   const initial = hero.dataset.initialProject;
   if (initial && indexOf.has(initial)) {
+    // Step the intro aside before the static copy goes, so the intro never paints (it would
+    // flash, and become the page's largest paint at the moment of the handoff).
+    hero.classList.add('is-visiting');
     hero.classList.remove('visiting');
     hero.setAttribute('aria-labelledby', 'hero-heading');
   }

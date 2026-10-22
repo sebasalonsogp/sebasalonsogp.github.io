@@ -41,6 +41,8 @@ jobs:
         run: npm run check
       - name: Build static site
         run: npm run build
+      - name: Check size budgets (initial JS, explorer chunk, media per visit)
+        run: npm run budgets
       - name: Audit dependencies
         run: npm audit --audit-level=high
       # A no-op while the image matches @playwright/test; if they drift, it fetches the
@@ -49,3 +51,5 @@ jobs:
         run: npx playwright install chromium firefox webkit
       - name: Run browser tests (Chromium, Firefox, WebKit + axe)
         run: npm test
+      - name: Check Lighthouse budgets (LCP, CLS on throttled mobile)
+        run: npm run lighthouse

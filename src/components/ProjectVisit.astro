@@ -326,6 +326,15 @@ const projectPath = (id: string) => withBase(`projects/${id}/`);
     color: var(--ink);
   }
 
+  /* On phones the meta and back link always stack: side by side they fit with fallback fonts
+     but not with the web fonts, and the late wrap shifted the page (CLS 0.27). */
+  @media (max-width: 520px) {
+    .v-top {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
   @media (max-width: 900px) {
     .visit,
     .visit.no-media {
