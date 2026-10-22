@@ -20,6 +20,7 @@ import {
   type CameraPose,
 } from './camera';
 import { createLabels, type ScreenFrame, type ScreenPlanet } from './labels';
+import { createLanding } from './landing';
 import { createVisitPanel } from './panel';
 import { layoutSystem, type SystemData } from './system';
 
@@ -192,7 +193,8 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   const visitPoseNow = (id: string): CameraPose => {
     const planet = planetAt(id);
     const { x, y, z } = planet.position;
-    return { ...visitPose([x, y, z], planet.radius, width, height), yaw };
+    const hasMedia = (projects[indexOf.get(id) ?? -1]?.media.length ?? 0) > 0;
+    return { ...visitPose([x, y, z], planet.radius, width, height, hasMedia), yaw };
   };
 
   // Screen projection for labels and hit testing.
@@ -283,6 +285,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     onBack: () => back(),
     onStep: (direction) => step(direction),
   });
+  const landing = createLanding(hero, panel.media);
 
   const startTransition = (kind: Transition['kind'], id?: string) => {
     const hop = kind === 'planet' && (mode === 'visit' || mode === 'flying') && current !== id;
@@ -314,6 +317,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     setHighlight();
     hero.classList.add('is-visiting');
     panel.show(project, (indexOf.get(id) ?? 0) + 1, projects.length);
+    landing.show(project);
     if (options.focus !== false) panel.focusTitle();
   };
 
@@ -326,6 +330,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     setHighlight();
     hero.classList.remove('is-visiting');
     panel.hide();
+    landing.hide();
     const target = returnTo;
     returnTo = null;
     if (target?.isConnected && target !== document.body) target.focus({ preventScroll: true });
@@ -338,7 +343,9 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   }
 
   const onKey = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape' || (mode !== 'visit' && mode !== 'flying')) return;
+    // The lightbox (a modal dialog) handles its own Escape first.
+    if (event.key !== 'Escape' || landing.isLightboxOpen()) return;
+    if (mode !== 'visit' && mode !== 'flying') return;
     event.preventDefault();
     back();
   };
@@ -530,6 +537,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       }
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
+      landing.dispose();
       panel.dispose();
       labels.dispose();
       bodies.dispose();

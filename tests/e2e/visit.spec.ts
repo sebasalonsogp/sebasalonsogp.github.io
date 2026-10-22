@@ -134,3 +134,100 @@ test.describe('visits with motion', () => {
     await expect(hero(page)).toHaveAttribute('data-mode', 'explore', { timeout: 5_000 });
   });
 });
+
+/** Projects from the embedded data, so tests follow the content rather than fixed ids. */
+const mediaCounts = (page: Page) =>
+  page.evaluate(() =>
+    (
+      JSON.parse(document.querySelector('script[data-explorer-system]')!.textContent!) as {
+        projects: { id: string; media: unknown[] }[];
+      }
+    ).projects.map((p) => ({ id: p.id, media: p.media.length })),
+  );
+
+test.describe('landing previews', () => {
+  test.beforeEach(async ({ page }) => ready(page));
+
+  test('a project with media lands beside a preview screen with dots', async ({ page }) => {
+    const target = (await mediaCounts(page)).find((p) => p.media > 1);
+    test.skip(!target, 'No project with several media items');
+    await page.locator(`.planet-label[data-project="${target!.id}"]`).click();
+    await expect(hero(page)).toHaveClass(/has-landing/);
+    await expect(page.locator('.landing')).toBeVisible();
+    const dots = page.locator('.ld-dot');
+    await expect(dots).toHaveCount(target!.media);
+    await expect(dots.first()).toHaveAttribute('aria-pressed', 'true');
+    const firstCaption = await page.locator('.ld-cap').textContent();
+    await dots.nth(1).click();
+    await expect(dots.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.ld-cap')).not.toHaveText(firstCaption!);
+  });
+
+  test('the lightbox browses previews and Escape closes it before the visit', async ({ page }) => {
+    const target = (await mediaCounts(page)).find((p) => p.media > 1);
+    test.skip(!target, 'No project with several media items');
+    await page.locator(`.planet-label[data-project="${target!.id}"]`).click();
+    await page.locator('.ld-dot').nth(1).click();
+    const screen = page.locator('.ld-screen');
+    await screen.click();
+    const dialog = page.locator('dialog.lb');
+    await expect(dialog).toHaveAttribute('open', '');
+    await expect(page.getByRole('button', { name: /Close/ })).toBeFocused();
+    await expect(page.locator('.lb-cap')).toContainText(`2 of ${target!.media}`);
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.querySelector<HTMLImageElement>('.lb-stage img')?.naturalWidth ?? 0,
+        ),
+      )
+      .toBeGreaterThan(0);
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.lb-cap')).toContainText(`3 of ${target!.media}`);
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toHaveAttribute('open', '');
+    await expect(hero(page)).toHaveAttribute('data-mode', 'visit');
+    await expect(screen).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(hero(page)).toHaveAttribute('data-mode', 'explore');
+  });
+
+  test('a project without media has no landing screen', async ({ page }) => {
+    const target = (await mediaCounts(page)).find((p) => p.media === 0);
+    test.skip(!target, 'Every project has media');
+    await page.locator(`.planet-label[data-project="${target!.id}"]`).click();
+    await expect(hero(page)).toHaveAttribute('data-mode', 'visit');
+    await expect(hero(page)).not.toHaveClass(/has-landing/);
+    await expect(page.locator('.landing')).toBeHidden();
+  });
+
+  test('video stays on its poster with reduced motion', async ({ page }) => {
+    const id = await page.evaluate(
+      () =>
+        (
+          JSON.parse(document.querySelector('script[data-explorer-system]')!.textContent!) as {
+            projects: { id: string; media: { type: string }[] }[];
+          }
+        ).projects.find((p) => p.media[0]?.type === 'video')?.id,
+    );
+    test.skip(!id, 'No project opens on a video');
+    await page.locator(`.planet-label[data-project="${id}"]`).click();
+    const video = page.locator('.ld-media video');
+    await expect(video).toHaveAttribute('poster', /\S/);
+    expect(await video.evaluate((v: HTMLVideoElement) => v.paused && !v.autoplay)).toBe(true);
+  });
+
+  test('phones show the preview inside the panel', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await expect(hero(page)).toHaveAttribute('data-explorer', 'static', { timeout: 10_000 });
+    const target = (await mediaCounts(page)).find((p) => p.media > 0);
+    test.skip(!target, 'No project with media');
+    await page.locator(`.planet-label[data-project="${target!.id}"]`).click();
+    await expect(page.locator('.landing')).toBeHidden();
+    const preview = page.locator('.explorer-visit .v-media');
+    await expect(preview).toBeVisible();
+    await preview.click();
+    await expect(page.locator('dialog.lb')).toHaveAttribute('open', '');
+  });
+});

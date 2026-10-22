@@ -40,7 +40,7 @@ before ending a session.
 ## Phase 4 — Visit, land, return (in progress)
 
 - [x] 4.1 Visit state machine and panel.
-- [ ] 4.2 Landing previews, video, lightbox.
+- [x] 4.2 Landing previews, video, lightbox.
 - [ ] 4.3 Routes, history, direct load, focus.
 - [ ] 4.4 Tour.
 - [ ] 4.5 Journey tests.

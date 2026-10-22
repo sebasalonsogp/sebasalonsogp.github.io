@@ -318,3 +318,249 @@
     font-size: 1.65rem;
   }
 }
+
+/* Landing preview (desktop): a 16:10 screen below-left of the visited planet. Fades in after
+   the panel. Phones show the preview inside the panel instead (.v-media). */
+.hero .landing {
+  position: absolute;
+  left: max(var(--gutter-left), calc((100% - var(--content-width)) / 2));
+  bottom: 56px;
+  z-index: 3;
+  width: min(42vw, 580px);
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  transition:
+    opacity var(--dur-base) ease,
+    transform var(--dur-base) ease,
+    visibility 0s linear var(--dur-base);
+}
+
+.hero.has-landing .landing {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--dur-panel) ease var(--delay-landing),
+    transform var(--dur-panel) ease var(--delay-landing),
+    visibility 0s;
+}
+
+.landing .ld-screen,
+.explorer-visit .v-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--faint);
+  background: var(--void-2);
+  cursor: zoom-in;
+}
+
+.landing .ld-screen {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-3);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 0.6);
+}
+
+.landing .ld-screen:hover {
+  border-color: var(--dim);
+}
+
+.landing .ld-media,
+.landing .ld-media > *,
+.explorer-visit .v-media > * {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.landing .ld-media img,
+.landing .ld-media video,
+.explorer-visit .v-media img,
+.explorer-visit .v-media video {
+  object-fit: cover;
+  object-position: top center;
+}
+
+.landing .ld-media img.fit-contain,
+.explorer-visit .v-media img.fit-contain {
+  object-fit: contain;
+  object-position: center;
+}
+
+.landing .ld-zoom {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 3px 8px;
+  border: 1px solid var(--faint);
+  border-radius: var(--radius-1);
+  background: color-mix(in srgb, var(--void) 80%, transparent);
+  font-size: var(--s-cap);
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity var(--dur-fast);
+}
+
+.landing .ld-screen:hover .ld-zoom,
+.landing .ld-screen:focus-visible .ld-zoom {
+  opacity: 1;
+}
+
+.landing figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: var(--s-small);
+  color: var(--dim);
+  text-shadow: var(--halo);
+}
+
+.landing .ld-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.landing .ld-dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.landing .ld-dot::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--faint);
+  transition: background var(--dur-fast);
+}
+
+.landing .ld-dot[aria-pressed='true']::before {
+  background: var(--sol);
+}
+
+.explorer-visit .v-media {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-2);
+}
+
+@media (min-width: 761px) {
+  .explorer-visit .v-media {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero .landing {
+    display: none;
+  }
+}
+
+/* Lightbox: a native modal <dialog>, so focus stays inside and Escape closes it. */
+.is-lightbox-open {
+  overflow: hidden;
+}
+
+.lb {
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  border: 0;
+  background: color-mix(in srgb, var(--void) 94%, transparent);
+  color: var(--ink);
+}
+
+.lb[open] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.lb::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+.lb .lb-btn {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--faint);
+  border-radius: var(--radius-1);
+  background: none;
+  font-size: var(--s-small);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.lb .lb-btn:hover {
+  border-color: var(--dim);
+}
+
+.lb kbd {
+  margin-left: var(--sp-1);
+  font-family: var(--f-data);
+  font-size: var(--s-cap);
+  color: var(--dim);
+}
+
+.lb .lb-close {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.lb .lb-prev {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.lb .lb-next {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.lb .lb-stage {
+  grid-column: 2;
+  grid-row: 2;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.lb .lb-stage img,
+.lb .lb-stage video {
+  max-width: 100%;
+  max-height: calc(100dvh - 150px);
+  object-fit: contain;
+  border: 1px solid var(--faint);
+  border-radius: var(--radius-2);
+  background: var(--void-2);
+}
+
+.lb .lb-cap {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin: 0;
+  text-align: center;
+  font-size: var(--s-small);
+  color: var(--dim);
+}

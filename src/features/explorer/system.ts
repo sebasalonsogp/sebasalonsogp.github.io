@@ -13,6 +13,20 @@ export interface SystemData {
   projects: SystemProject[];
 }
 
+/** A preview for the landing screen and lightbox, already optimized at build time. */
+export type SystemMedia =
+  | {
+      type: 'image';
+      src: string;
+      srcset: string;
+      width: number;
+      height: number;
+      alt: string;
+      caption: string;
+      fit: 'cover' | 'contain';
+    }
+  | { type: 'video'; src: string; poster: string; caption: string };
+
 /** A project as the explorer sees it, in orbit order (most recent commit first). */
 export interface SystemProject {
   id: string;
@@ -32,6 +46,7 @@ export interface SystemProject {
   loc: number;
   live: boolean;
   subsystems: string[];
+  media: SystemMedia[];
 }
 
 export interface PlanetLayout {

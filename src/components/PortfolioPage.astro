@@ -41,7 +41,7 @@ const description = visit
 
 <BaseLayout title={title} description={description}>
   <SiteNav slot="header" />
-  <Hero initialProject={initialProject} system={toSystemData(projects)}>
+  <Hero initialProject={initialProject} system={await toSystemData(projects)}>
     {visit && <ProjectVisit {...visit} />}
   </Hero>
   <ProjectList projects={projects} current={initialProject} />

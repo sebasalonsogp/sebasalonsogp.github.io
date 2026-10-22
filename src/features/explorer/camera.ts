@@ -76,25 +76,32 @@ export function applyPose(
   camera.updateProjectionMatrix();
 }
 
-/** The visit view: the planet large on one side, room for the panel on the other. */
+/**
+ * The visit view: the planet large on one side, room for the panel on the other. With a
+ * landing preview (desktop only) the planet moves up-left and smaller, above the screen.
+ */
 export function visitPose(
   planet: readonly [number, number, number],
   planetRadius: number,
   width: number,
   height: number,
+  landing = false,
 ): CameraPose {
   const phone = width < PHONE_MAX_WIDTH;
+  const land = landing && !phone;
   // Planet's on-screen radius (CSS px).
   const screenRadius = phone
     ? Math.min(0.19 * height, 0.34 * width)
-    : Math.min(0.27 * height, 0.2 * width);
+    : land
+      ? Math.min(0.15 * height, 0.11 * width)
+      : Math.min(0.27 * height, 0.2 * width);
   return {
     target: planet,
     yaw: 0,
     pitch: 0.14,
     distance: (focalLength(width, height) * planetRadius) / screenRadius,
-    cx: phone ? 0.5 : 0.33,
-    cy: phone ? 0.26 : 0.5,
+    cx: phone ? 0.5 : land ? 0.27 : 0.33,
+    cy: phone ? 0.26 : land ? 0.27 : 0.5,
   };
 }
 

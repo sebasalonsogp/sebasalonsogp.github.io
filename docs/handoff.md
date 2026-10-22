@@ -5,9 +5,10 @@
 **Phase 1 is live** at https://sebasalonsogp.github.io/ (`noindex`) from `main` of the
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
-slices are live and the Phase 3 checkpoint is approved. **Phase 4 has started:** slice 4.1
-(visit state machine and panel) is done on branch `feat/visit`, not yet merged. Next is
-4.2 (landing previews). Every push to `main` runs the CI checks and deploys only if they pass.
+slices are live and the Phase 3 checkpoint is approved. **Phase 4 has started:** slices 4.1
+(visit) and 4.2 (landing previews) are done on stacked branches `feat/visit` →
+`feat/landing`, not yet merged (deploy after 4.3 so visits have shareable URLs). Next is
+4.3 (routes and history). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -184,11 +185,27 @@ content migrated; each validation rule was shown to fail the build when broken.
   test now runs without WebGL2 (where rows still open the static page). 48 tests × 3
   browsers: 143 passed, 1 skipped. Explorer chunk 141 KB gzip.
 
+## Slice 4.2 — landing previews
+
+- `landing.ts` (screen, dots, phone preview, lightbox `<dialog>`), landing pose in
+  `camera.ts`, optimized media in the embedded data (`toSystemData` is now async and uses
+  `getImage`), styles in `explorer.css`.
+- Checked with real flights (Playwright) at 1440×900 and 390×844 and in a GPU window: layout
+  matches the concept; dots, lightbox focus/arrows/Escape order, no-media project, phone
+  preview all work; no console errors.
+- Unexplained, not reproduced: twice, headless screenshots taken during or right after a
+  flight showed the canvas blank above the landing screen's shadow. Afterwards 8/8 headless
+  runs and a GPU window rendered correctly. Re-check on real devices in Phase 8.3.
+- Tests (in `visit.spec.ts`, projects chosen from the data): landing with dots, lightbox
+  (focus, arrows, image loads, Escape order), no landing without media, poster under reduced
+  motion, phone preview. 53 tests × 3 browsers: 158 passed, 1 skipped. Explorer chunk
+  143 KB gzip; home HTML 11 KB gzip.
+
 ## Next task
 
-Phase 4, slice 4.2 — landing previews: with media the planet moves up-left and the 16:10
-screen fades in below (captions, dots), video autoplays muted (poster with reduced motion),
-lightbox with arrows, Esc and focus trap; phones show the preview inside the panel.
+Phase 4, slice 4.3 — routes and history: visiting pushes `/projects/<id>/`, Back returns to
+explore, direct loads of `/projects/<id>/` open that visit (static page stays the no-JS
+fallback), focus to the panel title and back to the trigger.
 
 ## Open inputs and issues
 

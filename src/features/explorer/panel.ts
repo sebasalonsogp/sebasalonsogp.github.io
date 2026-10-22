@@ -12,6 +12,8 @@ export interface PanelHandlers {
 }
 
 export interface VisitPanel {
+  /** Phone-size preview button above the tabs (the landing module fills it). */
+  media: HTMLButtonElement;
   show(project: SystemProject, position: number, total: number): void;
   hide(): void;
   focusTitle(): void;
@@ -56,6 +58,10 @@ export function createVisitPanel(hero: HTMLElement, handlers: PanelHandlers): Vi
   title.id = 'explorer-visit-title';
   title.tabIndex = -1;
   const one = el('p', 'v-one');
+  const media = el('button', 'v-media');
+  media.type = 'button';
+  media.hidden = true;
+  media.setAttribute('aria-label', 'Open the preview full size');
 
   const tabs = el('div', 'v-tabs');
   tabs.setAttribute('role', 'tablist');
@@ -87,7 +93,7 @@ export function createVisitPanel(hero: HTMLElement, handlers: PanelHandlers): Vi
   previous.type = next.type = 'button';
   nav.append(previous, count, next);
 
-  panel.append(top, title, one, tabs, body, actions, stack, nav);
+  panel.append(top, title, one, media, tabs, body, actions, stack, nav);
   hero.append(panel);
 
   let project: SystemProject | undefined;
@@ -126,6 +132,7 @@ export function createVisitPanel(hero: HTMLElement, handlers: PanelHandlers): Vi
   next.addEventListener('click', onNext);
 
   return {
+    media,
     show(p, position, total) {
       project = p;
       const domain = domains[p.domain];

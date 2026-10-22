@@ -174,6 +174,15 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
   around a visited planet (no tilt). The panel is an `<aside>`, inert when closed; tabs
   are an ARIA tablist with arrow keys. Not ported: the concept's slower spin for the visited
   planet.
+- Landing (4.2, `landing.ts`): with media on desktop the visit pose becomes planet at
+  27% / 27%, radius `min(0.15·H, 0.11·W)`; the screen (`.landing`, `min(42vw, 580px)`,
+  bottom 56 px, left at the content edge) fades in after 0.95 s with caption (body face) and
+  dots for several items; "Expand ⤢" on hover. Phones put the preview in the panel above the
+  tabs. Media is rendered only into the visible container (one video at a time). Images are
+  responsive WebP from `getImage` (480–1600 w); video is muted, looping and plays inline,
+  poster only with reduced motion. The lightbox is a native modal `<dialog>` (focus stays
+  inside, page inert, scroll locked), Close / arrows / ← → keys; Escape closes it before
+  leaving the visit; focus returns to the screen.
 
 ## Project pages (readable visit)
 
