@@ -12,8 +12,9 @@ has started:** Phase 6 is live (`main` 61f943a, deploy run 39783890725) and its 
 approved. **Phase 7 is live** (`main` 66ac6ae) and its checkpoint is approved. CI now runs in the
 Playwright container (`main` 93ffdce). **Phase 8 has started:** 8.1 (accessibility audit)
 and 8.2 are live; 8.3's automated part is live (`main` 165747f); real devices and the
-screen-reader pass are outstanding. 8.4 (SEO and sharing) is live (`main` 7428f4c). 8.5
-(GitHub data refresh) is on `feat/github-sync`, not merged. Every push to `main` runs the CI checks and deploys only if they pass.
+screen-reader pass are outstanding. 8.4 and 8.5 are live (`main` ae65c9f); 8.6 skipped.
+**Release candidate:** `docs/release-candidate.md` — the Phase 8 checkpoint summary, the
+manual checks for Sebastian and the Phase 9 decisions. Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -486,11 +487,16 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
   dispatch only works once the workflow is on `main`.
 - 122 tests × 3 browsers: 363 passed, 3 skipped. `npm run verify` passes.
 
+- Ran "Refresh GitHub data" by hand on `main` (run 39848968342): re-measured all five
+  repositories with the same values as locally (line counts match across Linux and
+  Windows) and stopped at "up to date". Its PR step is untested until the data changes.
+
 ## Next task
 
-After merging: run "Refresh GitHub data" once by hand (Actions tab or
-`gh workflow run github-data.yml`) to confirm it. Then 8.6 (optional analytics) or Phase 9.
-Real-device checks and the screen-reader pass remain with Sebastian.
+Phase 8 checkpoint (release candidate): Sebastian works through the manual checks and
+decisions in `docs/release-candidate.md`. Then Phase 9: 9.1 content review (apply his
+decisions), 9.2 remove `noindex` (and domain, tag `v1.0.0`), 9.3 live verification and
+rollback notes in `docs/deployment.md`.
 
 ## Open inputs and issues
 
@@ -499,9 +505,9 @@ Real-device checks and the screen-reader pass remain with Sebastian.
   the Eigenflow page on real Safari/iOS in Phase 8.3; an MP4 (H.264) source in Phase 4.2
   would be the safe fallback. WebKit also keeps links out of the Tab order (Safari
   default), so the skip-link test focuses the link directly there.
-- **axe "incomplete" (needs a human):** `color-contrast` on some elements (measure in 2.3)
-  and `video-caption` for the Eigenflow demo; no captions are needed if the recording is
-  silent. Confirm.
+- **axe "incomplete":** `color-contrast` over the sky is measured (2.3, 8.1). `video-caption`:
+  the Eigenflow recording is silent (checked: no audio decoded), so no captions; it still
+  wants a one-sentence text description (in `docs/release-candidate.md`).
 - **Sky cost on real hardware:** confirm < 2 ms/frame on a mid-range laptop and a phone
   in Phase 8.2; this machine is likely faster than mid-range.
 - `npm test` fails to start if another `astro preview` is running (Astro allows one).

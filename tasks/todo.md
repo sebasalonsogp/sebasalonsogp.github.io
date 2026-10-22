@@ -72,7 +72,7 @@ before ending a session.
       (`docs/browser-device-pass.md`); real Safari / iOS / Android devices outstanding.
 - [x] 8.4 SEO, Open Graph, sitemap, structured data.
 - [x] 8.5 GitHub data refresh automation.
-- [ ] 8.6 Analytics (optional).
+- [x] ~~8.6 Analytics (optional).~~ Skipped (Sebastian).
 
 ## Phase 9 — Launch
 
