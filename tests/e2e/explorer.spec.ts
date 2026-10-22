@@ -87,6 +87,105 @@ test.describe('explorer shell', () => {
   });
 });
 
+test.describe('explorer system', () => {
+  test('has one planet per project, in the list order', async ({ page }) => {
+    await page.goto('/');
+    const listed = await page
+      .locator('#projects .row a')
+      .evaluateAll((links) => links.map((a) => a.getAttribute('href')!.split('/').at(-2)));
+    const system = await page.evaluate(() =>
+      (
+        JSON.parse(document.querySelector('script[data-explorer-system]')!.textContent!) as {
+          id: string;
+        }[]
+      ).map((p) => p.id),
+    );
+    // Orbit order (innermost = most recent commit) is the list order.
+    expect(system).toEqual(listed);
+    test.skip(!(await supportsWebGL2(page)), 'No WebGL2 in this browser');
+    await expect(hero(page)).toHaveAttribute('data-planets', String(listed.length), {
+      timeout: 10_000,
+    });
+  });
+
+  for (const [name, width, height, cx, cy] of [
+    ['desktop', 1440, 900, 0.64, 0.56],
+    ['phone', 390, 844, 0.5, 0.68],
+  ] as const) {
+    test(`frames the star where the concept puts it (${name})`, async ({ page }) => {
+      // Reduced motion keeps the sky still, so two screenshots differ only by the explorer.
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.setViewportSize({ width, height });
+      await page.goto('/');
+      test.skip(!(await supportsWebGL2(page)), 'No WebGL2 in this browser');
+      await expect(hero(page)).toHaveAttribute('data-explorer', 'static', { timeout: 10_000 });
+      const withExplorer = (await hero(page).screenshot()).toString('base64');
+      await page.locator('#hero canvas.system').evaluate((el) => (el.style.visibility = 'hidden'));
+      const skyOnly = (await hero(page).screenshot()).toString('base64');
+
+      // The star is the largest bright glow the explorer adds: blur the difference, take the peak.
+      const peak = await page.evaluate(
+        async ([a, b]) => {
+          const load = (src: string) =>
+            new Promise<HTMLImageElement>((ok) => {
+              const img = new Image();
+              img.onload = () => ok(img);
+              img.src = 'data:image/png;base64,' + src;
+            });
+          const [imgA, imgB] = await Promise.all([load(a!), load(b!)]);
+          const W = Math.round(imgA.width / 4);
+          const H = Math.round(imgA.height / 4);
+          // Downscale (which averages), then box-blur in JS: WebKit's 2D canvas has no filter.
+          const read = (img: HTMLImageElement) => {
+            const c = document.createElement('canvas');
+            c.width = W;
+            c.height = H;
+            const ctx = c.getContext('2d')!;
+            ctx.drawImage(img, 0, 0, W, H);
+            return ctx.getImageData(0, 0, W, H).data;
+          };
+          const da = read(imgA);
+          const db = read(imgB);
+          const diff = new Float32Array(W * H);
+          for (let p = 0, i = 0; p < W * H; p++, i += 4) {
+            diff[p] = Math.max(
+              0,
+              da[i]! + da[i + 1]! + da[i + 2]! - db[i]! - db[i + 1]! - db[i + 2]!,
+            );
+          }
+          const R = 4;
+          let best = -1;
+          let at = [0, 0];
+          for (let y = R; y < H - R; y++) {
+            for (let x = R; x < W - R; x++) {
+              let sum = 0;
+              for (let j = -R; j <= R; j++)
+                for (let i = -R; i <= R; i++) sum += diff[(y + j) * W + x + i]!;
+              if (sum > best) {
+                best = sum;
+                at = [x / W, y / H];
+              }
+            }
+          }
+          return at;
+        },
+        [withExplorer, skyOnly],
+      );
+      expect(Math.abs(peak[0]! - cx)).toBeLessThan(0.03);
+      expect(Math.abs(peak[1]! - cy)).toBeLessThan(0.03);
+    });
+  }
+
+  test('project pages keep the plain visit panel (no explorer yet)', async ({ page }) => {
+    await page.goto('/');
+    const first = await page.locator('#projects .row a').first().getAttribute('href');
+    await page.goto(first!, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2500);
+    await expect(page.locator('#hero canvas.system')).toHaveCount(0);
+    await expect(hero(page)).not.toHaveAttribute('data-explorer', /.+/);
+  });
+});
+
 test.describe('explorer with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 

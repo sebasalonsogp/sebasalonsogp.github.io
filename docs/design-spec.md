@@ -117,7 +117,19 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
 - Camera (ported from the concept's projection, `src/features/explorer/camera.ts`): focal
   length `min(0.95·H, 1.35·W)` px; explore pose yaw 0.7, pitch 0.4 (phone 0.62), distance
   `max(12, f·10.6 / (0.34·W))` (phone `f·7.9 / (0.47·W)`), system centre at 64% / 56% of the
-  hero (phone 50% / 68%) via `setViewOffset`. Phones are < 760 px wide.
+  hero (phone 50% / 68%) via `setViewOffset`. Phones are < 760 px wide. The fit radius scales
+  with the system's outer edge (×1.184 desktop, ×0.883 phone), so more projects zoom out.
+- Bodies (`src/features/explorer/system.ts`, `bodies.ts`, `shaders.ts`), from the page's
+  embedded project data: orbit `2.3 + 1.15·i` in last-commit order; starting angle
+  `2.2 + i·2.39996` (golden angle, ≈ the concept's hand-picked angles); Kepler speed
+  `0.32·r^-1.5`; radius `0.17 × size`; surface seed hashed from the project id; rings
+  (concept's nine bands) for live demos; one moon per subsystem; 340-grain belt from
+  last orbit + 1.2 to + 2.05 (grains ≥ 1 CSS px, since WebGL may drop smaller points). Planet
+  surfaces are the concept's noise recipes in GLSL, one program per domain (compile-time
+  define), with its lighting curve and domain rim light. Star: sprite, radius
+  `max(1.1 units, 26 px)`, halo ×3.4.
+- Project pages do not mount the explorer until Phase 4 can frame a visit (the system would
+  sit behind the visit panel's text).
 
 ## Visit and landing
 

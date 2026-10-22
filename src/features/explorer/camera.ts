@@ -6,9 +6,10 @@ import type { PerspectiveCamera } from 'three';
 
 export const PHONE_MAX_WIDTH = 760;
 const INITIAL_YAW = 0.7;
-/** Radius (scene units) the explore view keeps on screen: outer orbit plus the belt. */
-const SYSTEM_RADIUS_DESKTOP = 10.6;
-const SYSTEM_RADIUS_PHONE = 7.9;
+/** How much of the system (as a multiple of its outer edge) the explore view keeps in the
+ * available width. The concept fitted 10.6 / 7.9 units around a belt edge at 8.95. */
+const FRAME_DESKTOP = 10.6 / 8.95;
+const FRAME_PHONE = 7.9 / 8.95;
 const MIN_DISTANCE = 12;
 
 export interface CameraPose {
@@ -26,11 +27,12 @@ export function focalLength(width: number, height: number): number {
   return Math.min(height * 0.95, width * 1.35);
 }
 
-/** The resting "explore" view: whole system to the right on desktop, below the text on phones. */
-export function explorePose(width: number, height: number): CameraPose {
+/** The resting "explore" view: whole system to the right on desktop, below the text on phones.
+ * `extent` is the system's outer radius (the belt's outer edge). */
+export function explorePose(width: number, height: number, extent: number): CameraPose {
   const phone = width < PHONE_MAX_WIDTH;
   const available = (phone ? 0.47 : 0.34) * width;
-  const radius = phone ? SYSTEM_RADIUS_PHONE : SYSTEM_RADIUS_DESKTOP;
+  const radius = extent * (phone ? FRAME_PHONE : FRAME_DESKTOP);
   return {
     target: [0, 0, 0],
     yaw: INITIAL_YAW,

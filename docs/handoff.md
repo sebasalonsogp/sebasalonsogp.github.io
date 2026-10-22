@@ -4,9 +4,9 @@
 
 **Phase 1 is live** at https://sebasalonsogp.github.io/ (`noindex`) from `main` of the
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
-checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** slice 3.1
-(explorer scene shell) is done on branch `feat/explorer-shell`, not yet merged. Next is
-3.2 (bodies from data). Every push to `main` runs the CI checks and deploys only if they pass.
+checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** slices 3.1
+(scene shell) and 3.2 (bodies from data) are done on branches `feat/explorer-shell` →
+`feat/explorer-bodies`, not yet merged. Next is 3.3 (labels and interaction). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -124,11 +124,28 @@ content migrated; each validation rule was shown to fail the build when broken.
   no WebGL2 → chunk never fetched and the readable page stays. 30 tests × 3 browsers: 89
   passed, 1 skipped. Initial JS ~4 KB gzip; explorer chunk 129 KB gzip.
 
+## Slice 3.2 — bodies from data
+
+- The hero embeds the projects (orbit order) as JSON (`src/lib/system-data.ts`); the
+  explorer lays out star, orbits, planets, rings, moons and belt from it
+  (`system.ts` pure layout, `bodies.ts`, `shaders.ts`). Values in `docs/design-spec.md`.
+- Checked in the browser at 1440×900 and 390×844 against the concept: star at 64% / 56%
+  (phone 50% / 68%), five orbits, rings on the four live demos, Wine Journal's three moons,
+  belt. Surfaces inspected in a throwaway build with 6× planets (not committed): banded,
+  ice, rocky and ocean worlds lit from the star. No console messages in a fresh tab.
+- Performance (headed Chromium, RTX 2070): no dropped frames at the display's 165 Hz;
+  explorer capped at 60 fps; main thread ~1.2 ms per rendered frame (~4.4 ms at 4× CPU
+  throttle). Mid-range and phone GPUs still to confirm (Phase 8).
+- Project pages no longer mount the explorer until Phase 4 frames visits.
+- Tests: one planet per project in list order, star framing at desktop and phone (screenshot
+  difference with and without the canvas, blurred in JS so WebKit works), project pages
+  without the explorer. 34 tests × 3 browsers: 101 passed, 1 skipped.
+
 ## Next task
 
-Phase 3, slice 3.2 — bodies from data: star (Sebastian), orbits ordered by last commit,
-planet size from lines of code, procedural surfaces per domain, rings for live demos, moons
-for subsystems, outer belt; all from the collection and `src/data/github.json`.
+Phase 3, slice 3.3 — HTML labels over the canvas (collision-avoiding), drag to rotate, hover
+highlight, click to select, idle slow rotation (0.012 rad/s, feeds the sky's yaw parallax),
+project-list hover highlights the planet; labels and list stay real buttons/links.
 
 ## Open inputs and issues
 

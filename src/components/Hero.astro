@@ -1,12 +1,15 @@
 ---
 import { site } from '../data/site';
+import type { SystemProject } from '../features/explorer/system';
 
 interface Props {
   /** Project open on load (`/projects/<id>/`); its visit view is passed as the slot. */
   initialProject?: string | undefined;
+  /** Projects in orbit order for the explorer (built from the collection at compile time). */
+  system: SystemProject[];
 }
 
-const { initialProject } = Astro.props;
+const { initialProject, system } = Astro.props;
 ---
 
 <!-- The explorer canvas fills this section once loaded (after first paint, only with WebGL2);
@@ -18,6 +21,12 @@ const { initialProject } = Astro.props;
   data-initial-project={initialProject}
   data-explorer-root
 >
+  <script
+    is:inline
+    type="application/json"
+    data-explorer-system
+    set:html={JSON.stringify(system)}
+  />
   {initialProject ? (
     <div class="wrap visit-wrap">
       <slot />
@@ -43,7 +52,11 @@ const { initialProject } = Astro.props;
 
   // Three.js loads after the page has painted, so the hero text stays the largest paint, and
   // never loads without WebGL2: the readable hero and project list remain either way.
-  const hero = document.querySelector<HTMLElement>('[data-explorer-root]');
+  // Project pages keep the plain visit panel until the explorer can frame a visit (Phase 4);
+  // the system would otherwise sit behind the panel's text.
+  const hero = document.querySelector<HTMLElement>(
+    '[data-explorer-root]:not([data-initial-project])',
+  );
   if (hero) {
     if (!supportsWebGL2()) {
       hero.dataset.explorer = 'unavailable';

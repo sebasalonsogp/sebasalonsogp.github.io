@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../data/site';
 import { getEducation, getProjects, getRoles } from '../lib/content';
+import { toSystemProjects } from '../lib/system-data';
 import ContactSection from './ContactSection.astro';
 import ExperienceList from './ExperienceList.astro';
 import Hero from './Hero.astro';
@@ -40,7 +41,9 @@ const description = visit
 
 <BaseLayout title={title} description={description}>
   <SiteNav slot="header" />
-  <Hero initialProject={initialProject}>{visit && <ProjectVisit {...visit} />}</Hero>
+  <Hero initialProject={initialProject} system={toSystemProjects(projects)}>
+    {visit && <ProjectVisit {...visit} />}
+  </Hero>
   <ProjectList projects={projects} current={initialProject} />
   <ExperienceList roles={roles} education={education} />
   <SkillGroups projects={projects} roles={roles} />

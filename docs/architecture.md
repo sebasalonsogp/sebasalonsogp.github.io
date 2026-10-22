@@ -68,7 +68,7 @@ WebGL2 the chunk is never fetched and the hero reports `data-explorer="unavailab
 render loop reuses `ambientLoop` (60 fps, pauses when the hero is off screen or the tab is
 hidden, one still frame under reduced motion); context loss stops it and Three.js restores
 resources on `webglcontextrestored`. Measured: initial JS ~4 KB gzip; explorer chunk
-129 KB gzip (three 0.186.1).
+136 KB gzip with the bodies (three 0.186.1).
 
 ## Budgets
 
