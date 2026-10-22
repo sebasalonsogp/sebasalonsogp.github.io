@@ -20,9 +20,19 @@ test.describe('contact', () => {
       Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
     });
     await page.goto('/');
-    await copyButton(page).click();
-    await expect(status(page)).toHaveText(/^Selected\. Press (Ctrl\+C|⌘C) to copy\.$/);
-    expect(await page.evaluate(() => String(window.getSelection()))).toBe(await address(page));
+    await expect(copyButton(page)).toBeVisible();
+    // Click and read in one go: the status clears itself after 2.4 s, and a busy CI runner
+    // once took longer than that to look (the real click is covered by home.spec.ts).
+    const result = await page.evaluate(async () => {
+      document.querySelector<HTMLButtonElement>('[data-copy-email]')!.click();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return {
+        status: document.querySelector('[data-copy-status]')!.textContent,
+        selection: String(window.getSelection()),
+      };
+    });
+    expect(result.status).toMatch(/^Selected\. Press (Ctrl\+C|⌘C) to copy\.$/);
+    expect(result.selection).toBe(await address(page));
   });
 
   test('the resume card downloads the PDF and gives its size', async ({ page }) => {
