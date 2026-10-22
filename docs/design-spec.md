@@ -238,8 +238,23 @@ one-liner.
   into two lines). The SVG is never drawn narrower than its viewBox, so data labels are
   ≥ 12.8 px at 1440 px and 11 px minimum on phones, where the frame scrolls sideways (with
   "Swipe the timeline sideways →" below 992 px). Small text carries a void stroke halo
-  (`paint-order: stroke`). Until 5.2 makes roles selectable, the SVG is one `role="img"` with
-  a generated description and the scrolling frame is a focusable region.
+  (`paint-order: stroke`). Without JavaScript the SVG is one `role="img"` with a generated
+  description and the scrolling frame is a focusable region.
+- Selection, implemented in 5.2 (`src/features/timeline/selection.ts`): roles and the
+  college band become buttons (`aria-pressed`, `aria-controls` the list entry); the SVG
+  becomes a `group` and the frame stops being a tab stop. The details below the chart are
+  the readable list itself: only the selected entry shows (fading up 6 px over 380 ms,
+  instant with reduced motion), so there is one copy of the content and no-JS visitors still
+  get every entry. Starts on the role that ended last. Mouse hover and keyboard focus preview
+  roles; click, tap, Enter or Space select; the band responds to click and focus only (it
+  spans all of college, so hover would keep stealing the view). Tab order: band, then roles
+  by start. Selected bar 7 px, other roles at 0.86 opacity, band fill 10 %; focus shows a
+  dashed `--sol` outline round the role's hit area (labels included). A `#role-…` or
+  `#education-…` link selects that entry and scrolls to the chart. Each button's name starts
+  with its visible label and sublabel (one `<text>` with two `<tspan>` lines, so the visible
+  text reads as two phrases; WCAG 2.5.3), then the full title, organization and dates.
+  Skill tags link to `#skill-…`. "How to read this" sits in the section header (Lanes,
+  Lines, Band, Cone; `Section` gained an `aside` slot).
 
 ## Skills constellation
 
@@ -260,6 +275,7 @@ The timeline and constellation enhance these lists, which are always in the HTML
 - Experience: roles newest first, each with lane (eyebrow), title, org · place, dates ·
   duration, note, bullets, skill chips linking to `#skill-<name>`, and the optional link;
   then the education entry (school, place · honors · GPA, degrees, minor, coursework).
+  With JavaScript the timeline shows one entry at a time as its details (5.2).
 - Skills: Python under "Core", then each group's skills, most used first, with the use
   count (screen readers hear "used in N projects and M roles"); 3+ uses are bold. Header
   fact "35 skills from 5 projects and 7 roles" (derived).

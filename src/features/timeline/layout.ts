@@ -5,6 +5,7 @@
 
 import { lanes } from '../../data/taxonomy';
 import type { Education, Role } from '../../lib/content';
+import { formatMonth } from '../../lib/format';
 
 type Lane = keyof typeof lanes;
 
@@ -32,16 +33,21 @@ const LABEL_GAP = 12;
 
 export interface TimelineRole {
   id: string;
+  /** Accessible name: title, organization and dates. */
+  name: string;
   label: string;
   sublabel: string;
   highlight: boolean;
   x0: number;
   x1: number;
   y: number;
+  /** Width of the role's labels, so its hit area covers them. */
+  labelWidth: number;
 }
 
 export interface TimelineBand {
   id: string;
+  name: string;
   x0: number;
   x1: number;
   label: string;
@@ -61,6 +67,8 @@ export interface TimelineLayout {
   laneEnd: number;
   roles: TimelineRole[];
   bands: TimelineBand[];
+  /** The role that ended last (or is ongoing): selected first, and where now sits. */
+  latest: string;
   now: {
     x: number;
     y: number;
@@ -114,11 +122,12 @@ export function layoutTimeline(
     rows.set(data.lane, laneRows);
     let row = laneRows.findIndex((r) => data.start >= r.end && x0 >= r.labelEnd + LABEL_GAP);
     if (row === -1) row = laneRows.push({ end: '', labelEnd: 0 }) - 1;
-    laneRows[row] = {
-      end: data.end ?? '9999-12',
-      labelEnd: x0 + Math.max(data.label.length * LABEL_CHAR, data.sublabel.length * SUBLABEL_CHAR),
-    };
-    return { id, data, x0, row };
+    const labelWidth = Math.max(
+      data.label.length * LABEL_CHAR,
+      data.sublabel.length * SUBLABEL_CHAR,
+    );
+    laneRows[row] = { end: data.end ?? '9999-12', labelEnd: x0 + labelWidth };
+    return { id, data, x0, row, labelWidth };
   });
 
   // Lanes keep the taxonomy's order; empty lanes still show, so the chart's frame is stable.
@@ -132,14 +141,19 @@ export function layoutTimeline(
   const bottom = next - ROW + 22;
   const rowY = (lane: Lane, row: number) => laneRows.find((l) => l.lane === lane)!.y[row]!;
 
-  const timelineRoles: TimelineRole[] = placed.map(({ id, data, x0, row }) => ({
+  const timelineRoles: TimelineRole[] = placed.map(({ id, data, x0, row, labelWidth }) => ({
     id,
+    // Starts with the visible labels (WCAG 2.5.3), then the full title, organization and dates.
+    name: `${data.label}, ${data.sublabel}: ${data.title}, ${data.org}, ${formatMonth(
+      data.start,
+    )} to ${data.end === undefined ? 'present' : formatMonth(data.end)}`,
     label: data.label,
     sublabel: data.sublabel,
     highlight: data.highlight,
     x0,
     x1: x(endOf(data.end)),
     y: rowY(data.lane, row),
+    labelWidth,
   }));
 
   // Now sits on the row of the role that ended last (an ongoing role counts as now).
@@ -167,6 +181,7 @@ export function layoutTimeline(
     return [
       {
         id,
+        name: `${data.label}, ${data.sublabel}`,
         x0: Math.max(LEFT, x(toYears(data.start))),
         x1,
         label: data.label,
@@ -192,6 +207,7 @@ export function layoutTimeline(
     laneEnd: RIGHT,
     roles: timelineRoles,
     bands,
+    latest: latest.id,
     now: {
       x: nowX,
       y: nowY,

@@ -7,8 +7,8 @@ public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved th
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
 slices are live and the Phase 3 checkpoint is approved. **Phase 4 is live** (`main` c0151cb,
 deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 has
-started:** slice 5.1 (build-time timeline) is done on `feat/timeline`, not yet merged; next
-is 5.2 (selection and details). Every push to `main` runs the CI checks and deploys only if they pass.
+started:** slices 5.1 (build-time timeline) and 5.2 (selection) are done on `feat/timeline`,
+not yet merged; next is 5.3 (playback). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -260,12 +260,32 @@ content migrated; each validation rule was shown to fail the build when broken.
   × 3 browsers: 206 passed, 1 skipped (before a type fix in the new spec; the spec reran
   15/15 after it). `npm run verify` passes.
 
+## Slice 5.2 — selection, details, help
+
+- `src/features/timeline/selection.ts`; `ExperienceList.astro` wraps the list in a
+  `data-readout` element and adds the popover; `Section.astro` gained an `aside` slot.
+  Decision: the details are the selected list entry (others hidden with JS), not a second
+  copy. Rules in `docs/design-spec.md`.
+- Checked in the browser at 1440×900 (default selection, band click, hover, keyboard order,
+  popover) and with taps at 390×844 (details switch, frame starts at the latest role, no
+  page overflow). Found and fixed: the band stole the view on hover; Chromium made the SVG
+  itself a tab stop; axe `label-content-name-mismatch` (the two label lines read as one word,
+  so no name could match; now one `<text>` with two `<tspan>`s).
+- WebKit note: Playwright's auto-scroll to an SVG `<text>` measures it in the wrong place,
+  so tests point at a role's hit area by coordinates after scrolling the chart into view;
+  hit-testing itself is correct in WebKit.
+- Tests (`timeline.spec.ts`): buttons for every entry with label-in-name, default
+  selection, click role and band, hover previews roles not the band, keyboard focus order
+  and Enter, `#role-…` links, skill links resolve, popover terms and Escape; no-JS shows
+  every entry. 78 tests × 3 browsers: 230 passed, 1 skipped. `npm run verify` passes.
+
 ## Next task
 
-Phase 5, slice 5.2 — selection: roles and the college band become buttons that show their
-details below (lane, title, org · place, dates · duration, note, bullets, skill links to the
-constellation, link), "How to read this" popover (`HowToRead.astro`). Decide then how the
-readable list and the details relate (the concept shows only the selected role).
+Phase 5, slice 5.3 — playback: "Play the timeline" moves a cursor between role starts
+(0.9–2.6 s per segment), draws roles as it passes with riding dots, 4.6 s per role, then
+reveals now and the cone; stops on any interaction or Esc; phones follow the cursor.
+`enhanceTimeline` returns `select()` for it. Acceptance: chart, controls and details on one
+screen at 1440×900.
 
 ## Open inputs and issues
 

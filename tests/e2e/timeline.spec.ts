@@ -89,6 +89,11 @@ test.describe('experience timeline', () => {
       'aria-label',
       /roles are listed below/,
     );
+    // Every entry shows, and the scrolling frame is the keyboard's way to the picture.
+    for (const entry of await page.locator('[data-readout] .entry').all()) {
+      await expect(entry).toBeVisible();
+    }
+    await expect(page.locator('#experience .figwrap')).toHaveAttribute('tabindex', '0');
     await context.close();
   });
 
@@ -111,9 +116,16 @@ test.describe('experience timeline', () => {
     expect(await frame.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
     expect(await hasHorizontalScroll(page)).toBe(false);
     expect(await smallestText(page)).toBeGreaterThanOrEqual(11);
-    // The scrolling frame is reachable by keyboard, and the section passes axe there.
-    await frame.focus();
-    await expect(frame).toBeFocused();
+    // A focused role scrolls into the frame, and the section passes axe there.
+    const firstRole = page.locator('#experience [data-role]').first();
+    await firstRole.focus();
+    await expect(firstRole).toBeFocused();
+    await expect
+      .poll(async () => {
+        const [role, view] = await Promise.all([firstRole.boundingBox(), frame.boundingBox()]);
+        return role!.x >= view!.x - 1 && role!.x < view!.x + view!.width;
+      })
+      .toBe(true);
     const { violations } = await new AxeBuilder({ page })
       .include('#experience')
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
@@ -122,12 +134,137 @@ test.describe('experience timeline', () => {
   });
 });
 
+test.describe('timeline selection', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+  });
+
+  const shownEntries = (page: Page) =>
+    page
+      .locator('[data-readout] .entry')
+      .evaluateAll((entries) => entries.filter((e) => !(e as HTMLElement).hidden).map((e) => e.id));
+  const button = (page: Page, entryId: string) =>
+    page.locator(`#experience [data-entry="${entryId}"]`);
+  /**
+   * Centre of a role's hit area, with the chart in view. Pointing by coordinates: Playwright's
+   * own scrolling to an SVG <text> in WebKit measures the text in the wrong place.
+   */
+  const roleTarget = async (page: Page, entryId: string) => {
+    await page
+      .locator('#experience svg')
+      .evaluate((svg) => svg.scrollIntoView({ block: 'center' }));
+    const box = (await button(page, entryId).locator('.hit').boundingBox())!;
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  };
+
+  test('roles and the band become buttons for their list entries', async ({ page }) => {
+    await expect(page.locator('#experience svg')).toHaveAttribute('role', 'group');
+    const buttons = page.locator('#experience [data-entry]');
+    const ids = await page
+      .locator('[data-readout] .entry')
+      .evaluateAll((entries) => entries.map((e) => e.id));
+    expect(await buttons.count()).toBe(ids.length);
+    for (const b of await buttons.all()) {
+      await expect(b).toHaveAttribute('role', 'button');
+      await expect(b).toHaveAttribute('tabindex', '0');
+      // The name starts with what the button shows (WCAG 2.5.3, label in name).
+      const visible = (await b.locator('tspan').allTextContents()).join(', ');
+      expect((await b.getAttribute('aria-label'))!.startsWith(visible)).toBe(true);
+      expect(ids).toContain(await b.getAttribute('aria-controls'));
+    }
+  });
+
+  test('starts on the role that ended last, alone below the chart', async ({ page }) => {
+    const latest = await page.locator('#experience [data-role]').evaluateAll((groups) => {
+      const end = (g: Element) => Number(g.querySelector('.bar')!.getAttribute('x2'));
+      return groups.reduce((a, b) => (end(b) >= end(a) ? b : a)).getAttribute('data-entry');
+    });
+    expect(await shownEntries(page)).toEqual([latest]);
+    await expect(button(page, latest!)).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('clicking a role or the band shows its entry', async ({ page }) => {
+    const [role] = await page
+      .locator('#experience [data-role]')
+      .evaluateAll((groups) => groups.map((g) => g.getAttribute('data-entry')!));
+    const target = await roleTarget(page, role!);
+    await page.mouse.click(target.x, target.y);
+    expect(await shownEntries(page)).toEqual([role]);
+    await expect(button(page, role!)).toHaveAttribute('aria-pressed', 'true');
+
+    const band = await page
+      .locator('#experience [data-entry^="education-"]')
+      .first()
+      .getAttribute('data-entry');
+    test.skip(!band, 'No education band');
+    const bandBox = (await page.locator('#experience .band').first().boundingBox())!;
+    // An empty spot in the band, below the lowest lane's labels.
+    await page.mouse.click(bandBox.x + 12, bandBox.y + bandBox.height - 4);
+    expect(await shownEntries(page)).toEqual([band]);
+    await expect(button(page, role!)).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('hovering previews roles, not the band', async ({ page }) => {
+    const roles = await page
+      .locator('#experience [data-role]')
+      .evaluateAll((groups) => groups.map((g) => g.getAttribute('data-entry')!));
+    const target = await roleTarget(page, roles[1]!);
+    await page.mouse.move(target.x, target.y);
+    expect(await shownEntries(page)).toEqual([roles[1]]);
+    const bandBox = (await page.locator('#experience .band').first().boundingBox())!;
+    await page.mouse.move(bandBox.x + 12, bandBox.y + bandBox.height - 4);
+    expect(await shownEntries(page)).toEqual([roles[1]]);
+  });
+
+  test('keyboard focus previews each item and Enter keeps it', async ({ page }) => {
+    const order = await page
+      .locator('#experience [data-entry]')
+      .evaluateAll((items) => items.map((i) => i.getAttribute('data-entry')!));
+    await page.locator('#experience summary').focus();
+    for (const id of order) {
+      await page.keyboard.press('Tab');
+      await expect(button(page, id)).toBeFocused();
+      expect(await shownEntries(page)).toEqual([id]);
+    }
+    await page.keyboard.press('Enter');
+    await expect(button(page, order.at(-1)!)).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('a link to a role selects it', async ({ page }) => {
+    const roles = await page
+      .locator('#experience [data-role]')
+      .evaluateAll((groups) => groups.map((g) => g.getAttribute('data-entry')!));
+    await page.evaluate((id) => (window.location.hash = id), roles[0]!);
+    await expect.poll(() => shownEntries(page)).toEqual([roles[0]]);
+    await expect(page.locator('#experience svg')).toBeInViewport();
+  });
+
+  test('skill tags in the details lead to the skill', async ({ page }) => {
+    const chips = page.locator('[data-readout] .entry:not([hidden]) .chip');
+    expect(await chips.count()).toBeGreaterThan(0);
+    for (const chip of await chips.all()) {
+      const href = (await chip.getAttribute('href'))!;
+      await expect(page.locator(href)).toHaveCount(1);
+    }
+  });
+
+  test('"How to read this" explains the chart', async ({ page }) => {
+    const popover = page.locator('#experience [data-how-to-read]');
+    await popover.locator('summary').click();
+    await expect(popover.locator('dt')).toHaveText(['Lanes', 'Lines', 'Band', 'Cone']);
+    await page.keyboard.press('Escape');
+    await expect(popover).not.toHaveAttribute('open', '');
+    await expect(popover.locator('summary')).toBeFocused();
+  });
+});
+
 /** Smallest rendered font size (CSS px) of any text in the chart. */
 function smallestText(page: Page) {
   return page.locator('#experience svg').evaluate((svg) => {
     const scale = svg.getBoundingClientRect().width / (svg as SVGSVGElement).viewBox.baseVal.width;
     return Math.min(
-      ...[...svg.querySelectorAll('text')].map(
+      ...[...svg.querySelectorAll('text, tspan')].map(
         (text) => parseFloat(getComputedStyle(text).fontSize) * scale,
       ),
     );

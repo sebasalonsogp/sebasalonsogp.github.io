@@ -4,6 +4,7 @@ import type { Education, Role } from '../lib/content';
 import { formatMonth, formatSpan, skillAnchor } from '../lib/format';
 import ExperienceTimeline from './ExperienceTimeline.astro';
 import ExternalLink from './ExternalLink.astro';
+import HowToRead from './HowToRead.astro';
 import Section from './Section.astro';
 
 interface Props {
@@ -13,74 +14,84 @@ interface Props {
 
 const { roles, education } = Astro.props;
 const newestFirst = [...roles].reverse();
+const key = [
+  { term: 'Lanes', detail: 'Each row is a kind of work' },
+  { term: 'Lines', detail: 'A role, drawn for as long as it lasted. Overlapping roles stack.' },
+  { term: 'Band', detail: 'College. Select it for degree details.' },
+  { term: 'Cone', detail: 'The future light cone: roles still ahead' },
+];
 ---
 
 <Section id="experience" title="Experience">
+  <HowToRead slot="aside" items={key} />
   <ExperienceTimeline roles={roles} education={education} />
-  <ol class="roles">
-    {newestFirst.map(({ id, data }) => (
-      <li class="entry" id={`role-${id}`}>
-        <div class="meta">
-          <p class="eyebrow">{lanes[data.lane]}</p>
-          <h3>{data.title}</h3>
-          <p class="org">
-            {data.org} · {data.place}
-          </p>
-          <p class="mono">{formatSpan(data.start, data.end)}</p>
-        </div>
-        <div class="detail">
-          {data.note && <p class="note">{data.note}</p>}
-          <ul class="bullets">
-            {data.bullets.map((bullet) => (
-              <li>{bullet}</li>
-            ))}
-          </ul>
-          {data.skills.length > 0 && (
-            <ul class="chips" aria-label="Skills">
-              {data.skills.map((skill) => (
-                <li>
-                  <a class="chip" href={`#${skillAnchor(skill)}`}>
-                    {skill}
-                  </a>
-                </li>
+  <!-- Every entry shows without JavaScript; the timeline then shows only the selected one. -->
+  <div class="readout" data-readout>
+    <ol class="roles">
+      {newestFirst.map(({ id, data }) => (
+        <li class="entry" id={`role-${id}`}>
+          <div class="meta">
+            <p class="eyebrow">{lanes[data.lane]}</p>
+            <h3>{data.title}</h3>
+            <p class="org">
+              {data.org} · {data.place}
+            </p>
+            <p class="mono">{formatSpan(data.start, data.end)}</p>
+          </div>
+          <div class="detail">
+            {data.note && <p class="note">{data.note}</p>}
+            <ul class="bullets">
+              {data.bullets.map((bullet) => (
+                <li>{bullet}</li>
               ))}
             </ul>
-          )}
-          {data.link && (
-            <p class="link">
-              <ExternalLink href={data.link.url}>{data.link.label} ↗</ExternalLink>
-            </p>
+            {data.skills.length > 0 && (
+              <ul class="chips" aria-label="Skills">
+                {data.skills.map((skill) => (
+                  <li>
+                    <a class="chip" href={`#${skillAnchor(skill)}`}>
+                      {skill}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {data.link && (
+              <p class="link">
+                <ExternalLink href={data.link.url}>{data.link.label} ↗</ExternalLink>
+              </p>
+            )}
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    {education.map(({ id, data }) => (
+      <div class="entry education" id={`education-${id}`}>
+        <div class="meta">
+          <p class="eyebrow">Education</p>
+          <h3>{data.school}</h3>
+          <p class="org">
+            {[data.place, data.honors, data.gpa && `GPA ${data.gpa}`].filter(Boolean).join(' · ')}
+          </p>
+          <p class="mono">
+            {formatMonth(data.start)} – {formatMonth(data.end)}
+          </p>
+        </div>
+        <div class="detail">
+          <ul class="bullets">
+            {data.degrees.map((degree) => (
+              <li>{degree}</li>
+            ))}
+            {data.minor && <li>Minor in {data.minor.toLowerCase()}</li>}
+          </ul>
+          {data.coursework.length > 0 && (
+            <p class="note">Coursework: {data.coursework.join(', ')}.</p>
           )}
         </div>
-      </li>
+      </div>
     ))}
-  </ol>
-
-  {education.map(({ id, data }) => (
-    <div class="entry education" id={`education-${id}`}>
-      <div class="meta">
-        <p class="eyebrow">Education</p>
-        <h3>{data.school}</h3>
-        <p class="org">
-          {[data.place, data.honors, data.gpa && `GPA ${data.gpa}`].filter(Boolean).join(' · ')}
-        </p>
-        <p class="mono">
-          {formatMonth(data.start)} – {formatMonth(data.end)}
-        </p>
-      </div>
-      <div class="detail">
-        <ul class="bullets">
-          {data.degrees.map((degree) => (
-            <li>{degree}</li>
-          ))}
-          {data.minor && <li>Minor in {data.minor.toLowerCase()}</li>}
-        </ul>
-        {data.coursework.length > 0 && (
-          <p class="note">Coursework: {data.coursework.join(', ')}.</p>
-        )}
-      </div>
-    </div>
-  ))}
+  </div>
 </Section>
 
 <style>
@@ -102,6 +113,12 @@ const newestFirst = [...roles].reverse();
   .roles > .entry:first-child {
     border-top: 0;
     padding-top: 0;
+  }
+
+  /* One entry at a time below the chart (src/features/timeline/selection.ts). */
+  .readout[data-single] .entry {
+    padding: 20px 0 0;
+    border-top: 1px solid var(--rule);
   }
 
   .meta p {

@@ -49,7 +49,7 @@ before ending a session.
 ## Phase 5 — Experience timeline
 
 - [x] 5.1 Build-time SVG timeline.
-- [ ] 5.2 Selection, details, skill links, help popover.
+- [x] 5.2 Selection, details, skill links, help popover.
 - [ ] 5.3 Playback.
 
 ## Phase 6 — Skills constellation

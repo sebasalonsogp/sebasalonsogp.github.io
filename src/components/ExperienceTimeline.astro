@@ -1,7 +1,8 @@
 ---
 // The experience worldline (docs/design-spec.md, "Experience timeline"), drawn at build time
 // from the experience and education collections. The list below it carries the same
-// information for screen readers and anyone who prefers text.
+// information; with JavaScript, roles and the college band become buttons that show their
+// entry from that list (src/features/timeline/selection.ts).
 import { site } from '../data/site';
 import { layoutTimeline } from '../features/timeline/layout';
 import type { Education, Role } from '../lib/content';
@@ -25,7 +26,14 @@ const coneX = t.now.x + t.now.cone.width;
 <div class="timeline">
   <p class="swipe-hint">Swipe the timeline sideways →</p>
   <div class="figwrap" tabindex="0" role="region" aria-label="Experience timeline">
-    <svg class="wl" viewBox={`0 0 ${t.width} ${t.height}`} role="img" aria-label={description}>
+    <svg
+      class="wl"
+      viewBox={`0 0 ${t.width} ${t.height}`}
+      role="img"
+      aria-label={description}
+      data-timeline
+      data-default={`role-${t.latest}`}
+    >
       {t.years.map(({ year, x }) => (
         <>
           <line class="grid" x1={x} y1={t.top - 4} x2={x} y2={t.bottom} />
@@ -37,7 +45,7 @@ const coneX = t.now.x + t.now.cone.width;
       <line class="axis" x1={t.left} y1={t.axis.y} x2={t.axis.x1} y2={t.axis.y} />
 
       {t.bands.map((band) => (
-        <g class="edu" data-education={band.id}>
+        <g class="edu" data-entry={`education-${band.id}`} aria-label={band.name}>
           <rect
             class="band"
             x={band.x0}
@@ -45,11 +53,14 @@ const coneX = t.now.x + t.now.cone.width;
             width={band.x1 - band.x0}
             height={t.bottom - t.top}
           />
-          <text class="cold" x={band.x0 + 8} y={t.bottom + 20}>
-            {band.label}
-          </text>
-          <text class="cold" x={band.x0 + 8} y={t.bottom + 35}>
-            {band.sublabel}
+          {/* One text with a space between the lines, so it reads as two phrases. */}
+          <text class="cold">
+            <tspan x={band.x0 + 8} y={t.bottom + 20}>
+              {band.label}
+            </tspan>{' '}
+            <tspan x={band.x0 + 8} y={t.bottom + 35}>
+              {band.sublabel}
+            </tspan>
           </text>
           <line class="grad" x1={band.x1} y1={t.top} x2={band.x1} y2={t.bottom + 6} />
         </g>
@@ -90,19 +101,45 @@ const coneX = t.now.x + t.now.cone.width;
       </g>
 
       {t.roles.map((role) => (
-        <g class:list={['wr', { hl: role.highlight }]} data-role={role.id}>
+        <g
+          class:list={['wr', { hl: role.highlight }]}
+          data-role={role.id}
+          data-entry={`role-${role.id}`}
+          aria-label={role.name}
+        >
+          <rect
+            class="hit"
+            x={role.x0 - 8}
+            y={role.y - 26}
+            width={Math.max(role.x1 - role.x0, role.labelWidth) + 16}
+            height="50"
+            rx="3"
+          />
           <line class="bar" x1={role.x0} y1={role.y} x2={role.x1} y2={role.y} />
-          <text class="lab" x={role.x0} y={role.y - 10}>
-            {role.label}
-          </text>
-          <text class="sub" x={role.x0} y={role.y + 19}>
-            {role.sublabel}
+          {/*
+            One text with a space between the lines, so its visible text reads "label sublabel"
+            and the button's name can start with it (WCAG 2.5.3).
+          */}
+          <text>
+            <tspan class="lab" x={role.x0} y={role.y - 10}>
+              {role.label}
+            </tspan>{' '}
+            <tspan class="sub" x={role.x0} y={role.y + 19}>
+              {role.sublabel}
+            </tspan>
           </text>
         </g>
       ))}
     </svg>
   </div>
 </div>
+
+<script>
+  import { enhanceTimeline } from '../features/timeline/selection';
+
+  const section = document.querySelector<HTMLElement>('#experience');
+  if (section) enhanceTimeline(section);
+</script>
 
 <style>
   .timeline {
@@ -244,6 +281,54 @@ const coneX = t.now.x + t.now.cone.width;
 
   .wr.hl .bar {
     stroke: var(--sol);
+  }
+
+  /* Invisible but hit-testable, so a role's labels and the space around its bar select it. */
+  .hit {
+    fill: transparent;
+    stroke: none;
+    pointer-events: all;
+  }
+
+  /* Selection (selection.ts turns the picture into a group of buttons). */
+  .wl[role='group'] [data-entry] {
+    cursor: pointer;
+  }
+
+  .wl [data-entry]:focus {
+    outline: none;
+  }
+
+  .wl [data-entry]:focus-visible .hit,
+  .edu:focus-visible .band {
+    stroke: var(--sol);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 3;
+  }
+
+  .wr {
+    transition: opacity var(--dur-base) ease;
+  }
+
+  .bar {
+    transition: stroke-width var(--dur-base) ease;
+  }
+
+  .band {
+    transition: fill-opacity var(--dur-fast) ease;
+  }
+
+  .wr.is-selected .bar {
+    stroke-width: 7;
+  }
+
+  .wl.has-selection .wr:not(.is-selected) {
+    opacity: 0.86;
+  }
+
+  .wl[role='group'] .edu:hover .band,
+  .edu.is-selected .band {
+    fill-opacity: 0.1;
   }
 
   /* The figure's frame is 960 px plus the gutters; below that it scrolls. */
