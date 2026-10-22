@@ -21,3 +21,40 @@ export async function open(page: Page, path: string) {
 export function hasHorizontalScroll(page: Page): Promise<boolean> {
   return page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
 }
+
+/**
+ * Makes WebGL2 unavailable for the page, so the 3D scene never loads and the static page
+ * (the no-WebGL fallback) is what the visitor gets.
+ */
+export async function withoutWebGL2(page: Page) {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      type: string,
+      ...rest: unknown[]
+    ) {
+      if (type === 'webgl2') return null;
+      return (original as (...args: unknown[]) => unknown).call(this, type, ...rest);
+    } as typeof HTMLCanvasElement.prototype.getContext;
+  });
+}
+
+/**
+ * Waits until the page has settled: the explorer has finished loading (or is unavailable) and,
+ * during a visit, the panel has finished fading in. Scans of a half-faded panel would measure
+ * contrast for text no visitor sees.
+ */
+export async function settled(page: Page) {
+  await page.waitForFunction(
+    () => {
+      const hero = document.querySelector<HTMLElement>('#hero');
+      if (!hero || hero.dataset.explorer === 'loading') return false;
+      if (hero.dataset.mode === 'flying' || hero.dataset.mode === 'returning') return false;
+      const panel = document.querySelector('.explorer-visit.is-open');
+      return !panel || getComputedStyle(panel).opacity === '1';
+    },
+    null,
+    { timeout: 15_000 },
+  );
+}

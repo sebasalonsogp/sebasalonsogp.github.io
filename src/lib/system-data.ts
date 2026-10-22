@@ -1,5 +1,5 @@
 import { getImage } from 'astro:assets';
-import { site } from '../data/site';
+import { homeTitle, site } from '../data/site';
 import type { SystemData, SystemMedia, SystemProject } from '../features/explorer/system';
 import type { Project } from './content';
 import { withBase } from './format';
@@ -39,6 +39,9 @@ export async function toSystemData(projects: readonly Project[]): Promise<System
   const span = from === to ? String(from) : `${from}–${String(to).slice(-2)}`;
   return {
     star: site.name.split(' ')[0]!,
+    homeHref: withBase(''),
+    homeTitle,
+    siteName: site.name,
     earlierWork: years.length ? `Earlier work · ${span}` : '',
     projects: await Promise.all(
       projects.map(async ({ id, data, github, media }): Promise<SystemProject> => ({

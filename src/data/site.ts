@@ -74,3 +74,7 @@ export const site: Site = siteSchema.parse({
     { name: 'ZoomAutoBot', url: 'https://github.com/sebasalonsogp/ZoomAutoBot', year: 2023 },
   ],
 });
+
+/** Document titles, shared by the static pages and the explorer's in-page visits. */
+export const homeTitle = `${site.name} — Backend and ML systems engineer`;
+export const projectTitle = (title: string) => `${title} — ${site.name}`;

@@ -1,7 +1,9 @@
 // Explorer: renderer, camera, resize, render loop that pauses when the hero is off screen or
 // the tab is hidden, context-loss handling and disposal; the system's bodies built from the
 // page's data; HTML labels; drag to turn, hover, idle drift; and visits (Phase 4.1):
-// explore → flying → visit → returning, with an in-page visit panel.
+// explore → flying → visit → returning, with an in-page visit panel; and routes (Phase 4.3):
+// visits are /projects/<id>/ URLs, Back and Forward drive the scene, and loading a project
+// URL opens that visit without a fly-in.
 // The hero reports `data-explorer` (loading | running | paused | static | unavailable) and
 // `data-mode` (explore | flying | visit | returning).
 
@@ -73,10 +75,20 @@ interface Drag {
   mouse: boolean;
 }
 
-function readSystem(hero: HTMLElement): SystemData {
+function readSystem(hero: HTMLElement): SystemData | null {
   const source = hero.querySelector('script[data-explorer-system]')?.textContent;
-  return source ? (JSON.parse(source) as SystemData) : { star: '', earlierWork: '', projects: [] };
+  return source ? (JSON.parse(source) as SystemData) : null;
 }
+
+/** History entry state written by the explorer. */
+interface RouteState {
+  project: string | null;
+  /** The visit was opened from the home entry, so leaving it can step back in history. */
+  fromHome?: boolean;
+}
+
+const routeState = () => (history.state ?? {}) as Partial<RouteState>;
+const normalizePath = (path: string) => (path.endsWith('/') ? path : `${path}/`);
 
 /** A plain left click, not one meant to open the link in a new tab or window. */
 const isPlainClick = (event: MouseEvent) =>
@@ -90,6 +102,12 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   const setState = (state: string) => {
     hero.dataset.explorer = state;
   };
+
+  const data = readSystem(hero);
+  if (!data) {
+    setState('unavailable');
+    return null;
+  }
 
   const canvas = document.createElement('canvas');
   canvas.className = 'system';
@@ -110,8 +128,27 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   renderer.setClearColor(0x000000, 0);
   hero.prepend(canvas);
 
-  const data = readSystem(hero);
   const projects = data.projects;
+  const homeHref = data.homeHref;
+  const pathOf = (href: string) => normalizePath(new URL(href, window.location.href).pathname);
+  const homePath = pathOf(data.homeHref);
+  const idByPath = new Map(projects.map((p) => [pathOf(p.href), p.id]));
+  const routeId = () => idByPath.get(normalizePath(window.location.pathname)) ?? null;
+  const rowLinks = new Map(
+    [...document.querySelectorAll<HTMLElement>('[data-project-row]')].map((row) => [
+      row.dataset.projectRow!,
+      row.querySelector<HTMLAnchorElement>('a'),
+    ]),
+  );
+  /** Keeps the page title and the list's current row in step with the visit. */
+  const showRoute = (id: string | null) => {
+    const project = id ? projects[indexOf.get(id) ?? -1] : undefined;
+    document.title = project ? `${project.title} — ${data.siteName}` : data.homeTitle;
+    for (const [key, link] of rowLinks) {
+      if (key === id) link?.setAttribute('aria-current', 'page');
+      else link?.removeAttribute('aria-current');
+    }
+  };
   const indexOf = new Map(projects.map((p, i) => [p.id, i]));
   const scene = new Scene();
   const camera = new PerspectiveCamera();
@@ -287,7 +324,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   });
   const landing = createLanding(hero, panel.media);
 
-  const startTransition = (kind: Transition['kind'], id?: string) => {
+  const startTransition = (kind: Transition['kind'], id?: string, instant = false) => {
     const hop = kind === 'planet' && (mode === 'visit' || mode === 'flying') && current !== id;
     const yawTo = kind === 'planet' && id ? yawFor(visitPoseNow(id).target, cam.yaw) : cam.yaw;
     transition = {
@@ -295,20 +332,46 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       from: { ...cam, target: [...cam.target] as [number, number, number] },
       yawTo,
       start: performance.now(),
-      duration: reducedMotion.matches ? 0 : hop ? HOP_MS : kind === 'planet' ? FLY_MS : RETURN_MS,
+      duration:
+        instant || reducedMotion.matches
+          ? 0
+          : hop
+            ? HOP_MS
+            : kind === 'planet'
+              ? FLY_MS
+              : RETURN_MS,
       hop,
     };
     setMode(kind === 'planet' ? 'flying' : 'returning');
     invalidate();
   };
 
-  const visit = (id: string, options: { returnTo?: HTMLElement | null; focus?: boolean } = {}) => {
+  interface VisitOptions {
+    returnTo?: HTMLElement | null;
+    focus?: boolean;
+    /** push a new entry (default), replace the current one (hops), or leave history alone. */
+    history?: 'push' | 'replace' | 'none';
+    /** Arrive without flying (direct loads). */
+    instant?: boolean;
+  }
+
+  const visit = (id: string, options: VisitOptions = {}) => {
     const project = projects[indexOf.get(id) ?? -1];
     if (!project) return;
-    if (mode === 'explore' || mode === 'returning') {
-      returnTo = options.returnTo ?? (document.activeElement as HTMLElement | null);
+    const fromExplore = mode === 'explore' || mode === 'returning';
+    if (fromExplore) returnTo = options.returnTo ?? (document.activeElement as HTMLElement | null);
+    const how = options.history ?? 'push';
+    if (how === 'push') {
+      const state: RouteState = {
+        project: id,
+        fromHome: fromExplore && normalizePath(window.location.pathname) === homePath,
+      };
+      history.pushState(state, '', project.href);
+    } else if (how === 'replace') {
+      history.replaceState({ ...routeState(), project: id }, '', project.href);
     }
-    startTransition('planet', id);
+    showRoute(id);
+    startTransition('planet', id, options.instant);
     current = id;
     hoverId = null;
     canvas.classList.remove('is-over-planet');
@@ -321,8 +384,21 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     if (options.focus !== false) panel.focusTitle();
   };
 
-  function back() {
+  /**
+   * Returns to the system. From the page's own controls (`history: 'auto'`) it steps back
+   * through history when the visit came from the home entry (so the history stays clean),
+   * otherwise it pushes the home URL; popstate calls it with `history: 'none'`.
+   */
+  function back(options: { history?: 'auto' | 'none' } = {}) {
     if (mode !== 'visit' && mode !== 'flying') return;
+    if ((options.history ?? 'auto') === 'auto') {
+      if (routeState().fromHome) {
+        history.back();
+        return;
+      }
+      history.pushState({ project: null } satisfies RouteState, '', homeHref);
+    }
+    showRoute(null);
     startTransition('explore');
     current = null;
     labels.setVisible(true);
@@ -339,7 +415,9 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   function step(direction: 1 | -1) {
     if (!current) return;
     const i = indexOf.get(current) ?? 0;
-    visit(projects[(i + direction + projects.length) % projects.length]!.id);
+    visit(projects[(i + direction + projects.length) % projects.length]!.id, {
+      history: 'replace',
+    });
   }
 
   const onKey = (event: KeyboardEvent) => {
@@ -350,6 +428,17 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
     back();
   };
   document.addEventListener('keydown', onKey);
+
+  // Back and Forward drive the scene.
+  const onPopState = () => {
+    const id = routeId();
+    if (id) {
+      if (id !== current || mode === 'returning') visit(id, { history: 'none' });
+    } else {
+      back({ history: 'none' });
+    }
+  };
+  window.addEventListener('popstate', onPopState);
 
   // Planet labels and project rows open the visit in place; modified clicks keep the link.
   const onLabelClick = (event: MouseEvent) => {
@@ -510,8 +599,21 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   canvas.addEventListener('webglcontextlost', onLost);
   canvas.addEventListener('webglcontextrestored', onRestored);
 
+  // A project URL loaded directly: hand the static visit over to the explorer and open that
+  // visit without flying (and without moving focus on page load).
+  const initial = hero.dataset.initialProject;
+  if (initial && indexOf.has(initial)) {
+    hero.classList.remove('visiting');
+    hero.setAttribute('aria-labelledby', 'hero-heading');
+  }
   resize();
   cam = explorePoseNow();
+  if (initial && indexOf.has(initial)) {
+    history.replaceState({ project: initial, fromHome: false } satisfies RouteState, '');
+    visit(initial, { history: 'none', focus: false, instant: true });
+  } else {
+    history.replaceState({ project: null } satisfies RouteState, '');
+  }
   loop.kick();
 
   return {
@@ -522,6 +624,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       visibility.disconnect();
       size.disconnect();
       document.removeEventListener('keydown', onKey);
+      window.removeEventListener('popstate', onPopState);
       hero.removeEventListener('click', onLabelClick);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);

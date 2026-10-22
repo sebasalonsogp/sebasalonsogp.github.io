@@ -1,20 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { hasHorizontalScroll, open, projectPaths } from './helpers';
+import { hasHorizontalScroll, open, projectPaths, withoutWebGL2 } from './helpers';
 
 test.describe('project routes', () => {
   test('without the 3D scene, each project row opens its page', async ({ page }) => {
     // With WebGL2 the row opens the visit in place (visit.spec.ts); without it, the link.
-    await page.addInitScript(() => {
-      const original = HTMLCanvasElement.prototype.getContext;
-      HTMLCanvasElement.prototype.getContext = function (
-        this: HTMLCanvasElement,
-        type: string,
-        ...rest: unknown[]
-      ) {
-        if (type === 'webgl2') return null;
-        return (original as (...args: unknown[]) => unknown).call(this, type, ...rest);
-      } as typeof HTMLCanvasElement.prototype.getContext;
-    });
+    await withoutWebGL2(page);
     const paths = await projectPaths(page);
     expect(paths.length).toBeGreaterThan(0);
 
@@ -28,8 +18,12 @@ test.describe('project routes', () => {
     await expect(page.locator('h1')).toHaveText(title);
   });
 
-  test('every project page loads directly with its visit open', async ({ page }) => {
+  // Without WebGL2 the static page is the visit (with it, the explorer takes over: visit.spec).
+  test('without the 3D scene, every project page loads directly with its visit open', async ({
+    page,
+  }) => {
     test.slow();
+    await withoutWebGL2(page);
     for (const path of await projectPaths(page)) {
       const id = path.split('/').filter(Boolean).pop()!;
       const response = await open(page, path);
@@ -52,8 +46,11 @@ test.describe('project routes', () => {
     }
   });
 
-  test('next links visit every project once and wrap around', async ({ page }) => {
+  test('without the 3D scene, next links visit every project once and wrap around', async ({
+    page,
+  }) => {
     test.slow();
+    await withoutWebGL2(page);
     const paths = await projectPaths(page);
     await open(page, paths[0]!);
     const visited: string[] = [];
@@ -67,8 +64,9 @@ test.describe('project routes', () => {
     expect(visited.sort()).toEqual([...paths].sort());
   });
 
-  test('project media loads', async ({ page }) => {
+  test('without the 3D scene, project media loads', async ({ page }) => {
     test.slow();
+    await withoutWebGL2(page);
     for (const path of await projectPaths(page)) {
       await open(page, path);
       for (const img of await page.locator('.visit img').all()) {

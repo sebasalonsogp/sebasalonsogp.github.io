@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { withoutWebGL2 } from './helpers';
 
 const EXPLORER_CHUNK = /\/_astro\/explorer\.[^/]+\.js$/;
 
@@ -177,15 +178,6 @@ test.describe('explorer system', () => {
       expect(Math.abs(peak[1]! - cy)).toBeLessThan(0.03);
     });
   }
-
-  test('project pages keep the plain visit panel (no explorer yet)', async ({ page }) => {
-    await page.goto('/');
-    const first = await page.locator('#projects .row a').first().getAttribute('href');
-    await page.goto(first!, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2500);
-    await expect(page.locator('#hero canvas.system')).toHaveCount(0);
-    await expect(hero(page)).not.toHaveAttribute('data-explorer', /.+/);
-  });
 });
 
 test.describe('explorer labels and interaction', () => {
@@ -294,19 +286,7 @@ test.describe('explorer with reduced motion', () => {
 });
 
 test.describe('explorer without WebGL2', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      const original = HTMLCanvasElement.prototype.getContext;
-      HTMLCanvasElement.prototype.getContext = function (
-        this: HTMLCanvasElement,
-        type: string,
-        ...rest: unknown[]
-      ) {
-        if (type === 'webgl2') return null;
-        return (original as (...args: unknown[]) => unknown).call(this, type, ...rest);
-      } as typeof HTMLCanvasElement.prototype.getContext;
-    });
-  });
+  test.beforeEach(async ({ page }) => withoutWebGL2(page));
 
   test('never downloads Three.js and keeps the readable hero and list', async ({ page }) => {
     const chunkRequests: string[] = [];

@@ -183,6 +183,7 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
   poster only with reduced motion. The lightbox is a native modal `<dialog>` (focus stays
   inside, page inert, scroll locked), Close / arrows / ← → keys; Escape closes it before
   leaving the visit; focus returns to the screen.
+- Routes (4.3): see `docs/architecture.md`, "Page and route model".
 
 ## Project pages (readable visit)
 

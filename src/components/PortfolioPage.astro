@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { site } from '../data/site';
+import { homeTitle, projectTitle, site } from '../data/site';
 import { getEducation, getProjects, getRoles } from '../lib/content';
 import { toSystemData } from '../lib/system-data';
 import ContactSection from './ContactSection.astro';
@@ -31,9 +31,7 @@ const visit = index >= 0 && {
   total: projects.length,
 };
 
-const title = visit
-  ? `${visit.project.data.title} — ${site.name}`
-  : `${site.name} — Backend and ML systems engineer`;
+const title = visit ? projectTitle(visit.project.data.title) : homeTitle;
 const description = visit
   ? visit.project.data.summary
   : `${site.pitch.lead} ${site.pitch.emphasis} ${site.lede}`;

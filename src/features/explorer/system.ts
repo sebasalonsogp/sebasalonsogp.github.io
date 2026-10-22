@@ -8,6 +8,10 @@ export type Domain = 'backend' | 'ml' | 'data' | 'math';
 export interface SystemData {
   /** Star label, e.g. "Sebastian". */
   star: string;
+  /** Home page URL (with the site base) and document title; project titles add the name. */
+  homeHref: string;
+  homeTitle: string;
+  siteName: string;
   /** Belt label, e.g. "Earlier work · 2023–25"; empty when there is no earlier work. */
   earlierWork: string;
   projects: SystemProject[];

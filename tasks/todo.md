@@ -41,7 +41,7 @@ before ending a session.
 
 - [x] 4.1 Visit state machine and panel.
 - [x] 4.2 Landing previews, video, lightbox.
-- [ ] 4.3 Routes, history, direct load, focus.
+- [x] 4.3 Routes, history, direct load, focus.
 - [ ] 4.4 Tour.
 - [ ] 4.5 Journey tests.
 - [ ] Checkpoint: full journey, shared link on a phone.

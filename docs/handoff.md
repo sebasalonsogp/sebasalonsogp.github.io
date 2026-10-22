@@ -6,9 +6,9 @@
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
 slices are live and the Phase 3 checkpoint is approved. **Phase 4 has started:** slices 4.1
-(visit) and 4.2 (landing previews) are done on stacked branches `feat/visit` →
-`feat/landing`, not yet merged (deploy after 4.3 so visits have shareable URLs). Next is
-4.3 (routes and history). Every push to `main` runs the CI checks and deploys only if they pass.
+(visit), 4.2 (landing) and 4.3 (routes) are done on stacked branches `feat/visit` →
+`feat/landing` → `feat/routes`, not yet merged. Visits now have shareable URLs, so
+the Phase 4 work can deploy whenever Sebastian wants; next is 4.4 (tour). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -201,11 +201,27 @@ content migrated; each validation rule was shown to fail the build when broken.
   motion, phone preview. 53 tests × 3 browsers: 158 passed, 1 skipped. Explorer chunk
   143 KB gzip; home HTML 11 KB gzip.
 
+## Slice 4.3 — routes and history
+
+- `explorer.ts`: pushState on visits, replaceState on hops, popstate drives the scene,
+  leaving a visit opened from home uses `history.back()`, titles and `aria-current`
+  follow; direct loads hand the static visit to the explorer and open it instantly without
+  moving focus. `Hero.astro` renders intro and hint on both routes (pitch is a `p` on
+  project pages); the explorer starts at `load` or after 2.5 s. Title formats shared via
+  `homeTitle` / `projectTitle` in `site.ts`.
+- Checked with Playwright: URL, title and current row on visit; Back/Forward; Esc steps back
+  (history length +1 only for the visit); hops replace; direct load (static first, then the
+  explorer visit, focus untouched); Esc from a direct load pushes `/` and shows the intro.
+- Tests: routes and history in `visit.spec.ts`; static-page tests now run without WebGL2
+  (shared `withoutWebGL2` helper); axe waits for a settled page (`settled` helper; a scan
+  during the panel fade measured half-transparent text). 57 tests × 3 browsers: 167 passed,
+  1 skipped.
+
 ## Next task
 
-Phase 4, slice 4.3 — routes and history: visiting pushes `/projects/<id>/`, Back returns to
-explore, direct loads of `/projects/<id>/` open that visit (static page stays the no-JS
-fallback), focus to the panel title and back to the trigger.
+Phase 4, slice 4.4 — tour: "Take the 60-second tour" visits Eigenflow → Wine Journal →
+Quantum Playground (from the `tour` field), 8.5 s each with a progress bar; any interaction
+stops it.
 
 ## Open inputs and issues
 

@@ -34,7 +34,7 @@ test.describe('visits', () => {
     await expect(hero(page)).toHaveAttribute('data-mode', 'visit');
     await expect(title(page)).toHaveText(first!.title);
     await expect(title(page)).toBeFocused();
-    await expect(page).toHaveURL((url) => url.pathname === '/');
+    await expect(page).toHaveURL((url) => url.pathname === `/projects/${first!.id}/`);
     await expect(page.locator('.explorer-labels')).toHaveClass(/is-hidden/);
   });
 
@@ -229,5 +229,69 @@ test.describe('landing previews', () => {
     await expect(preview).toBeVisible();
     await preview.click();
     await expect(page.locator('dialog.lb')).toHaveAttribute('open', '');
+  });
+});
+
+test.describe('routes and history', () => {
+  test.beforeEach(async ({ page }) => ready(page));
+
+  const path = (page: Page) => new URL(page.url()).pathname;
+
+  test('a visit has its own URL and title; Back returns and Forward revisits', async ({ page }) => {
+    const [first] = await projectList(page);
+    const homeTitle = await page.title();
+    await page.locator(`.planet-label[data-project="${first!.id}"]`).click();
+    await expect(page).toHaveURL((url) => url.pathname === `/projects/${first!.id}/`);
+    await expect(page).toHaveTitle(new RegExp(`^${first!.title} — `));
+    await expect(page.locator(`[data-project-row="${first!.id}"] a`)).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+
+    await page.goBack();
+    await expect(hero(page)).toHaveAttribute('data-mode', 'explore');
+    expect(path(page)).toBe('/');
+    await expect(page).toHaveTitle(homeTitle);
+    await page.goForward();
+    await expect(hero(page)).toHaveAttribute('data-mode', 'visit');
+    await expect(title(page)).toHaveText(first!.title);
+  });
+
+  test('leaving a visit opened from home steps back instead of adding history', async ({
+    page,
+  }) => {
+    const length = await page.evaluate(() => history.length);
+    await page.locator('.planet-label').first().click();
+    await page.keyboard.press('Escape');
+    await expect(hero(page)).toHaveAttribute('data-mode', 'explore');
+    await expect.poll(() => path(page)).toBe('/');
+    // One entry for the visit, none for returning.
+    expect(await page.evaluate(() => history.length)).toBe(length + 1);
+  });
+
+  test('previous / next replace the visit in history', async ({ page }) => {
+    const list = await projectList(page);
+    await page.locator(`.planet-label[data-project="${list[0]!.id}"]`).click();
+    await page.getByRole('button', { name: 'Next world →' }).click();
+    await expect(page).toHaveURL((url) => url.pathname === `/projects/${list[1]!.id}/`);
+    await page.goBack();
+    await expect(hero(page)).toHaveAttribute('data-mode', 'explore');
+    expect(path(page)).toBe('/');
+  });
+
+  test('a project URL loaded directly opens that visit in the explorer', async ({ page }) => {
+    const [first] = await projectList(page);
+    await page.goto(`/projects/${first!.id}/`, { waitUntil: 'domcontentloaded' });
+    await expect(hero(page)).toHaveAttribute('data-mode', 'visit', { timeout: 15_000 });
+    await expect(title(page)).toHaveText(first!.title);
+    // The static copy steps aside and focus is not moved on page load.
+    await expect(page.locator('.visit-wrap')).toBeHidden();
+    expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
+
+    await page.keyboard.press('Escape');
+    await expect(hero(page)).toHaveAttribute('data-mode', 'explore');
+    expect(path(page)).toBe('/');
+    await expect(page.locator('.intro')).toBeVisible();
+    await expect(page.locator('.planet-label').first()).toBeVisible();
   });
 });

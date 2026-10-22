@@ -35,6 +35,13 @@ content collections + github.json + site.ts
 - The explorer reads `data-initial-project`; a direct load opens that visit without the fly-in.
 - Visiting pushes `/projects/<id>/`; returning pushes `/`; `popstate` drives the scene. No
   SPA fallback is needed because every URL is a real file on Pages.
+- As built (4.3): hops between planets replace the history entry; leaving a visit that was
+  opened from the home entry steps back (`history.back()`) instead of pushing `/`, so the
+  history stays clean. Titles and the list's `aria-current` row follow the visit. A direct
+  load renders the static visit first (readable, no JavaScript needed), then the explorer
+  takes over at `load` (or after 2.5 s if a slow image or video holds `load` back) and opens
+  that visit without flying or moving focus. Project pages keep the project title as the
+  only `h1`; their intro pitch is a paragraph shown after returning to the system.
 - Per-project titles, descriptions and Open Graph images come from the project entry.
 
 ## Client modules (progressive enhancement)

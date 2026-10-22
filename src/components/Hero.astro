@@ -43,44 +43,51 @@ const key = [
     data-explorer-system
     set:html={JSON.stringify(system)}
   />
-  {initialProject ? (
+  {initialProject && (
     <div class="wrap visit-wrap">
       <slot />
     </div>
-  ) : (
-    <div class="intro wrap">
-      <p class="eyebrow">{site.eyebrow}</p>
-      <h1 id="hero-heading">
-        {site.pitch.lead} <em>{site.pitch.emphasis}</em>
-      </h1>
-      <p class="lede">{site.lede}</p>
-      <div class="ctas">
-        <a class="btn" href="#projects">
-          See the list instead
-        </a>
-      </div>
-    </div>
   )}
-  {!initialProject && (
-    <div class="hint">
-      <div class="hint-row wrap">
-        <span>Drag to turn · Select a world · Esc to return</span>
-        <HowToRead summary="How to read the system" placement="up" items={key} />
-      </div>
+  <div class="intro wrap">
+    <p class="eyebrow">{site.eyebrow}</p>
+    {
+      /* On project pages the project title is the page's h1; the pitch is shown there only
+         after returning to the system. */
+      initialProject ? (
+        <p class="hero-title" id="hero-heading">
+          {site.pitch.lead} <em>{site.pitch.emphasis}</em>
+        </p>
+      ) : (
+        <h1 class="hero-title" id="hero-heading">
+          {site.pitch.lead} <em>{site.pitch.emphasis}</em>
+        </h1>
+      )
+    }
+    <p class="lede">{site.lede}</p>
+    <div class="ctas">
+      <a class="btn" href="#projects">
+        See the list instead
+      </a>
     </div>
-  )}
+  </div>
+  <div class="hint">
+    <div class="hint-row wrap">
+      <span>Drag to turn · Select a world · Esc to return</span>
+      <HowToRead summary="How to read the system" placement="up" items={key} />
+    </div>
+  </div>
 </section>
 
 <script>
   import { supportsWebGL2 } from '../features/explorer/support';
 
+  const LOAD_FALLBACK_MS = 2500;
+
   // Three.js loads after the page has painted, so the hero text stays the largest paint, and
   // never loads without WebGL2: the readable hero and project list remain either way.
-  // Project pages keep the plain visit panel until the explorer can frame a visit (Phase 4);
-  // the system would otherwise sit behind the panel's text.
-  const hero = document.querySelector<HTMLElement>(
-    '[data-explorer-root]:not([data-initial-project])',
-  );
+  // On project pages the static visit shows first and the explorer takes over as soon as the
+  // page has loaded (no idle wait), opening that visit without a fly-in.
+  const hero = document.querySelector<HTMLElement>('[data-explorer-root]');
   if (hero) {
     if (!supportsWebGL2()) {
       hero.dataset.explorer = 'unavailable';
@@ -92,15 +99,25 @@ const key = [
           .catch(() => {
             hero.dataset.explorer = 'unavailable';
           });
-      const whenIdle = () => {
-        if (typeof window.requestIdleCallback === 'function') {
+      let started = false;
+      const begin = () => {
+        if (started) return;
+        started = true;
+        if (hero.dataset.initialProject) {
+          start();
+        } else if (typeof window.requestIdleCallback === 'function') {
           window.requestIdleCallback(start, { timeout: 2000 });
         } else {
           window.setTimeout(start, 200);
         }
       };
-      if (document.readyState === 'complete') whenIdle();
-      else window.addEventListener('load', whenIdle, { once: true });
+      // After the page has loaded, or after a short wait if a slow image or video holds the
+      // load event back.
+      if (document.readyState === 'complete') begin();
+      else {
+        window.addEventListener('load', begin, { once: true });
+        window.setTimeout(begin, LOAD_FALLBACK_MS);
+      }
     }
   }
 </script>
@@ -174,6 +191,14 @@ const key = [
     pointer-events: auto;
   }
 
+  /* Project pages without the explorer show the static visit; with it, the explorer takes
+     over (it removes .visiting) and the static copy steps aside. */
+  .hero.visiting .intro,
+  .hero.visiting .hint,
+  .hero:not(.visiting) .visit-wrap {
+    display: none;
+  }
+
   .visit-wrap {
     position: relative;
     z-index: 1;
@@ -197,8 +222,9 @@ const key = [
     pointer-events: auto;
   }
 
-  h1 {
+  .hero-title {
     margin: 0;
+    font-family: var(--f-display);
     font-size: var(--s-h1);
     font-weight: 380;
     line-height: 1.07;
