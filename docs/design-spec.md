@@ -107,7 +107,11 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
   PadStats. Each planet is one of my projects."; CTAs "Take the 60-second tour" (primary),
   "See the list instead".
 - Bottom hint: "Drag to turn · Select a world · Esc to return" and "How to read the
-  system" popover (Surface, Orbit, Ring, Size, Moons, Belt).
+  system" popover (Surface, Orbit, Ring, Size, Moons, Belt). Built in 3.4 as
+  "Drag to turn · Select a world" until visits add Esc (Phase 4); body face per the type rule.
+  Hint and popover show only once the explorer has mounted (no WebGL, no JavaScript: hidden).
+  The popover is the reusable `HowToRead` component (native `<details>`, Escape and outside
+  click close it, one open at a time); on phones the hint row stacks so it opens from the left.
 - Encodings: surface = domain; orbit order = most recent commit innermost; size = lines of
   code on a log scale (`0.6 + 0.45·log10(loc/1000)`); ring = live demo; moons = separately
   running subsystems; outer belt = earlier repositories.

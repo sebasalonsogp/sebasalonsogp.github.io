@@ -1,0 +1,115 @@
+---
+// "How to read this" popover (docs/design-spec.md): a native <details> disclosure, so it works
+// without JavaScript; the script adds Escape and outside-click to close and keeps one open.
+
+interface Props {
+  items: { term: string; detail: string }[];
+  summary?: string;
+  /** Which side of the summary the panel opens on. */
+  placement?: 'up' | 'down';
+  class?: string;
+}
+
+const { items, summary = 'How to read this', placement = 'down', class: className } = Astro.props;
+---
+
+<details class:list={['how-to-read', placement, className]} data-how-to-read>
+  <summary>{summary}</summary>
+  <dl>
+    {items.map(({ term, detail }) => (
+      <>
+        <dt>{term}</dt>
+        <dd>{detail}</dd>
+      </>
+    ))}
+  </dl>
+</details>
+
+<script>
+  const popovers = [...document.querySelectorAll<HTMLDetailsElement>('[data-how-to-read]')];
+
+  for (const popover of popovers) {
+    popover.addEventListener('toggle', () => {
+      if (!popover.open) return;
+      for (const other of popovers) if (other !== popover) other.open = false;
+    });
+    popover.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !popover.open) return;
+      event.stopPropagation();
+      popover.open = false;
+      popover.querySelector('summary')?.focus();
+    });
+  }
+
+  document.addEventListener('pointerdown', (event) => {
+    for (const popover of popovers) {
+      if (popover.open && !popover.contains(event.target as Node)) popover.open = false;
+    }
+  });
+</script>
+
+<style>
+  .how-to-read {
+    position: relative;
+  }
+
+  summary {
+    cursor: pointer;
+    list-style: none;
+    font-size: var(--s-small);
+    color: var(--sol);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    text-decoration-color: color-mix(in srgb, var(--sol) 50%, transparent);
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  dl {
+    position: absolute;
+    right: 0;
+    z-index: 5;
+    width: min(24rem, calc(100vw - 32px));
+    margin: 0;
+    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--sp-2) 14px;
+    background: color-mix(in srgb, var(--void-2) 94%, transparent);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-2);
+    font-size: var(--s-small);
+    box-shadow: 0 18px 50px rgb(0 0 0 / 0.5);
+  }
+
+  .up dl {
+    bottom: calc(100% + 12px);
+  }
+
+  .down dl {
+    top: calc(100% + 10px);
+  }
+
+  dt {
+    padding-top: 2px;
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    color: var(--sol);
+  }
+
+  dd {
+    margin: 0;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--ink) 86%, var(--dim));
+  }
+
+  @media (max-width: 760px) {
+    dl {
+      right: auto;
+      left: 0;
+    }
+  }
+</style>

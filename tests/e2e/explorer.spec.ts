@@ -269,6 +269,39 @@ test.describe('explorer labels and interaction', () => {
   });
 });
 
+test.describe('system key', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    test.skip(!(await supportsWebGL2(page)), 'No WebGL2 in this browser');
+    await expect(hero(page)).toHaveAttribute('data-planets', /\d+/, { timeout: 10_000 });
+  });
+
+  test('explains the system once it is running', async ({ page }) => {
+    await expect(page.getByText('Drag to turn · Select a world')).toBeVisible();
+    const summary = page.locator('#hero summary', { hasText: 'How to read the system' });
+    await summary.click();
+    const terms = await page.locator('#hero [data-how-to-read] dt').allTextContents();
+    expect(terms).toEqual(['Surface', 'Orbit', 'Ring', 'Size', 'Moons', 'Belt']);
+    await expect(page.locator('#hero [data-how-to-read] dl')).toBeVisible();
+  });
+
+  test('closes with Escape (focus back on its summary) or a click elsewhere', async ({ page }) => {
+    const popover = page.locator('#hero [data-how-to-read]');
+    const summary = popover.locator('summary');
+    await summary.focus();
+    await page.keyboard.press('Enter');
+    await expect(popover).toHaveAttribute('open', '');
+    await page.keyboard.press('Escape');
+    await expect(popover).not.toHaveAttribute('open', '');
+    await expect(summary).toBeFocused();
+
+    await summary.click();
+    await expect(popover).toHaveAttribute('open', '');
+    await page.mouse.click(10, 10);
+    await expect(popover).not.toHaveAttribute('open', '');
+  });
+});
+
 test.describe('explorer with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
@@ -304,6 +337,8 @@ test.describe('explorer without WebGL2', () => {
     await page.waitForTimeout(2500);
     expect(chunkRequests).toEqual([]);
     await expect(page.locator('#hero canvas.system')).toHaveCount(0);
+    // No instructions for a system that is not there.
+    await expect(page.getByText('Drag to turn · Select a world')).toBeHidden();
     await expect(page.locator('h1')).toBeVisible();
     await expect(page.locator('#projects .row a')).not.toHaveCount(0);
   });

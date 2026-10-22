@@ -4,10 +4,9 @@
 
 **Phase 1 is live** at https://sebasalonsogp.github.io/ (`noindex`) from `main` of the
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
-checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** slices 3.1
-(scene shell), 3.2 (bodies) and 3.3 (labels and interaction) are done on stacked branches
-`feat/explorer-shell` → `feat/explorer-bodies` → `feat/explorer-interaction`, not yet
-merged (Phase 3 deploys together at the checkpoint). Next is 3.4 (hero key popover). Every push to `main` runs the CI checks and deploys only if they pass.
+checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
+slices (3.1 shell, 3.2 bodies, 3.3 labels and interaction, 3.4 key popover) are done and
+deployed together for the Phase 3 checkpoint (explore the system on desktop and phone). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -156,11 +155,21 @@ content migrated; each validation rule was shown to fail the build when broken.
   highlight, drag turns the system, clicking a planet opens its page. 39 tests × 3
   browsers: 116 passed, 1 skipped. Explorer chunk 139 KB gzip; initial JS ~4 KB.
 
+## Slice 3.4 — hero key popover
+
+- `HowToRead.astro` (reusable for 5.2 and 6.2): native `<details>` with Escape and
+  outside-click closing. Hero hint "Drag to turn · Select a world" plus the system key, shown
+  only once the explorer mounts.
+- Browser check found two bugs, both fixed: the popover was unclickable (Astro scoped the
+  hint's pointer-events rule away from the other component's `<details>`) and it overflowed
+  on phones (the hint row now stacks). Fits at 390 and 320 px.
+- Tests: hint and key appear only with the explorer, six terms, Escape returns focus, click
+  outside closes. 41 tests × 3 browsers: 122 passed, 1 skipped.
+
 ## Next task
 
-Phase 3, slice 3.4 — hero key popover ("How to read the system": Surface, Orbit, Ring, Size,
-Moons, Belt) and the bottom hint "Drag to turn · Select a world · Esc to return"; then the
-Phase 3 checkpoint, which merges the explorer branches into `main` and deploys.
+Phase 3 checkpoint: Sebastian explores the live system on desktop and phone. After approval,
+Phase 4 slice 4.1 (visit state machine and panel).
 
 ## Open inputs and issues
 

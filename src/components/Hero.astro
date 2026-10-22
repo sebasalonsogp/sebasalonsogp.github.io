@@ -1,6 +1,7 @@
 ---
 import { site } from '../data/site';
 import type { SystemData } from '../features/explorer/system';
+import HowToRead from './HowToRead.astro';
 
 interface Props {
   /** Project open on load (`/projects/<id>/`); its visit view is passed as the slot. */
@@ -10,6 +11,20 @@ interface Props {
 }
 
 const { initialProject, system } = Astro.props;
+
+// What each encoding in the system means (concept's key).
+const key = [
+  {
+    term: 'Surface',
+    detail:
+      'What kind of work: rocky for backend, banded for machine learning, ocean for data science, ice for math',
+  },
+  { term: 'Orbit', detail: 'Inner orbits are the most recent work' },
+  { term: 'Ring', detail: 'A live demo you can land on' },
+  { term: 'Size', detail: 'Lines of code' },
+  { term: 'Moons', detail: 'Separately running services' },
+  { term: 'Belt', detail: 'Earlier projects and coursework' },
+];
 ---
 
 <!-- The explorer canvas fills this section once loaded (after first paint, only with WebGL2);
@@ -42,6 +57,14 @@ const { initialProject, system } = Astro.props;
         <a class="btn" href="#projects">
           See the list instead
         </a>
+      </div>
+    </div>
+  )}
+  {!initialProject && (
+    <div class="hint">
+      <div class="hint-row wrap">
+        <span>Drag to turn · Select a world</span>
+        <HowToRead summary="How to read the system" placement="up" items={key} />
       </div>
     </div>
   )}
@@ -94,6 +117,36 @@ const { initialProject, system } = Astro.props;
     height: auto;
     min-height: clamp(660px, 92vh, 900px);
     padding-block: 104px var(--sp-7);
+  }
+
+  /* Instructions for the system: shown only once the explorer has mounted (it sets
+     data-planets), so nobody reads about a system they cannot see. */
+  .hint {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 2;
+    padding: 16px var(--gutter-right) 18px var(--gutter-left);
+    pointer-events: none;
+  }
+
+  .hero:not([data-planets]) .hint {
+    display: none;
+  }
+
+  .hint-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px 20px;
+    font-size: var(--s-small);
+    color: var(--dim);
+    text-shadow: var(--halo);
+  }
+
+  /* Global so it also reaches the popover, which belongs to another component's scope. */
+  .hint-row > :global(*) {
+    pointer-events: auto;
   }
 
   .visit-wrap {
@@ -252,6 +305,12 @@ const { initialProject, system } = Astro.props;
   }
 
   @media (max-width: 760px) {
+    /* Stacked, so the popover opens from the left edge and fits the screen. */
+    .hint-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
     .hero {
       align-items: start;
       height: clamp(760px, 100svh, 880px);
