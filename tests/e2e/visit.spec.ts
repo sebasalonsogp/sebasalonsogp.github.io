@@ -1,29 +1,15 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import {
+  hero,
+  mediaCounts,
+  projectList,
+  ready,
+  supportsWebGL2,
+  visitTitle as title,
+} from './helpers';
 
-const hero = (page: Page) => page.locator('#hero');
 const panel = (page: Page) => page.locator('.explorer-visit');
-const title = (page: Page) => page.locator('#explorer-visit-title');
-
-const supportsWebGL2 = (page: Page) =>
-  page.evaluate(() => Boolean(document.createElement('canvas').getContext('webgl2')));
-
-/** Loads the home page with the explorer ready; reduced motion makes every flight instant. */
-async function ready(page: Page) {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/');
-  test.skip(!(await supportsWebGL2(page)), 'No WebGL2 in this browser');
-  await expect(hero(page)).toHaveAttribute('data-explorer', 'static', { timeout: 10_000 });
-}
-
-const projectList = (page: Page) =>
-  page.locator('[data-project-row]').evaluateAll((rows) =>
-    rows.map((row) => ({
-      id: row.getAttribute('data-project-row')!,
-      title: row.querySelector('h3')!.textContent!.trim(),
-    })),
-  );
 
 test.describe('visits', () => {
   test.beforeEach(async ({ page }) => ready(page));
@@ -134,16 +120,6 @@ test.describe('visits with motion', () => {
     await expect(hero(page)).toHaveAttribute('data-mode', 'explore', { timeout: 5_000 });
   });
 });
-
-/** Projects from the embedded data, so tests follow the content rather than fixed ids. */
-const mediaCounts = (page: Page) =>
-  page.evaluate(() =>
-    (
-      JSON.parse(document.querySelector('script[data-explorer-system]')!.textContent!) as {
-        projects: { id: string; media: unknown[] }[];
-      }
-    ).projects.map((p) => ({ id: p.id, media: p.media.length })),
-  );
 
 test.describe('landing previews', () => {
   test.beforeEach(async ({ page }) => ready(page));

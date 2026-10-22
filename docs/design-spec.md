@@ -159,6 +159,7 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
 - With media (desktop): planet moves to the upper left, screen (16:10, rounded 4 px, soft
   shadow) appears bottom-left with caption and dots for multiple items. Click → lightbox
   (arrows, Esc, focus trap). Video: muted loop autoplay; poster only for reduced motion.
+  Browser Back / Forward with the lightbox open closes it along with the visit change.
 - Tour: Eigenflow → Wine Journal → Quantum Playground, 8.5 s each, progress bar, stops on
   any interaction.
 - Tour implemented in 4.4 (`explorer.ts`, `panel.ts`): stops come from each project's

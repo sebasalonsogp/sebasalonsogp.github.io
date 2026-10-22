@@ -160,6 +160,14 @@ export function createLanding(
     if (event.target === dialog || event.target === stage) dialog.close();
   };
 
+  // Back / Forward can change or end the visit while the lightbox is open: close it without
+  // returning focus to a screen that is going away (the explorer moves focus itself).
+  const dismissLightbox = () => {
+    if (!dialog.open) return;
+    returnFocus = null;
+    dialog.close();
+  };
+
   const onBreakpoint = () => {
     if (hero.classList.contains('has-landing')) showItem(index);
   };
@@ -177,6 +185,7 @@ export function createLanding(
   return {
     show(project) {
       window.clearTimeout(clearTimer);
+      dismissLightbox();
       items = project.media;
       dots.replaceChildren(
         ...(items.length > 1
@@ -197,6 +206,7 @@ export function createLanding(
       hero.classList.toggle('has-landing', items.length > 0);
     },
     hide() {
+      dismissLightbox();
       hero.classList.remove('has-landing');
       panelMedia.hidden = true;
       for (const video of hero.querySelectorAll<HTMLVideoElement>(

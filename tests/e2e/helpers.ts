@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /** Project page paths, read from the home page's project list (no hard-coded ids). */
 export async function projectPaths(page: Page): Promise<string[]> {
@@ -58,3 +58,42 @@ export async function settled(page: Page) {
     { timeout: 15_000 },
   );
 }
+
+export const hero = (page: Page) => page.locator('#hero');
+export const visitTitle = (page: Page) => page.locator('#explorer-visit-title');
+
+export const supportsWebGL2 = (page: Page) =>
+  page.evaluate(() => Boolean(document.createElement('canvas').getContext('webgl2')));
+
+/**
+ * Loads the home page at 1440×900 with the explorer ready, skipping the test without WebGL2.
+ * Reduced motion (the default here) makes every flight instant.
+ */
+export async function ready(page: Page, { motion = false } = {}) {
+  if (!motion) await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  test.skip(!(await supportsWebGL2(page)), 'No WebGL2 in this browser');
+  await expect(hero(page)).toHaveAttribute('data-explorer', motion ? 'running' : 'static', {
+    timeout: 10_000,
+  });
+}
+
+/** Projects in list order, from the page's project rows. */
+export const projectList = (page: Page) =>
+  page.locator('[data-project-row]').evaluateAll((rows) =>
+    rows.map((row) => ({
+      id: row.getAttribute('data-project-row')!,
+      title: row.querySelector('h3')!.textContent!.trim(),
+    })),
+  );
+
+/** Media count per project from the embedded data, so tests follow the content. */
+export const mediaCounts = (page: Page) =>
+  page.evaluate(() =>
+    (
+      JSON.parse(document.querySelector('script[data-explorer-system]')!.textContent!) as {
+        projects: { id: string; media: unknown[] }[];
+      }
+    ).projects.map((p) => ({ id: p.id, media: p.media.length })),
+  );

@@ -6,9 +6,9 @@
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
 slices are live and the Phase 3 checkpoint is approved. **Phase 4 has started:** slices 4.1
-(visit), 4.2 (landing) and 4.3 (routes) are live (`main` b0735cd). Slice 4.4 (tour) is
-done on `feat/tour`, not yet merged; next is 4.5 (journey tests), then the Phase 4
-checkpoint. Every push to `main` runs the CI checks and deploys only if they pass.
+(visit), 4.2 (landing) and 4.3 (routes) are live (`main` b0735cd). Slices 4.4 (tour) and 4.5
+(journey tests) are done on `feat/tour` → `feat/journeys`, not yet merged. Phase 4 is
+ready for its checkpoint. Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -231,11 +231,24 @@ content migrated; each validation rule was shown to fail the build when broken.
   "Stop tour" focuses the title); the no-WebGL2 test checks the button stays hidden.
   59 tests × 3 browsers: 173 passed, 1 skipped.
 
+## Slice 4.5 — journey tests
+
+- `tests/e2e/journey.spec.ts`: list → fly → land → lightbox → return → another world with
+  real flights, then Back/Forward (history grows by one entry); Esc mid-flight; Back with
+  the lightbox open; Back during the tour; every project URL in the explorer plus a
+  reload of a visit opened from home; a phone journey through the panel preview. Shared
+  explorer helpers (`ready`, `projectList`, `mediaCounts`, …) moved to `helpers.ts`.
+- Found and fixed: Back (or a phone's back gesture) with the lightbox open returned the
+  scene but left the modal open over the system; Forward to another project kept stale
+  items in it. `landing.ts` now closes the lightbox on every visit change without
+  sending focus back to the departing screen. The new test fails without the fix.
+- 65 tests × 3 browsers: 191 passed, 1 skipped. `npm run verify` passes.
+
 ## Next task
 
-Phase 4, slice 4.5 — journey tests (plan: visit, land, return, then visit; Back/Forward,
-direct load, tour stop, reduced motion), then the Phase 4 checkpoint (merge `feat/tour`
-and deploy on Sebastian's go-ahead).
+Phase 4 checkpoint: Sebastian reviews the full journey (including a project link sent to
+a phone); on approval merge `feat/journeys` (contains `feat/tour`) into `main` and push to
+deploy. Then Phase 5, slice 5.1.
 
 ## Open inputs and issues
 
