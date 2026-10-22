@@ -78,4 +78,4 @@ before ending a session.
 
 - [ ] 9.1 Final content review and missing screenshots.
 - [ ] 9.2 Remove `noindex`, domain, tag v1.0.0.
-- [ ] 9.3 Live verification and rollback notes.
+- [x] 9.3 Live verification and rollback notes (`docs/deployment.md`; run at launch).

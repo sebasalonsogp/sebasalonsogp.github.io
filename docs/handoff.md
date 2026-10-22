@@ -491,12 +491,20 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
   repositories with the same values as locally (line counts match across Linux and
   Windows) and stopped at "up to date". Its PR step is untested until the data changes.
 
+## Launch preparation (9.3 and the 9.2 switch)
+
+- `indexable` in `src/data/site.ts` (false) drives the robots meta; the 404 is always
+  `noindex`; `seo.spec.ts` reads the same constant. Dry run with `true`: home and project
+  pages lose the tag, the 404 keeps it, the tests pass; restored to `false`.
+- `docs/deployment.md`: current workflows, the after-deploy checklist, launch steps
+  (content, `indexable`, optional domain, verification, `v1.0.0` tag) and rollback (revert
+  on `main`, which alone may deploy; undo launch or domain).
+
 ## Next task
 
-Phase 8 checkpoint (release candidate): Sebastian works through the manual checks and
-decisions in `docs/release-candidate.md`. Then Phase 9: 9.1 content review (apply his
-decisions), 9.2 remove `noindex` (and domain, tag `v1.0.0`), 9.3 live verification and
-rollback notes in `docs/deployment.md`.
+Phase 8 checkpoint (release candidate): Sebastian works through `docs/release-candidate.md`
+(manual checks and decisions). Then Phase 9: 9.1 apply his content decisions, 9.2 launch by
+the steps in `docs/deployment.md`.
 
 ## Open inputs and issues
 

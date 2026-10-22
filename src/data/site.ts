@@ -76,6 +76,12 @@ export const site: Site = siteSchema.parse({
 });
 
 /** Document titles, shared by the static pages and the explorer's in-page visits. */
+/**
+ * Launch switch (docs/deployment.md, "Launch"): while false every page carries
+ * `<meta name="robots" content="noindex">`. The 404 is never indexed.
+ */
+export const indexable = false;
+
 /** What Sebastian does, in the home title and the structured data. */
 export const role = 'Backend and ML systems engineer';
 export const homeTitle = `${site.name} — ${role}`;

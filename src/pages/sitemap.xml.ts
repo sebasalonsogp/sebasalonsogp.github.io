@@ -1,5 +1,5 @@
 // Sitemap of every page (the home page and one per project), with last-modified dates from
-// the GitHub snapshot. Pages stay `noindex` until launch (Phase 9).
+// the GitHub snapshot. Pages stay `noindex` until launch (`indexable` in src/data/site.ts).
 import type { APIRoute } from 'astro';
 import { getProjects } from '../lib/content';
 import { withBase } from '../lib/format';

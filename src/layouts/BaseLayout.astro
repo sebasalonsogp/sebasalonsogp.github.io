@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import Fonts from '../components/Fonts.astro';
 import Sky from '../components/Sky.astro';
-import { site } from '../data/site';
+import { indexable, site } from '../data/site';
 import { withBase } from '../lib/format';
 import '../styles/global.css';
 
@@ -36,8 +36,8 @@ const icon = (path: string) => withBase(path);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {/* Until launch (Phase 9) nothing is indexed. */}
-    <meta name="robots" content="noindex" />
+    {/* Until launch (`indexable` in src/data/site.ts) nothing is indexed; the 404 never is. */}
+    {(!indexable || !shareable) && <meta name="robots" content="noindex" />}
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#030408" />
     <link rel="icon" href={icon('favicon.ico')} sizes="32x32" />

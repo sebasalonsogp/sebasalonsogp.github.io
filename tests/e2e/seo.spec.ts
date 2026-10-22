@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import sharp from 'sharp';
+import { indexable } from '../../src/data/site';
 import { projectPaths } from './helpers';
 
 /** Absolute production URLs in the head, mapped onto the local server. */
@@ -34,7 +35,8 @@ test.describe('search and sharing', () => {
     for (const path of ['/', ...(await projectPaths(page))]) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const h = await head(page);
-      expect(h.robots, path).toBe('noindex'); // Until launch (Phase 9).
+      // Not indexed until launch; then no robots meta at all.
+      expect(h.robots, path).toBe(indexable ? null : 'noindex');
       expect(local(h.canonical!), path).toBe(path);
       expect(h.canonical, path).toMatch(/^https:\/\//);
       expect(h.ogUrl).toBe(h.canonical);
@@ -107,6 +109,7 @@ test.describe('search and sharing', () => {
   });
 
   test('the 404 page is not shared or indexed under its URL', async ({ page }) => {
+    // Never indexed, before or after launch.
     await page.goto('/no-such-page/');
     const h = await head(page);
     expect(h.canonical).toBeNull();

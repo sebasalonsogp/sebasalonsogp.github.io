@@ -1,4 +1,4 @@
-// Crawlers may fetch everything (they need to, to see each page's `noindex` until launch)
+// Crawlers may fetch everything (before launch they need to, to see each page's `noindex`)
 // and are pointed at the sitemap.
 import type { APIRoute } from 'astro';
 import { withBase } from '../lib/format';
