@@ -9,13 +9,14 @@ interface Props {
 const { initialProject } = Astro.props;
 ---
 
-<!-- The explorer canvas (Phase 3) fills this section; its height is reserved now so the
-     layout does not shift when the scene arrives. -->
+<!-- The explorer canvas fills this section once loaded (after first paint, only with WebGL2);
+     its height is reserved so the layout does not shift when the scene arrives. -->
 <section
   class:list={['hero gut', { visiting: initialProject }]}
   id="hero"
   aria-labelledby={initialProject ? 'visit-title' : 'hero-heading'}
   data-initial-project={initialProject}
+  data-explorer-root
 >
   {initialProject ? (
     <div class="wrap visit-wrap">
@@ -37,6 +38,36 @@ const { initialProject } = Astro.props;
   )}
 </section>
 
+<script>
+  import { supportsWebGL2 } from '../features/explorer/support';
+
+  // Three.js loads after the page has painted, so the hero text stays the largest paint, and
+  // never loads without WebGL2: the readable hero and project list remain either way.
+  const hero = document.querySelector<HTMLElement>('[data-explorer-root]');
+  if (hero) {
+    if (!supportsWebGL2()) {
+      hero.dataset.explorer = 'unavailable';
+    } else {
+      hero.dataset.explorer = 'loading';
+      const start = () =>
+        import('../features/explorer/explorer')
+          .then(({ mountExplorer }) => mountExplorer(hero))
+          .catch(() => {
+            hero.dataset.explorer = 'unavailable';
+          });
+      const whenIdle = () => {
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(start, { timeout: 2000 });
+        } else {
+          window.setTimeout(start, 200);
+        }
+      };
+      if (document.readyState === 'complete') whenIdle();
+      else window.addEventListener('load', whenIdle, { once: true });
+    }
+  }
+</script>
+
 <style>
   .hero {
     position: relative;
@@ -53,10 +84,25 @@ const { initialProject } = Astro.props;
   }
 
   .visit-wrap {
+    position: relative;
+    z-index: 1;
     width: 100%;
   }
 
+  /* Created by the explorer script, so not scoped to this component. */
+  .hero :global(.system) {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    pointer-events: none;
+  }
+
   .intro {
+    position: relative;
+    z-index: 1;
     width: 100%;
     display: grid;
     gap: 20px;

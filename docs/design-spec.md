@@ -114,6 +114,10 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
 - Star label "SEBASTIAN"; planet labels = short name (body 12.5 px) + "Mon YYYY · live"
   (mono, desktop only); labels avoid each other and stay on screen.
 - Idle yaw drift 0.012 rad/s; orbital motion slows to stop during a visit.
+- Camera (ported from the concept's projection, `src/features/explorer/camera.ts`): focal
+  length `min(0.95·H, 1.35·W)` px; explore pose yaw 0.7, pitch 0.4 (phone 0.62), distance
+  `max(12, f·10.6 / (0.34·W))` (phone `f·7.9 / (0.47·W)`), system centre at 64% / 56% of the
+  hero (phone 50% / 68%) via `setViewOffset`. Phones are < 760 px wide.
 
 ## Visit and landing
 

@@ -43,7 +43,7 @@ content collections + github.json + site.ts
 src/features/
   motion/       reduced motion, visibility, fps cap (shared; in use)
   sky/          2D canvas starfield (in use)
-  explorer/     Three.js scene, bodies, labels, camera, visit state machine
+  explorer/     Three.js scene, bodies, labels, camera, visit state machine (shell in use)
   landing/      preview screen + lightbox
   timeline/     selection + playback over build-time SVG
   constellation/ selection + filter over build-time SVG
@@ -59,6 +59,16 @@ src/features/
   browser only handles interaction.
 - Every loop pauses off-screen and in hidden tabs; resources and listeners are disposed on
   teardown.
+
+## Explorer loading (Phase 3.1)
+
+The hero's inline entry (~1.3 KB gzip) checks WebGL2 (required by Three.js r186) and only
+then imports `src/features/explorer/explorer.ts` after `load`, at idle time. Without
+WebGL2 the chunk is never fetched and the hero reports `data-explorer="unavailable"`. The
+render loop reuses `ambientLoop` (60 fps, pauses when the hero is off screen or the tab is
+hidden, one still frame under reduced motion); context loss stops it and Three.js restores
+resources on `webglcontextrestored`. Measured: initial JS ~4 KB gzip; explorer chunk
+129 KB gzip (three 0.186.1).
 
 ## Budgets
 

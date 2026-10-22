@@ -4,9 +4,9 @@
 
 **Phase 1 is live** at https://sebasalonsogp.github.io/ (`noindex`) from `main` of the
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
-checkpoint by moving on. **Phase 2 is built:** slices 2.1 (sky) and 2.2 (motion policy) are live; slice 2.3 (visual
-pass) is done on branch `feat/visual-pass` and not yet merged. Next is the Phase 2
-checkpoint (look and feel on the live URL). Every push to `main` runs the CI checks and deploys only if they pass.
+checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** slice 3.1
+(explorer scene shell) is done on branch `feat/explorer-shell`, not yet merged. Next is
+3.2 (bodies from data). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -111,10 +111,24 @@ content migrated; each validation rule was shown to fail the build when broken.
 - Checked in the browser at 1440×900 and 390×844: hierarchy, keyboard focus ring on chips,
   no horizontal scroll, no console errors. `npm run verify` passes; `npm test` 72 passed.
 
+## Slice 3.1 — explorer scene shell
+
+- `three` 0.186.1 (+ `@types/three` 0.186.0). `src/features/explorer/`: `support.ts`
+  (WebGL2 check), `camera.ts` (concept framing as a Three.js camera), `explorer.ts`
+  (renderer, resize via ResizeObserver, IntersectionObserver pause, context loss, dispose).
+  Hero script loads it after `load` at idle; canvas is `aria-hidden`, no pointer events
+  yet (drag in 3.3). `ambientLoop` gained `fps`, `active` and `onState` options.
+- Scene is empty until 3.2; framing will be checked visually when the star exists.
+- Tests (`explorer.spec.ts`): loads after `load` and fills the hero, hero text is LCP
+  (not in WebKit), pauses off screen and resumes, follows resizes, reduced motion is static,
+  no WebGL2 → chunk never fetched and the readable page stays. 30 tests × 3 browsers: 89
+  passed, 1 skipped. Initial JS ~4 KB gzip; explorer chunk 129 KB gzip.
+
 ## Next task
 
-Merge `feat/visual-pass` into `main` and deploy (needs Sebastian's go-ahead), then the
-Phase 2 checkpoint. After approval, Phase 3 slice 3.1 (Three.js scene shell).
+Phase 3, slice 3.2 — bodies from data: star (Sebastian), orbits ordered by last commit,
+planet size from lines of code, procedural surfaces per domain, rings for live demos, moons
+for subsystems, outer belt; all from the collection and `src/data/github.json`.
 
 ## Open inputs and issues
 

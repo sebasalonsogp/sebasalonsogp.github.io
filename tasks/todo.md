@@ -22,16 +22,16 @@ before ending a session.
 - [x] 1.6 GitHub Pages workflow (tests gate deploy), `noindex`, resume PDF, plain 404; verify direct loads live.
 - [x] Checkpoint: review the live readable site (approved by moving on to Phase 2).
 
-## Phase 2 — Sky and visual system (in progress)
+## Phase 2 — Sky and visual system ✓
 
 - [x] 2.1 Sky module (stars, twinkle, haze 0.024, parallax).
 - [x] 2.2 Shared motion policy (reduced motion, visibility pause, fps cap).
 - [x] 2.3 Visual pass: type rules, headings, focus, contrast over the sky (popovers move to 3.4, 5.2, 6.2).
-- [ ] Checkpoint: look and feel.
+- [x] Checkpoint: look and feel (approved).
 
-## Phase 3 — Solar-system explorer
+## Phase 3 — Solar-system explorer (in progress)
 
-- [ ] 3.1 Three.js scene shell with lazy load and fallback.
+- [x] 3.1 Three.js scene shell with lazy load and fallback.
 - [ ] 3.2 Data-driven bodies: star, orbits, procedural planets, rings, moons, belt.
 - [ ] 3.3 HTML labels, drag, hover, select, list ↔ planet highlight.
 - [ ] 3.4 Hero key popover.
