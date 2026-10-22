@@ -364,6 +364,11 @@ The timeline and constellation enhance these lists, which are always in the HTML
 
 "This page fell past the event horizon." with the black hole and a link back to the system.
 
+- Implemented in 7.3 (`src/pages/404.astro`): eyebrow "404", the line as `h1`, "Back to the
+  system". The black hole (`BlackHole.astro`, shared with Contact) loads at once here and
+  sits as on Contact: backdrop on the right on desktop, banner above the line on phones.
+  Without WebGL the page is the line and the link.
+
 ## Motion and accessibility rules
 
 - All loops pause off-screen and in hidden tabs; ambient loops ≤ 30 fps.

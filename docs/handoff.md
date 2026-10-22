@@ -9,8 +9,9 @@ slices are live and the Phase 3 checkpoint is approved. **Phase 4 is live** (`ma
 deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 is
 live** (`main` a41cd97, deploy run 39778943782) and its checkpoint is approved. **Phase 6
 has started:** Phase 6 is live (`main` 61f943a, deploy run 39783890725) and its checkpoint is
-approved. **Phase 7 has started:** slices 7.1 (contact polish) and 7.2 (black hole) are done on
-`feat/contact` → `feat/blackhole`, not yet merged; next is 7.3 (404 page). Every push to `main` runs the CI checks and deploys only if they pass.
+approved. **Phase 7 is done** on `feat/contact` → `feat/blackhole` → `feat/not-found` (7.1 contact
+polish, 7.2 black hole, 7.3 404), not yet merged; next is the Phase 7 checkpoint ("End of
+page"). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -371,11 +372,22 @@ content migrated; each validation rule was shown to fail the build when broken.
   327 passed, 3 skipped (then a typing fix in the new spec; it reran 21/21).
   `npm run verify` passes.
 
+## Slice 7.3 — 404
+
+- `BlackHole.astro` now holds the figure, loader and placement (Contact loads it when near,
+  `eager` loads at once); `ContactSection.astro` uses it; `src/pages/404.astro` adds it behind
+  the line.
+- Checked on the real GPU at 1440×900 and 390×844 on a nested missing path (404 status,
+  running, no overflow, no errors) and Contact after the extraction.
+- Tests (`not-found.spec.ts`): draws at once and decorative, link clickable over it, no
+  overflow and axe at 1440; banner above the line on phones; no WebGL keeps line and link.
+  115 tests × 3 browsers: 336 passed, 3 skipped. `npm run verify` passes.
+
 ## Next task
 
-Phase 7, slice 7.3 — 404: "This page fell past the event horizon." with the black hole and a
-link back to the system (`src/pages/404.astro`; reuse `mountBlackHole`). Then the Phase 7
-checkpoint (deploy `feat/blackhole`, which contains `feat/contact`).
+Phase 7 checkpoint: on Sebastian's go-ahead merge `feat/not-found` (contains `feat/contact`
+and `feat/blackhole`) into `main` and push to deploy; he reviews Contact, the black hole and
+the 404 on the live site (desktop and phone). Then Phase 8 (quality).
 
 ## Open inputs and issues
 

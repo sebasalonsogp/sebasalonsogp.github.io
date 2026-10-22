@@ -1,0 +1,103 @@
+---
+// The ray-traced black hole (docs/design-spec.md, "Contact" and "404"), placed inside a
+// positioned section: a backdrop on the right on desktop, faded out under the text, and a
+// banner above the content on phones. It is decorative and hidden until it has drawn
+// (src/features/blackhole), so without WebGL there is no empty box.
+
+interface Props {
+  /** Load at once (the 404, where it is the hero) rather than when its section comes near. */
+  eager?: boolean;
+}
+
+const { eager = false } = Astro.props;
+---
+
+<figure class="bh" aria-hidden="true" hidden data-black-hole data-eager={eager || undefined}>
+  <canvas></canvas>
+  <figcaption>Ray-traced live in your browser</figcaption>
+</figure>
+
+<script>
+  const load = (figure: HTMLElement) => {
+    figure.dataset.pending = '';
+    figure.hidden = false;
+    void import('../features/blackhole/blackhole')
+      .then(({ mountBlackHole }) => mountBlackHole(figure))
+      .catch(() => null)
+      .then((mounted) => {
+        if (!mounted) figure.hidden = true;
+      });
+  };
+
+  for (const figure of document.querySelectorAll<HTMLElement>('[data-black-hole]')) {
+    const section = figure.closest('section');
+    if (figure.dataset.eager !== undefined || !section) {
+      load(figure);
+      continue;
+    }
+    const near = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        near.disconnect();
+        load(figure);
+      },
+      { rootMargin: '600px 0px' },
+    );
+    near.observe(section);
+  }
+</script>
+
+<style>
+  .bh {
+    position: absolute;
+    top: 50%;
+    right: max(-80px, calc((100vw - 1120px) / 2 - 200px));
+    z-index: 0;
+    width: min(1080px, 82vw);
+    margin: 0;
+    pointer-events: none;
+    transform: translateY(-44%);
+  }
+
+  .bh[data-pending] {
+    visibility: hidden;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.35) 22%, #000 46%);
+  }
+
+  figcaption {
+    position: absolute;
+    right: 12%;
+    bottom: 10%;
+    font-size: var(--s-cap);
+    color: var(--dim);
+    text-shadow: var(--halo);
+  }
+
+  @media (max-width: 900px) {
+    .bh {
+      position: relative;
+      top: auto;
+      right: auto;
+      width: auto;
+      margin: 0 calc(-1 * var(--gutter-right)) 8px calc(-1 * var(--gutter-left));
+      transform: none;
+    }
+
+    canvas {
+      aspect-ratio: 4 / 3;
+      mask-image: none;
+    }
+
+    figcaption {
+      position: static;
+      margin-top: -8px;
+      text-align: center;
+    }
+  }
+</style>

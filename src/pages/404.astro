@@ -1,13 +1,15 @@
 ---
+import BlackHole from '../components/BlackHole.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/format';
 
-// Plain for now; the black hole joins this page in Phase 7.3.
+// docs/design-spec.md, "404": the line and a way back, with the black hole behind them.
 ---
 
 <BaseLayout title={`Page not found — ${site.name}`} description="This page does not exist.">
   <section class="lost gut" aria-labelledby="lost-heading">
+    <BlackHole eager />
     <div class="wrap">
       <p class="eyebrow">404</p>
       <h1 id="lost-heading">This page fell past the event horizon.</h1>
@@ -20,12 +22,16 @@ import { withBase } from '../lib/format';
 
 <style>
   .lost {
+    position: relative;
     display: grid;
-    align-items: center;
+    align-content: center;
     min-height: 100svh;
+    overflow: hidden;
   }
 
   .wrap {
+    position: relative;
+    z-index: 1;
     display: grid;
     gap: 20px;
     justify-items: start;

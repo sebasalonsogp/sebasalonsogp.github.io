@@ -61,7 +61,7 @@ before ending a session.
 
 - [x] 7.1 Contact polish and resume download.
 - [x] 7.2 Black hole (lazy, adaptive, fallback).
-- [ ] 7.3 404 page.
+- [x] 7.3 404 page.
 
 ## Phase 8 — Quality
 

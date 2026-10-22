@@ -3,6 +3,7 @@ import { statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { site } from '../data/site';
 import { withBase } from '../lib/format';
+import BlackHole from './BlackHole.astro';
 import ExternalLink from './ExternalLink.astro';
 import Section from './Section.astro';
 
@@ -17,11 +18,7 @@ const phoneHref = `tel:${phoneDigits.length === 10 ? `+1${phoneDigits}` : phoneD
 ---
 
 <Section id="contact" title="Contact" fact={site.availability} class="contact">
-  {/* Decorative; shown only once the black hole has drawn (src/features/blackhole). */}
-  <figure class="bh" slot="backdrop" aria-hidden="true" hidden data-black-hole>
-    <canvas></canvas>
-    <figcaption>Ray-traced live in your browser</figcaption>
-  </figure>
+  <BlackHole slot="backdrop" />
   <div class="ct-grid">
     <div class="ct-info">
       <div class="ct-item">
@@ -86,30 +83,6 @@ const phoneHref = `tel:${phoneDigits.length === 10 ? `+1${phoneDigits}` : phoneD
 </Section>
 
 <script>
-  // The black hole loads only when Contact comes near, and only shows if it can draw.
-  const blackHole = document.querySelector<HTMLElement>('[data-black-hole]');
-  const contact = document.querySelector<HTMLElement>('#contact');
-  if (blackHole && contact) {
-    const near = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        near.disconnect();
-        blackHole.dataset.pending = '';
-        blackHole.hidden = false;
-        void import('../features/blackhole/blackhole')
-          .then(({ mountBlackHole }) => mountBlackHole(blackHole))
-          .catch(() => null)
-          .then((mounted) => {
-            if (!mounted) blackHole.hidden = true;
-          });
-      },
-      { rootMargin: '600px 0px' },
-    );
-    near.observe(contact);
-  }
-</script>
-
-<script>
   // Progressive enhancement: without JavaScript the address and the mail link remain.
   const button = document.querySelector<HTMLButtonElement>('[data-copy-email]');
   const address = document.querySelector<HTMLElement>('[data-email-address]');
@@ -146,8 +119,7 @@ const phoneHref = `tel:${phoneDigits.length === 10 ? `+1${phoneDigits}` : phoneD
 </script>
 
 <style>
-  /* The black hole sits behind the contact column: a backdrop on the right on desktop, faded
-     out under the text, and a banner above the heading on phones. */
+  /* The black hole (BlackHole.astro) sits behind the contact column. */
   :global(.sec.contact) {
     position: relative;
     overflow: hidden;
@@ -156,37 +128,6 @@ const phoneHref = `tel:${phoneDigits.length === 10 ? `+1${phoneDigits}` : phoneD
   :global(.sec.contact > .wrap) {
     position: relative;
     z-index: 1;
-  }
-
-  .bh {
-    position: absolute;
-    top: 50%;
-    right: max(-80px, calc((100vw - 1120px) / 2 - 200px));
-    z-index: 0;
-    width: min(1080px, 82vw);
-    margin: 0;
-    pointer-events: none;
-    transform: translateY(-44%);
-  }
-
-  .bh[data-pending] {
-    visibility: hidden;
-  }
-
-  .bh canvas {
-    display: block;
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.35) 22%, #000 46%);
-  }
-
-  .bh figcaption {
-    position: absolute;
-    right: 12%;
-    bottom: 10%;
-    font-size: var(--s-cap);
-    color: var(--dim);
-    text-shadow: var(--halo);
   }
 
   .ct-grid {
@@ -198,26 +139,6 @@ const phoneHref = `tel:${phoneDigits.length === 10 ? `+1${phoneDigits}` : phoneD
   }
 
   @media (max-width: 900px) {
-    .bh {
-      position: relative;
-      top: auto;
-      right: auto;
-      width: auto;
-      margin: 0 calc(-1 * var(--gutter-right)) 8px calc(-1 * var(--gutter-left));
-      transform: none;
-    }
-
-    .bh canvas {
-      aspect-ratio: 4 / 3;
-      mask-image: none;
-    }
-
-    .bh figcaption {
-      position: static;
-      margin-top: -8px;
-      text-align: center;
-    }
-
     .ct-grid {
       min-height: 0;
     }
