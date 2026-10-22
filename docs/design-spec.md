@@ -293,8 +293,25 @@ one-liner.
   stroke halo; the SVG never draws narrower than 772 px, so every label is ≥ 12 px. The
   chart sits beside the overview (2.6 : 1) from 1180 px and stacks above it below that;
   under 804 px it scrolls with "Swipe the constellation sideways →". The overview is static
-  in 6.1 (count, groups and sources, "Most used" top six with filled / hollow icons); 6.2
-  makes it the selection panel.
+  HTML (count, groups and sources, "Most used" top six with filled / hollow icons), so it
+  reads without JavaScript.
+- Selection, implemented in 6.2 (`src/features/constellation/selection.ts`, data embedded as
+  JSON at build time): stars become buttons (name starts with the skill; `aria-pressed`,
+  `aria-controls` the panel); each has a hit area over star and label, a dashed `--sol`
+  focus outline and a 12 % halo on hover. Selecting (click, tap, Enter, or keyboard focus)
+  turns the star `--sol` with a 22 % halo, keeps co-used skills (same project stack or role
+  skill tags) bright and fades the rest to 24 %; lines drop to 14 % and group names to 45 %.
+  The panel shows "Selected skill", "Clear ×", the name, "n projects · m roles · used with
+  k skills", then Projects (domain-coloured dot; links carry `data-visit`, which the
+  explorer opens in place, falling back to the project page) and Experience (hollow dot;
+  `#role-…` links that select the role in the timeline). "Most used" entries become buttons.
+  Clear, Escape on a star or a click on empty sky returns to the overview. The filter (All /
+  Projects / Experience, `aria-pressed`, shown only with JavaScript) dims other stars to
+  12 % and their lines, takes them out of the tab order, recounts the overview and drops a
+  selection it hides. Skill tags in the timeline (`#skill-…` links) select their star and
+  bring the chart into view, also when the same tag is followed twice. The header carries
+  "How to read this" (Stars, Lines, Filled, Hollow, Ringed, Select) in place of the count,
+  which the overview states. The readable skill list stays visible below the chart.
 
 ## Readable equivalents (no graphics)
 
@@ -305,8 +322,9 @@ The timeline and constellation enhance these lists, which are always in the HTML
   then the education entry (school, place · honors · GPA, degrees, minor, coursework).
   With JavaScript the timeline shows one entry at a time as its details (5.2).
 - Skills: Python under "Core", then each group's skills, most used first, with the use
-  count (screen readers hear "used in N projects and M roles"); 3+ uses are bold. Header
-  fact "35 skills from 5 projects and 7 roles" (derived).
+  count (screen readers hear "used in N projects and M roles"); 3+ uses are bold. The
+  counts ("35 skills", "6 groups · from 5 projects and 7 roles") are in the constellation's
+  static overview; the header carries its key (6.2).
 - Hero: "Take the 60-second tour" (primary) shows only once the explorer mounts and only
   if some project has a `tour` position; "See the list instead" always shows.
 

@@ -507,13 +507,8 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   hero.addEventListener('click', onLabelClick);
 
   let scrollTimer = 0;
-  const rows = [...document.querySelectorAll<HTMLElement>('[data-project-row]')];
-  const onRowClick = (event: MouseEvent) => {
-    const row = event.currentTarget as HTMLElement;
-    const id = row.dataset.projectRow;
-    if (!id || !isPlainClick(event)) return;
-    event.preventDefault();
-    const link = row.querySelector<HTMLElement>('a');
+  /** Scrolls up to the hero (if it is away) and opens the visit; focus returns to `link`. */
+  const visitFromPage = (id: string, link: HTMLElement | null) => {
     const offset = hero.getBoundingClientRect().top;
     const far = Math.abs(offset) > 60;
     if (far) {
@@ -528,6 +523,23 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       far && !reducedMotion.matches ? SCROLL_SETTLE_MS : 0,
     );
   };
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-project-row]')];
+  const onRowClick = (event: MouseEvent) => {
+    const row = event.currentTarget as HTMLElement;
+    const id = row.dataset.projectRow;
+    if (!id || !isPlainClick(event)) return;
+    event.preventDefault();
+    visitFromPage(id, row.querySelector<HTMLElement>('a'));
+  };
+  // Other links to a project elsewhere on the page (e.g. the skills panel) carry `data-visit`.
+  const onVisitLink = (event: MouseEvent) => {
+    const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a[data-visit]');
+    const id = link?.dataset.visit;
+    if (!id || !indexOf.has(id) || !isPlainClick(event)) return;
+    event.preventDefault();
+    visitFromPage(id, link);
+  };
+  document.addEventListener('click', onVisitLink);
 
   // Pointer interaction: drag to turn, hover to highlight, click a planet to visit it.
   const local = (event: PointerEvent) => {
@@ -686,6 +698,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       document.removeEventListener('keydown', onKey);
       window.removeEventListener('popstate', onPopState);
       hero.removeEventListener('click', onLabelClick);
+      document.removeEventListener('click', onVisitLink);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);

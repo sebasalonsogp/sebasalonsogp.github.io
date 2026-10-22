@@ -53,7 +53,7 @@ src/features/
   explorer/     Three.js scene, bodies, labels, camera, visit state machine, landing
                 previews and lightbox, tour (in use)
   timeline/     build-time layout, selection and playback over the SVG (in use)
-  constellation/ build-time layout (in use); selection + filter over the SVG (6.2)
+  constellation/ build-time layout, selection, filter and cross-links over the SVG (in use)
   blackhole/    WebGL shader
 ```
 

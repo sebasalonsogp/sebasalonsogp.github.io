@@ -8,8 +8,8 @@ checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). *
 slices are live and the Phase 3 checkpoint is approved. **Phase 4 is live** (`main` c0151cb,
 deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 is
 live** (`main` a41cd97, deploy run 39778943782) and its checkpoint is approved. **Phase 6
-has started:** slice 6.1 (constellation layout) is done on `feat/constellation`, not yet
-merged; next is 6.2 (overview, selection, filter, cross-links). Every push to `main` runs the CI checks and deploys only if they pass.
+has started:** slices 6.1 (constellation layout) and 6.2 (selection, filter, cross-links) are done
+on `feat/constellation`, not yet merged; next is the Phase 6 checkpoint ("Constellation"). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -313,12 +313,29 @@ content migrated; each validation rule was shown to fail the build when broken.
   browsers: 263 passed, 1 skipped (before the swipe hint; the spec reran 18/18 after it).
   `npm run verify` passes.
 
+## Slice 6.2 — selection, filter, cross-links
+
+- `src/features/constellation/selection.ts` (data embedded by `Constellation.astro`); panel,
+  filter and star states styled in `Constellation.astro` (script-built panel items under
+  `.overview :global(…)`); `explorer.ts` gained a delegated `a[data-visit]` handler sharing
+  the project-row logic (`visitFromPage`); `SkillGroups.astro` swaps the header fact for the
+  key. Decision: the readable skill list stays visible below the chart (a complete reference;
+  the panel shows one skill at a time). Rules in `docs/design-spec.md`.
+- Checked with Playwright at 1440×900 (selection, near stars, panel, filter, timeline tag,
+  role link, project link opening the visit in place; no console errors) and with a tap at
+  390×844 (panel below the chart, no page overflow).
+- Tests: `constellation-selection.spec.ts` (buttons and label-in-name; near stars equal the
+  skills of the listed projects' stacks and roles' tags; Clear / Escape / empty sky; filter
+  dims, untabs and recounts; keyboard focus and most-used buttons; timeline tag twice; role
+  link selects in the timeline; axe with a selection; key terms; project link opens the
+  visit) plus no-JS checks in `constellation.spec.ts`. 99 tests × 3 browsers: 293 passed,
+  1 skipped. `npm run verify` passes.
+
 ## Next task
 
-Phase 6, slice 6.2 — overview panel and selection: select lights up co-used skills and
-lists projects (visit links) and roles (timeline links), filter All / Projects / Experience,
-clear, timeline skill tags focus a star, "How to read this" popover. Decide how the readable
-skill list relates to the panel (the experience list became the timeline's details).
+Phase 6 checkpoint: on Sebastian's go-ahead merge `feat/constellation` into `main` and push
+to deploy; he reviews the constellation on the live site (desktop and phone). Then Phase 7,
+slice 7.1.
 
 ## Open inputs and issues
 

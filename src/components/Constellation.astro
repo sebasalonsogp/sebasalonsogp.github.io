@@ -1,8 +1,12 @@
 ---
 // The skills constellation (docs/design-spec.md, "Skills constellation"), drawn at build time
 // from the skills the projects and roles use, beside an overview of them. The list below it
-// carries the same information as text.
+// carries the same information as text. With JavaScript, stars become buttons that light up
+// the skills used with them and list where (src/features/constellation/selection.ts).
+import { domains } from '../data/taxonomy';
 import { layoutConstellation } from '../features/constellation/layout';
+import type { ConstellationData } from '../features/constellation/selection';
+import { withBase } from '../lib/format';
 import type { SkillGroupUse, SkillUse } from '../lib/skills';
 
 interface Props {
@@ -19,17 +23,69 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const mostUsed = [...(core ? [core] : []), ...groups.flatMap((g) => g.skills)]
   .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
   .slice(0, 6);
+const allSkills = [...(core ? [core] : []), ...groups.flatMap((g) => g.skills)];
+// What the panel lists for each skill, and the skills used alongside it.
+const data: ConstellationData = {
+  skills: Object.fromEntries(
+    allSkills.map((skill) => {
+      const together = new Set([
+        ...skill.projects.flatMap((p) => p.data.tech),
+        ...skill.roles.flatMap((r) => r.data.skills),
+      ]);
+      together.delete(skill.name);
+      return [
+        skill.name,
+        {
+          count: skill.count,
+          projects: skill.projects.map((p) => ({
+            id: p.id,
+            title: p.data.title,
+            href: withBase(`projects/${p.id}/`),
+            color: domains[p.data.domain].color,
+          })),
+          roles: skill.roles.map((r) => ({
+            entry: `role-${r.id}`,
+            title: `${r.data.title}, ${r.data.orgShort}`,
+          })),
+          with: [...together],
+        },
+      ];
+    }),
+  ),
+  groups: groups.map((g) => g.skills.map((skill) => skill.name)),
+  projectCount,
+  roleCount,
+};
 const description =
   `Skills constellation: ${plural(total, 'skill')} in ${plural(groups.length, 'group')}` +
   `${core ? `, with ${core.name} at the centre` : ''}. Bigger stars are used in more places.` +
   ' The skills are listed below.';
 ---
 
+<div class="c-ctl" hidden data-constellation-controls>
+  <div class="seg" role="group" aria-label="Show skills from">
+    <button type="button" data-filter="all" aria-pressed="true">
+      All
+    </button>
+    <button type="button" data-filter="project" aria-pressed="false">
+      Projects
+    </button>
+    <button type="button" data-filter="role" aria-pressed="false">
+      Experience
+    </button>
+  </div>
+</div>
 <div class="skills-figure">
   <div class="chart">
     <p class="swipe-hint">Swipe the constellation sideways →</p>
     <div class="figwrap" tabindex="0" role="region" aria-label="Skills constellation">
-      <svg class="cn" viewBox={`0 0 ${c.width} ${c.height}`} role="img" aria-label={description}>
+      <svg
+        class="cn"
+        viewBox={`0 0 ${c.width} ${c.height}`}
+        role="img"
+        aria-label={description}
+        data-constellation
+      >
         <g class="links">
           {c.lines.map((l) => (
             <line
@@ -46,7 +102,20 @@ const description =
           </text>
         ))}
         {c.stars.map((star) => (
-          <g class:list={['star', { major: star.major }]} data-skill={star.name}>
+          <g
+            class:list={['star', { major: star.major }]}
+            data-skill={star.name}
+            aria-label={`${star.name}: ${plural(star.projects, 'project')}, ${plural(star.roles, 'role')}`}
+          >
+            <rect
+              class="hit"
+              x={star.box.x.toFixed(1)}
+              y={star.box.y.toFixed(1)}
+              width={star.box.width.toFixed(1)}
+              height={star.box.height.toFixed(1)}
+              rx="3"
+            />
+            <circle class="halo" cx={star.x.toFixed(1)} cy={star.y.toFixed(1)} r={star.r * 2.6} />
             {star.projects > 0 && star.roles > 0 && (
               <circle class="ring" cx={star.x.toFixed(1)} cy={star.y.toFixed(1)} r={star.r + 3.5} />
             )}
@@ -69,15 +138,22 @@ const description =
     </div>
   </div>
 
-  <div class="overview">
-    <p class="eyebrow">Overview</p>
-    <h3>{plural(total, 'skill')}</h3>
-    <p class="mono">
+  <div class="overview" id="constellation-panel" data-panel>
+    <div class="panel-head">
+      <p class="eyebrow" data-panel-eyebrow>
+        Overview
+      </p>
+      <button class="clear" type="button" hidden data-panel-clear>
+        Clear ×
+      </button>
+    </div>
+    <h3 data-panel-title>{plural(total, 'skill')}</h3>
+    <p class="mono" data-panel-count>
       {plural(groups.length, 'group')} · from {plural(projectCount, 'project')} and{' '}
       {plural(roleCount, 'role')}
     </p>
-    <p class="list-head">Most used</p>
-    <ul>
+    <ul data-panel-list>
+      <li class="list-head">Most used</li>
       {mostUsed.map((skill) => (
         <li>
           <i class:list={['ico', { role: skill.projects.length === 0 }]} aria-hidden="true" />
@@ -87,6 +163,17 @@ const description =
     </ul>
   </div>
 </div>
+<script
+  type="application/json"
+  data-constellation-data
+  set:html={JSON.stringify(data).replace(/</g, '\u003c')}
+/>
+<script>
+  import { enhanceConstellation } from '../features/constellation/selection';
+
+  const section = document.querySelector<HTMLElement>('#skills');
+  if (section) enhanceConstellation(section);
+</script>
 
 <style>
   .skills-figure {
@@ -193,7 +280,39 @@ const description =
     text-transform: uppercase;
   }
 
-  .list-head {
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .clear {
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    color: var(--dim);
+    cursor: pointer;
+  }
+
+  .clear:hover {
+    color: var(--ink);
+  }
+
+  .clear[hidden] {
+    display: none;
+  }
+
+  /* The list is rebuilt by selection.ts, so its items are styled globally within the panel. */
+  .overview ul {
+    display: grid;
+    gap: 2px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .overview :global(.list-head) {
     margin-top: 8px;
     font-family: var(--f-data);
     font-size: var(--s-cap);
@@ -203,21 +322,34 @@ const description =
     text-shadow: var(--halo);
   }
 
-  .overview ul {
-    display: grid;
-    gap: 2px;
-    padding: 0;
-    list-style: none;
-  }
-
-  .overview li {
+  .overview :global(li:not(.list-head)) {
     display: flex;
     gap: 10px;
     align-items: center;
     padding: 6px 0;
   }
 
-  .ico {
+  .overview :global(li > button),
+  .overview :global(li > a) {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .overview :global(li > button:hover),
+  .overview :global(li > a:hover) {
+    color: var(--sol);
+  }
+
+  .overview :global(.ico) {
     display: inline-block;
     flex: none;
     width: 10px;
@@ -226,9 +358,125 @@ const description =
     background: var(--ink);
   }
 
-  .ico.role {
+  .overview :global(.ico.role) {
     border: 1.5px solid var(--ink);
     background: transparent;
+  }
+
+  /* Filter (selection.ts shows it). */
+  .c-ctl {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    margin-bottom: 18px;
+  }
+
+  .c-ctl[hidden] {
+    display: none;
+  }
+
+  .seg {
+    display: inline-flex;
+    overflow: hidden;
+    border: 1px solid var(--faint);
+    border-radius: var(--radius-1);
+  }
+
+  .seg button {
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 0;
+    background: none;
+    color: var(--dim);
+    font-size: var(--s-small);
+    cursor: pointer;
+  }
+
+  .seg button + button {
+    border-left: 1px solid var(--faint);
+  }
+
+  .seg button[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--sol) 16%, transparent);
+    color: var(--ink);
+  }
+
+  /* Selection states (selection.ts). */
+  .hit {
+    fill: transparent;
+    stroke: none;
+    pointer-events: all;
+  }
+
+  .halo {
+    fill: var(--sol);
+    opacity: 0;
+    transition: opacity var(--dur-fast);
+  }
+
+  .cn[role='group'] .star {
+    cursor: pointer;
+  }
+
+  .star:focus {
+    outline: none;
+  }
+
+  .star:focus-visible .hit {
+    stroke: var(--sol);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 3;
+  }
+
+  .cn[role='group'] .star:hover .halo {
+    opacity: 0.12;
+  }
+
+  .star.is-selected .halo {
+    opacity: 0.22;
+  }
+
+  .star.is-selected .core {
+    fill: var(--sol);
+  }
+
+  .star.is-selected .core.hollow {
+    fill: var(--void);
+    stroke: var(--sol);
+  }
+
+  .star.is-selected text {
+    fill: var(--sol);
+  }
+
+  .star {
+    transition: opacity var(--dur-fast);
+  }
+
+  .cn.has-selection .star:not(.is-selected):not(.is-near) {
+    opacity: 0.24;
+  }
+
+  .cn.has-selection .star.is-near text {
+    fill: var(--ink);
+  }
+
+  .cn.has-selection .links line {
+    stroke-opacity: 0.14;
+  }
+
+  .cn.has-selection .group-label {
+    opacity: 0.45;
+  }
+
+  .star.is-off {
+    opacity: 0.12 !important;
+    pointer-events: none;
+  }
+
+  .links line.is-off {
+    opacity: 0.15;
   }
 
   /* The chart needs 772 px beside its panel; narrower screens stack them. */

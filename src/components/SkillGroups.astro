@@ -3,6 +3,7 @@ import type { Project, Role } from '../lib/content';
 import { skillAnchor } from '../lib/format';
 import { buildSkillIndex, type SkillUse } from '../lib/skills';
 import Constellation from './Constellation.astro';
+import HowToRead from './HowToRead.astro';
 import Section from './Section.astro';
 
 interface Props {
@@ -12,7 +13,15 @@ interface Props {
 
 const { projects, roles } = Astro.props;
 const { core, groups, total } = buildSkillIndex(projects, roles);
-const fact = `${total} skills from ${projects.length} projects and ${roles.length} roles`;
+// The overview beside the constellation states the counts; the header carries its key.
+const key = [
+  { term: 'Stars', detail: 'Skills. Bigger stars are used in more places.' },
+  { term: 'Lines', detail: 'Trace each group of related skills' },
+  { term: 'Filled', detail: 'Used in projects' },
+  { term: 'Hollow', detail: 'Used in roles' },
+  { term: 'Ringed', detail: 'Used in both' },
+  { term: 'Select', detail: 'Lights up the skills it was used with and lists where' },
+];
 
 // Matches the constellation, where skills used three or more times are bold.
 const FREQUENT = 3;
@@ -27,7 +36,8 @@ const uses = (skill: SkillUse) =>
 const lists = [...(core ? [{ name: 'Core', skills: [core] }] : []), ...groups];
 ---
 
-<Section id="skills" title="Skills" fact={fact}>
+<Section id="skills" title="Skills">
+  <HowToRead slot="aside" items={key} />
   <Constellation
     core={core}
     groups={groups}

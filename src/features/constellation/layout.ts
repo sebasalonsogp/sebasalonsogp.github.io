@@ -35,6 +35,8 @@ export interface ConstellationStar {
   labelLeft: boolean;
   /** Used three or more times: bold label. */
   major: boolean;
+  /** The star and its label: the hit area once stars become buttons. */
+  box: { x: number; y: number; width: number; height: number };
 }
 
 export interface ConstellationLayout {
@@ -73,6 +75,7 @@ export function layoutConstellation(
         roles: skill.roles.length,
         labelLeft: false,
         major: skill.count >= 3,
+        box: { x: 0, y: 0, width: 0, height: 0 },
         group,
       };
     });
@@ -112,7 +115,11 @@ export function layoutConstellation(
     }
     if (!moved) break;
   }
-  for (const n of nodes) n.labelLeft = n.x >= LABEL_FLIP_X;
+  for (const n of nodes) {
+    n.labelLeft = n.x >= LABEL_FLIP_X;
+    const [x0, y0, x1, y1] = box(n) as [number, number, number, number];
+    n.box = { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+  }
 
   // Shortest tree through each group's stars (Prim's algorithm; groups are small).
   const lines: ConstellationLayout['lines'] = [];

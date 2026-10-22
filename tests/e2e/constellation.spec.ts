@@ -136,8 +136,6 @@ test.describe('skills constellation', () => {
     const { overlaps, smallest } = await labelCheck(page);
     expect(overlaps).toEqual([]);
     expect(smallest).toBeGreaterThanOrEqual(12);
-    await frame.focus();
-    await expect(frame).toBeFocused();
     const { violations } = await new AxeBuilder({ page })
       .include('#skills')
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
@@ -154,7 +152,7 @@ test.describe('skills constellation', () => {
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
       .slice(0, 6)
       .map((s) => `${s.name} · ${s.count}`);
-    await expect(overview.locator('li')).toHaveText(top);
+    await expect(overview.locator('li:not(.list-head)')).toHaveText(top);
   });
 
   test('is drawn without JavaScript', async ({ browser }) => {
@@ -163,6 +161,8 @@ test.describe('skills constellation', () => {
     await page.goto('/');
     await expect(page.locator('#skills svg .star').first()).toBeVisible();
     await expect(page.locator('#skills svg')).toHaveAttribute('aria-label', /listed below/);
+    await expect(page.locator('[data-constellation-controls]')).toBeHidden();
+    await expect(page.locator('#skills .overview h3')).toHaveText(/\d+ skills/);
     await context.close();
   });
 });
