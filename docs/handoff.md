@@ -9,8 +9,8 @@ slices are live and the Phase 3 checkpoint is approved. **Phase 4 is live** (`ma
 deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 is
 live** (`main` a41cd97, deploy run 39778943782) and its checkpoint is approved. **Phase 6
 has started:** Phase 6 is live (`main` 61f943a, deploy run 39783890725) and its checkpoint is
-approved. **Phase 7 has started:** slice 7.1 (contact polish) is done on `feat/contact`,
-not yet merged; next is 7.2 (black hole). Every push to `main` runs the CI checks and deploys only if they pass.
+approved. **Phase 7 has started:** slices 7.1 (contact polish) and 7.2 (black hole) are done on
+`feat/contact` → `feat/blackhole`, not yet merged; next is 7.3 (404 page). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -348,12 +348,34 @@ content migrated; each validation rule was shown to fail the build when broken.
   (fails without the fix). 105 tests × 3 browsers: 306 passed, 3 skipped.
   `npm run verify` passes.
 
+## Slice 7.2 — black hole
+
+- `src/features/blackhole/shader.ts` (concept shader) and `blackhole.ts` (mount, ambient
+  loop, adaptive resolution, context loss); `ContactSection.astro` lazy-loads it and lays out
+  the backdrop / banner; `Section.astro` gained a `backdrop` slot and a `class` prop.
+- Measured (GPU time per frame with a one-pixel read): RTX 2070, 1080×675 at full quality,
+  median 2.5 ms (p90 6.7 ms) — runs at 25 fps. Headless Chromium (SwiftShader) ~1.1 s per
+  frame at full quality: detected as software and given one still frame at half resolution;
+  with the renderer name hidden, the timing path reaches the same result. Main-thread timer
+  gaps stayed ≤ 20 ms in all three cases. The concept's `gl.finish` probe measured 0 ms in
+  Chromium, so its fallback could never have fired.
+- Checked: desktop backdrop matches the concept (text fully legible; the disk sits right of
+  the column), phone banner above the heading, reduced motion gives identical frames, no
+  overflow. A mid-range laptop is still unmeasured (Phase 8.2): the plan's ≥ 30 fps target
+  vs. the 25 fps ambient cap — the cap wins per the motion rules; the adaptive path covers
+  slower GPUs.
+- Tests (`blackhole.spec.ts`, phone-sized so real rendering stays cheap; a fake GPU stubs the
+  timing read): lazy chunk, decorative and never covering contact links, fast GPU runs at
+  1.00 and pauses off screen, slower GPU steps to 0.50, too-slow GPU gets a still frame,
+  reduced motion, no WebGL and a failing shader leave no backdrop. 112 tests × 3 browsers:
+  327 passed, 3 skipped (then a typing fix in the new spec; it reran 21/21).
+  `npm run verify` passes.
+
 ## Next task
 
-Phase 7, slice 7.2 — black hole: port the concept's ray-traced lensing shader to
-`src/features/blackhole/` (raw WebGL), lazy-loaded near Contact, adaptive resolution, pause
-off-screen, one frame under reduced motion, hidden without WebGL; desktop backdrop with a
-left fade, phone banner above Contact; ≥ 30 fps on a mid-range laptop or degrade.
+Phase 7, slice 7.3 — 404: "This page fell past the event horizon." with the black hole and a
+link back to the system (`src/pages/404.astro`; reuse `mountBlackHole`). Then the Phase 7
+checkpoint (deploy `feat/blackhole`, which contains `feat/contact`).
 
 ## Open inputs and issues
 

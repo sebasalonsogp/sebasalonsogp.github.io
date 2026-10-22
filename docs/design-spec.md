@@ -343,6 +343,22 @@ The timeline and constellation enhance these lists, which are always in the HTML
   Doppler-brightened, slow differential rotation, amber palette. Desktop: backdrop to the
   right, ~82 vw wide, faded under the left column. Phone: banner above the heading.
   Caption "Ray-traced live in your browser".
+- Implemented in 7.2 (`src/features/blackhole/`): the concept's shader as is (GLSL ES 1.00,
+  WebGL 1), one full-screen triangle. The module (2.7 KB gzip) loads when Contact is within
+  600 px; the figure is `hidden` in the HTML, laid out invisibly (`data-pending`) while it
+  mounts, and shown by the first frame, so no WebGL, a failed shader or a lost context leave
+  no box (a restored context rebuilds it). Up to 25 fps through the shared ambient loop
+  (paused off screen and in hidden tabs; one frame at disk time 6 with reduced motion).
+  Pixel ratio ≤ 1.75 × quality. Adaptive: the first frames are timed on the GPU (a one-pixel
+  `readPixels` waits for the frame; `gl.finish` does not in Chromium, so the concept's probe
+  never fired); quality steps × 0.78 down to 0.5 while the median of 3 frames is over 20 ms;
+  still over 40 ms at 0.5, or one frame over 160 ms, means one still frame at 0.5. Software
+  renderers (SwiftShader, llvmpipe, Microsoft Basic Render) get that still frame without
+  being timed. Desktop: absolute, `right: max(-80px, (100vw − 1120px) / 2 − 200px)`,
+  `min(1080px, 82vw)`, 16 : 10, mask fading in from the left (transparent → 35 % at 22 % →
+  opaque at 46 %), `pointer-events: none` behind the column (z-index), which keeps a 560 px
+  minimum height. ≤ 900 px: a 4 : 3 banner, full bleed, above the heading, no mask. Caption
+  in the body face, `--dim`.
 
 ## 404
 

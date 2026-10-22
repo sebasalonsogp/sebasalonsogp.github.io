@@ -54,7 +54,7 @@ src/features/
                 previews and lightbox, tour (in use)
   timeline/     build-time layout, selection and playback over the SVG (in use)
   constellation/ build-time layout, selection, filter and cross-links over the SVG (in use)
-  blackhole/    WebGL shader
+  blackhole/    lensing shader in raw WebGL, adaptive resolution (in use)
 ```
 
 - Each feature is a plain `<script>` that dynamically imports its module when needed

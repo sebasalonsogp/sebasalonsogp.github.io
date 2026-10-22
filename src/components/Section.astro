@@ -4,13 +4,15 @@ interface Props {
   title: string;
   /** Short fact shown opposite the heading, e.g. "5 solo builds · 4 live demos". */
   fact?: string;
+  class?: string;
 }
 
-const { id, title, fact } = Astro.props;
+const { id, title, fact, class: className } = Astro.props;
 const headingId = `${id}-heading`;
 ---
 
-<section class="sec gut" id={id} aria-labelledby={headingId}>
+<section class:list={['sec', 'gut', className]} id={id} aria-labelledby={headingId}>
+  <slot name="backdrop" />
   <div class="wrap">
     <div class="sec-top">
       <h2 id={headingId}>{title}</h2>
