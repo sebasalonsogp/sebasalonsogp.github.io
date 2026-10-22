@@ -50,6 +50,13 @@
   pointer-events: auto;
 }
 
+/* A larger invisible hit area than the text (≥ 24 px tall even when only the name shows). */
+.hero .planet-label::before {
+  content: '';
+  position: absolute;
+  inset: -5px -6px;
+}
+
 .hero .planet-label.is-left {
   justify-items: end;
   text-align: right;
@@ -430,8 +437,8 @@
 .landing .ld-dot {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border: 0;
   background: none;

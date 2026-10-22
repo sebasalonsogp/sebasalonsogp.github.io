@@ -377,6 +377,9 @@ The timeline and constellation enhance these lists, which are always in the HTML
 - Keyboard: every planet, role, star, tab, dot and popover reachable; visible `--sol` focus
   ring; Esc closes lightbox, then visit, then playback.
 - Semantic HTML holds all text; canvases are `aria-hidden` with HTML equivalents.
+- Pointer targets are effectively ≥ 24×24 px (WCAG 2.5.8): sized, padded, or given an
+  invisible hit area (planet labels, constellation stars); `a11y.spec.ts` checks it.
+- Instant moves (reduced motion, direct loads) finish when they start, not on the next frame.
 
 ## Media
 

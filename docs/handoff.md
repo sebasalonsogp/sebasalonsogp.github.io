@@ -9,9 +9,9 @@ slices are live and the Phase 3 checkpoint is approved. **Phase 4 is live** (`ma
 deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 is
 live** (`main` a41cd97, deploy run 39778943782) and its checkpoint is approved. **Phase 6
 has started:** Phase 6 is live (`main` 61f943a, deploy run 39783890725) and its checkpoint is
-approved. **Phase 7 is done** on `feat/contact` → `feat/blackhole` → `feat/not-found` (7.1 contact
-polish, 7.2 black hole, 7.3 404), not yet merged; next is the Phase 7 checkpoint ("End of
-page"). Every push to `main` runs the CI checks and deploys only if they pass.
+approved. **Phase 7 is live** (`main` 66ac6ae) and its checkpoint is approved. CI now runs in the
+Playwright container (`main` 93ffdce). **Phase 8 has started:** 8.1 (accessibility audit)
+is on `feat/a11y-audit` except the screen-reader pass. Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -394,11 +394,29 @@ content migrated; each validation rule was shown to fail the build when broken.
 scrolls up and opens the visit` timed out in Chromium and passed on retry (watch it in
   Phase 8).
 
+## CI in the Playwright container
+
+- `ci.yml` runs the quality job in `mcr.microsoft.com/playwright:v1.64.1-noble` (pinned by
+  digest, `--user 1001 --ipc=host`); the browser step is a no-op there and nothing uses the
+  apt mirror. Keep the tag equal to `@playwright/test`. Validated on a branch first: it
+  surfaced two slow-runner test issues, now fixed (constellation attributes read in one call;
+  Play clicks skip the stability wait under WebKit's fake clock). Test step ~7–9 min.
+
+## Slice 8.1 — accessibility audit
+
+- Results and method in `docs/accessibility-audit.md`. Fixed: target sizes (stars, landing
+  dots, phone planet labels, summaries, nav and phone links); instant visits stuck at
+  "flying" when the explorer was paused (`finishTransition` in `explorer.ts`; the recurring CI
+  flake in the row-visit test). `settled` now passes on pages without a hero.
+- Tests: target size at 1440 and 390 on home, a project page and the 404; reduced-motion
+  visit while paused (fails without the fix).
+- Outstanding: the NVDA / VoiceOver pass (needs Sebastian or a machine with them).
+
 ## Next task
 
-Phase 7 checkpoint: on Sebastian's go-ahead merge `feat/not-found` (contains `feat/contact`
-and `feat/blackhole`) into `main` and push to deploy; he reviews Contact, the black hole and
-the 404 on the live site (desktop and phone). Then Phase 8 (quality).
+Finish 8.1 with a screen-reader pass (Sebastian), then Phase 8, slice 8.2 — performance
+budgets (LCP ≤ 2.5 s, CLS ≤ 0.1 throttled mobile; initial JS ≤ 60 KB gzip; explorer ≤ 200 KB
+gzip; media per visit ≤ 2 MB) and Lighthouse CI in the workflow.
 
 ## Open inputs and issues
 

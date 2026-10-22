@@ -49,7 +49,8 @@ export async function settled(page: Page) {
   await page.waitForFunction(
     () => {
       const hero = document.querySelector<HTMLElement>('#hero');
-      if (!hero || hero.dataset.explorer === 'loading') return false;
+      if (!hero) return true; // No explorer on this page (e.g. the 404).
+      if (hero.dataset.explorer === 'loading') return false;
       if (hero.dataset.mode === 'flying' || hero.dataset.mode === 'returning') return false;
       const panel = document.querySelector('.explorer-visit.is-open');
       return !panel || getComputedStyle(panel).opacity === '1';

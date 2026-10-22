@@ -19,6 +19,8 @@ const LABEL_FLIP_X = 760;
 /** Estimated glyph advance of a 14 px label, and its box height. */
 const LABEL_CHAR = 7.7;
 const LABEL_HEIGHT = 22;
+/** Hit areas are taller than the layout boxes: ≥ 24 px at the smallest drawing (WCAG 2.5.8). */
+const HIT_HEIGHT = 30;
 const BOUNDS = { x0: 30, x1: 860, y0: 40, y1: 566 };
 const GROUP_LABEL_GAP = 26;
 const MAX_PASSES = 500;
@@ -117,8 +119,8 @@ export function layoutConstellation(
   }
   for (const n of nodes) {
     n.labelLeft = n.x >= LABEL_FLIP_X;
-    const [x0, y0, x1, y1] = box(n) as [number, number, number, number];
-    n.box = { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+    const [x0, , x1] = box(n) as [number, number, number, number];
+    n.box = { x: x0, y: n.y - HIT_HEIGHT / 2, width: x1 - x0, height: HIT_HEIGHT };
   }
 
   // Shortest tree through each group's stars (Prim's algorithm; groups are small).

@@ -47,6 +47,24 @@ test.describe('visits', () => {
     await expect(hero(page)).toBeInViewport();
   });
 
+  test('with reduced motion a visit arrives at once, even while the explorer is paused', async ({
+    page,
+  }) => {
+    // Seen on CI: a row click far down the page started the visit while the explorer was
+    // paused off screen, and it stayed "flying" waiting for a frame.
+    const [first] = await projectList(page);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await expect(hero(page)).toHaveAttribute('data-explorer', 'paused');
+    const mode = await page.evaluate((id) => {
+      window.scrollTo = () => {}; // Keep the hero off screen: no frame will be drawn.
+      document.querySelector<HTMLElement>(`[data-project-row="${id}"]`)!.click();
+      return new Promise<string>((resolve) =>
+        setTimeout(() => resolve(document.querySelector<HTMLElement>('#hero')!.dataset.mode!), 50),
+      );
+    }, first!.id);
+    expect(mode).toBe('visit');
+  });
+
   test('tabs switch between the short version and the engineering log', async ({ page }) => {
     await page.locator('.planet-label').first().click();
     const brief = page.getByRole('tab', { name: 'The short version' });

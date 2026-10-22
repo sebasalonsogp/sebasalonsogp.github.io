@@ -295,12 +295,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       const k = t.duration ? (performance.now() - t.start) / t.duration : 1;
       const to = t.kind === 'planet' && current ? visitPoseNow(current) : explorePoseNow();
       cam = interpolatePose(t.from, to, t.yawTo, k, t.hop);
-      if (k >= 1) {
-        transition = null;
-        yaw = t.yawTo;
-        setMode(t.kind === 'planet' ? 'visit' : 'explore');
-        setHighlight();
-      }
+      if (k >= 1) finishTransition(t);
     } else {
       cam = mode === 'visit' && current ? visitPoseNow(current) : explorePoseNow();
     }
@@ -377,6 +372,13 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
   };
   tourButton?.addEventListener('click', onTourStart);
 
+  function finishTransition(t: Transition) {
+    transition = null;
+    yaw = t.yawTo;
+    setMode(t.kind === 'planet' ? 'visit' : 'explore');
+    setHighlight();
+  }
+
   const startTransition = (kind: Transition['kind'], id?: string, instant = false) => {
     const hop = kind === 'planet' && (mode === 'visit' || mode === 'flying') && current !== id;
     const yawTo = kind === 'planet' && id ? yawFor(visitPoseNow(id).target, cam.yaw) : cam.yaw;
@@ -396,6 +398,9 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       hop,
     };
     setMode(kind === 'planet' ? 'flying' : 'returning');
+    // An instant move (reduced motion, direct loads) arrives now rather than on the next frame:
+    // a paused loop (hero briefly off screen while the page scrolls up) might not draw one.
+    if (transition.duration === 0) finishTransition(transition);
     invalidate();
   };
 
