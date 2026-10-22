@@ -103,6 +103,17 @@ test.describe('home page', () => {
     await expect(status).toHaveText('', { timeout: 5_000 });
   });
 
+  test('has no horizontal scroll at 1440 px with the explorer running', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.reload();
+    await expect(page.locator('#hero')).toHaveAttribute(
+      'data-explorer',
+      /^(running|static|unavailable)$/,
+      { timeout: 10_000 },
+    );
+    expect(await hasHorizontalScroll(page)).toBe(false);
+  });
+
   test('has no horizontal scroll at 320 px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 700 });
     await page.reload();

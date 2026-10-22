@@ -1,8 +1,19 @@
 ---
+import { statSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { site } from '../data/site';
 import { withBase } from '../lib/format';
 import ExternalLink from './ExternalLink.astro';
 import Section from './Section.astro';
+
+// The resume card downloads the PDF and says how big it is (read at build time).
+const resumeKb = Math.max(
+  1,
+  Math.round(statSync(join(process.cwd(), 'public', site.resumePath)).size / 1024),
+);
+// Ten digits is a North American number: dial it with +1 so it works from abroad too.
+const phoneDigits = site.phone.replace(/\D/g, '');
+const phoneHref = `tel:${phoneDigits.length === 10 ? `+1${phoneDigits}` : phoneDigits}`;
 ---
 
 <Section id="contact" title="Contact" fact={site.availability}>
@@ -27,7 +38,11 @@ import Section from './Section.astro';
         {site.showPhone && (
           <div>
             <dt class="label">Phone</dt>
-            <dd class="ct-sel">{site.phone}</dd>
+            <dd>
+              <a class="ct-tel" href={phoneHref}>
+                {site.phone}
+              </a>
+            </dd>
           </div>
         )}
         <div>
@@ -38,15 +53,15 @@ import Section from './Section.astro';
     </div>
 
     <div class="ct-side">
-      <ExternalLink class="ct-resume" href={withBase(site.resumePath)}>
+      <a class="ct-resume" href={withBase(site.resumePath)} download={basename(site.resumePath)}>
         <span class="ct-r-top">
-          <span class="mono">Resume · PDF</span>
+          <span class="mono">Resume · PDF · {resumeKb} KB</span>
           <span class="ct-r-ico" aria-hidden="true">
             ↓
           </span>
         </span>
         <span class="ct-r-title">Download my resume</span>
-      </ExternalLink>
+      </a>
       <ul class="ct-links">
         <li>
           <ExternalLink href={site.linkedin.url}>
@@ -78,13 +93,15 @@ import Section from './Section.astro';
       window.clearTimeout(timer);
       timer = window.setTimeout(() => (status.textContent = ''), 2400);
     };
+    const shortcut = /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘C' : 'Ctrl+C';
+    // Without clipboard access (older browsers, no permission) the address is selected instead.
     const select = () => {
       const range = document.createRange();
       range.selectNodeContents(address);
       const selection = window.getSelection();
       selection?.removeAllRanges();
       selection?.addRange(range);
-      say('Selected. Press Ctrl+C or ⌘C to copy.');
+      say(`Selected. Press ${shortcut} to copy.`);
     };
 
     button.hidden = false;
@@ -165,9 +182,13 @@ import Section from './Section.astro';
     font-size: 1.05rem;
   }
 
-  .ct-sel {
-    user-select: all;
+  .ct-tel {
     font-variant-numeric: tabular-nums;
+    text-decoration: none;
+  }
+
+  .ct-tel:hover {
+    color: var(--sol);
   }
 
   .ct-side {
@@ -176,7 +197,7 @@ import Section from './Section.astro';
     gap: 20px;
   }
 
-  .ct-side :global(.ct-resume) {
+  .ct-resume {
     display: grid;
     gap: var(--sp-2);
     padding: 22px 22px 20px;
@@ -187,7 +208,7 @@ import Section from './Section.astro';
     transition: background var(--dur-fast);
   }
 
-  .ct-side :global(.ct-resume:hover) {
+  .ct-resume:hover {
     background: color-mix(in srgb, var(--sol) 15%, transparent);
   }
 

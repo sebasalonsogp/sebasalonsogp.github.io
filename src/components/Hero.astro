@@ -134,6 +134,8 @@ const key = [
     align-items: center;
     height: clamp(660px, 92vh, 900px);
     border-bottom: 1px solid var(--rule);
+    /* The closed visit panel waits just off the right edge; keep it from widening the page. */
+    overflow-x: clip;
   }
 
   .hero.visiting {

@@ -59,7 +59,7 @@ before ending a session.
 
 ## Phase 7 — Contact, black hole, 404
 
-- [ ] 7.1 Contact polish and resume download.
+- [x] 7.1 Contact polish and resume download.
 - [ ] 7.2 Black hole (lazy, adaptive, fallback).
 - [ ] 7.3 404 page.
 

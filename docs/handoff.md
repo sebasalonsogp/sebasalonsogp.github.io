@@ -8,8 +8,9 @@ checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). *
 slices are live and the Phase 3 checkpoint is approved. **Phase 4 is live** (`main` c0151cb,
 deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 is
 live** (`main` a41cd97, deploy run 39778943782) and its checkpoint is approved. **Phase 6
-has started:** slices 6.1 (constellation layout) and 6.2 (selection, filter, cross-links) are done
-on `feat/constellation`, not yet merged; next is the Phase 6 checkpoint ("Constellation"). Every push to `main` runs the CI checks and deploys only if they pass.
+has started:** Phase 6 is live (`main` 61f943a, deploy run 39783890725) and its checkpoint is
+approved. **Phase 7 has started:** slice 7.1 (contact polish) is done on `feat/contact`,
+not yet merged; next is 7.2 (black hole). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -60,7 +61,7 @@ content migrated; each validation rule was shown to fail the build when broken.
 - Checked in the built preview at 1440×900, 390×844 and 320 px (no horizontal scroll),
   keyboard order and focus rings, skill chips resolve to skill anchors, no console errors.
   Copy email exercised via its selection fallback (the pane blocks clipboard); the
-  clipboard success path is untested. `npm run verify` passes.
+  clipboard success path is untested (covered since 7.1). `npm run verify` passes.
 
 ## Slice 1.4 — project routes
 
@@ -331,11 +332,28 @@ content migrated; each validation rule was shown to fail the build when broken.
   visit) plus no-JS checks in `constellation.spec.ts`. 99 tests × 3 browsers: 293 passed,
   1 skipped. `npm run verify` passes.
 
+## Slice 7.1 — contact polish
+
+- `ContactSection.astro`: resume card downloads (`download`) with its size in the tag;
+  phone as a `tel:` link; copy-email fallback names the platform's shortcut. A legacy
+  `execCommand('copy')` step was tried and dropped (deprecated; it added three type hints for
+  browsers the Clipboard API already covers).
+- Found and fixed (since 4.1): at 1440 px the closed visit panel, parked 18 px right of its
+  open position, widened the page by 2 px. `.hero` now has `overflow-x: clip`. The old
+  overflow test only ran at 320 px, where the panel is a bottom sheet.
+- Checked at 1440×900 and 390×844 (copy with clipboard permission, layout, no overflow).
+- Tests: `contact.spec.ts` (clipboard success in Chromium, which alone can grant the
+  permission; selection fallback; download attribute, size label and a real download event;
+  `tel:` link) and a 1440 px overflow test in `home.spec.ts` with the explorer running
+  (fails without the fix). 105 tests × 3 browsers: 306 passed, 3 skipped.
+  `npm run verify` passes.
+
 ## Next task
 
-Phase 6 checkpoint: on Sebastian's go-ahead merge `feat/constellation` into `main` and push
-to deploy; he reviews the constellation on the live site (desktop and phone). Then Phase 7,
-slice 7.1.
+Phase 7, slice 7.2 — black hole: port the concept's ray-traced lensing shader to
+`src/features/blackhole/` (raw WebGL), lazy-loaded near Contact, adaptive resolution, pause
+off-screen, one frame under reduced motion, hidden without WebGL; desktop backdrop with a
+left fade, phone banner above Contact; ≥ 30 fps on a mid-range laptop or degrade.
 
 ## Open inputs and issues
 

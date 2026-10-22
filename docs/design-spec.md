@@ -333,6 +333,12 @@ The timeline and constellation enhance these lists, which are always in the HTML
 - Header "Contact" + "Open to backend and ML-platform roles".
 - Email (display size) + "Copy email" + "Open in mail app"; Phone; Location; resume card
   "Download my resume" (accent border); LinkedIn and GitHub rows.
+- Implemented in 7.1: "Copy email" (shown only with JavaScript) writes to the clipboard and
+  says "Copied"; without clipboard access it selects the address and says "Selected. Press
+  ⌘C / Ctrl+C to copy." (shortcut by platform); the status clears after 2.4 s. The phone is
+  a `tel:` link (ten digits dial with +1). The resume card downloads the PDF (`download`,
+  same tab) and its tag reads "Resume · PDF · N KB" (size read at build time); the nav and
+  footer "Resume" links still open it in a new tab for reading.
 - Black hole: ray-traced Schwarzschild lensing, thin disk from r = 3 to 8.8 (Rs = 1),
   Doppler-brightened, slow differential rotation, amber palette. Desktop: backdrop to the
   right, ~82 vw wide, faded under the left column. Phone: banner above the heading.
