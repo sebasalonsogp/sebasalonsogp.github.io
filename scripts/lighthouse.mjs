@@ -55,7 +55,17 @@ try {
         onlyCategories: ['performance'],
         throttlingMethod: 'devtools',
       });
-      const audits = result.lhr.audits;
+      const { audits, runtimeError, runWarnings } = result.lhr;
+      // Report anything that keeps a metric from being measured instead of passing quietly.
+      if (runtimeError) console.warn(`  ${path}: ${runtimeError.code} ${runtimeError.message}`);
+      for (const warning of runWarnings) console.warn(`  ${path}: ${warning}`);
+      for (const id of [
+        'largest-contentful-paint',
+        'cumulative-layout-shift',
+        'total-blocking-time',
+      ]) {
+        if (audits[id].errorMessage) console.warn(`  ${path}: ${id}: ${audits[id].errorMessage}`);
+      }
       runs.push({
         lcp: audits['largest-contentful-paint'].numericValue,
         cls: audits['cumulative-layout-shift'].numericValue,
@@ -70,7 +80,12 @@ try {
       tbt: Math.round(median(runs.map((r) => r.tbt))),
       score: Math.round(median(runs.map((r) => r.score)) * 100),
     };
-    const ok = page.lcp <= BUDGETS.lcp && page.cls <= BUDGETS.cls;
+    // A metric that could not be measured is a failure, not a pass.
+    const ok =
+      Number.isFinite(page.lcp) &&
+      Number.isFinite(page.cls) &&
+      page.lcp <= BUDGETS.lcp &&
+      page.cls <= BUDGETS.cls;
     failed ||= !ok;
     summary.push(page);
     console.log(
