@@ -20,7 +20,7 @@ import Section from './Section.astro';
           <a class="btn btn-ghost" href={`mailto:${site.email}`}>
             Open in mail app
           </a>
-          <span class="mono" data-copy-status aria-live="polite"></span>
+          <span class="status" data-copy-status aria-live="polite"></span>
         </div>
       </div>
       <dl class="ct-dl">
@@ -139,6 +139,11 @@ import Section from './Section.astro';
     flex-wrap: wrap;
     align-items: center;
     gap: 10px 14px;
+  }
+
+  .status {
+    font-size: var(--s-small);
+    color: var(--dim);
   }
 
   .ct-dl {

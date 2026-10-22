@@ -49,6 +49,17 @@ Scale: h1 `clamp(2.05rem, 3.7vw, 3.35rem)`, h2 `clamp(1.85rem, 3.2vw, 2.6rem)`, 
 lede 1.125rem, small 0.875rem, caption 0.75rem. Nothing under 12 px on desktop; on phones
 only chart data labels may reach 11 px. `text-wrap: balance` on headings.
 
+Applied in slice 2.3: mono covers dates, years, counts, profile handles, eyebrow labels and
+the "Resume · PDF" tag only; skill tags, section facts, captions, the visit panel's back and
+previous/next links, status messages and the footer use the body face (the concept used
+mono for several of these; the spec wins).
+
+Text over the sky: small dim text (eyebrows, dates, counts) carries `--halo`, a
+void-coloured `text-shadow` that darkens the sky only around the glyphs. Measured with the
+sky running (text hidden, three frames per view, brightest pixel kept), 1,473 text runs on
+home, a project page and 404 at 1440 and 390 px: all ≥ 4.5:1; worst 5.12:1 against a
+4 px-blurred 95th-percentile background, 5.69:1 against the mean background.
+
 Fonts are self-hosted Latin subsets (Fontsource files, declared in
 `src/components/Fonts.astro`, `font-display: swap`); Newsreader and Schibsted Grotesk
 upright are preloaded.

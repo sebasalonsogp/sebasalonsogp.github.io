@@ -26,7 +26,7 @@ before ending a session.
 
 - [x] 2.1 Sky module (stars, twinkle, haze 0.024, parallax).
 - [x] 2.2 Shared motion policy (reduced motion, visibility pause, fps cap).
-- [ ] 2.3 Visual pass: type rules, headings, help popovers, focus.
+- [x] 2.3 Visual pass: type rules, headings, focus, contrast over the sky (popovers move to 3.4, 5.2, 6.2).
 - [ ] Checkpoint: look and feel.
 
 ## Phase 3 — Solar-system explorer

@@ -4,9 +4,9 @@
 
 **Phase 1 is live** at https://sebasalonsogp.github.io/ (`noindex`) from `main` of the
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
-checkpoint by moving on. **Phase 2 is in progress:** slices 2.1 (sky) and 2.2 (motion
-policy) are done on branch `feat/sky-motion`; next is 2.3 (visual pass), then the Phase 2
-checkpoint. Every push to `main` runs the CI checks and deploys only if they pass.
+checkpoint by moving on. **Phase 2 is built:** slices 2.1 (sky) and 2.2 (motion policy) are live; slice 2.3 (visual
+pass) is done on branch `feat/visual-pass` and not yet merged. Next is the Phase 2
+checkpoint (look and feel on the live URL). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -102,11 +102,19 @@ content migrated; each validation rule was shown to fail the build when broken.
   404 with the custom page, resume PDF and video served, `noindex` everywhere, no console
   errors.
 
+## Slice 2.3 — visual pass
+
+- Type rule applied (mono only for dates, numbers, handles, tiny labels); no text under
+  12 px. `--halo` on small dim text keeps it ≥ 4.5:1 over star glows. Contrast measured
+  on 1,473 text runs over the running sky: all pass (method in `docs/design-spec.md`).
+- "How to read" popovers moved to the slices that build their graphics (3.4, 5.2, 6.2).
+- Checked in the browser at 1440×900 and 390×844: hierarchy, keyboard focus ring on chips,
+  no horizontal scroll, no console errors. `npm run verify` passes; `npm test` 72 passed.
+
 ## Next task
 
-Phase 2, slice 2.3 — visual pass: type rules (mono only for dates and data), section
-headings, "How to read" popovers, buttons, focus rings, scroll margins; measure text
-contrast ≥ 4.5:1 over the sky (axe left color-contrast "incomplete").
+Merge `feat/visual-pass` into `main` and deploy (needs Sebastian's go-ahead), then the
+Phase 2 checkpoint. After approval, Phase 3 slice 3.1 (Three.js scene shell).
 
 ## Open inputs and issues
 

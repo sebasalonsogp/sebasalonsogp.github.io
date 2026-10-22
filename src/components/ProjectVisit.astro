@@ -75,7 +75,7 @@ const projectPath = (id: string) => withBase(`projects/${id}/`);
               </video>
             )}
           </div>
-          <figcaption class="mono">{item.caption}</figcaption>
+          <figcaption>{item.caption}</figcaption>
         </figure>
       ))}
     </div>
@@ -126,7 +126,7 @@ const projectPath = (id: string) => withBase(`projects/${id}/`);
     <a href={projectPath(previous.id)} rel="prev">
       ← Previous<span class="sr-only">: {previous.data.title}</span>
     </a>
-    <span>
+    <span class="count">
       {position} of {total}
     </span>
     <a href={projectPath(next.id)} rel="next">
@@ -184,8 +184,7 @@ const projectPath = (id: string) => withBase(`projects/${id}/`);
 
   .v-back {
     padding: 6px 0;
-    font-family: var(--f-data);
-    font-size: var(--s-cap);
+    font-size: var(--s-small);
     color: var(--dim);
     text-decoration: none;
   }
@@ -222,6 +221,11 @@ const projectPath = (id: string) => withBase(`projects/${id}/`);
     display: grid;
     gap: 10px;
     margin: 0;
+  }
+
+  figcaption {
+    font-size: var(--s-small);
+    color: var(--dim);
   }
 
   .screen {
@@ -285,8 +289,7 @@ const projectPath = (id: string) => withBase(`projects/${id}/`);
     padding: 3px 8px;
     border: 1px solid var(--faint);
     border-radius: var(--radius-1);
-    font-family: var(--f-data);
-    font-size: var(--s-cap);
+    font-size: 0.8rem;
     text-decoration: none;
     transition: border-color var(--dur-fast);
   }
@@ -302,9 +305,15 @@ const projectPath = (id: string) => withBase(`projects/${id}/`);
     gap: 10px;
     padding-top: 10px;
     border-top: 1px solid var(--rule);
+    font-size: var(--s-small);
+    color: var(--dim);
+  }
+
+  .v-nav .count {
     font-family: var(--f-data);
     font-size: var(--s-cap);
-    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+    text-shadow: var(--halo);
   }
 
   .v-nav a {

@@ -99,7 +99,8 @@ Slices:
 2. **Motion policy.** One shared `motion.ts`: reduced-motion detection, page-visibility
    pause, 30 fps cap for ambient loops. Reduced motion renders a single static sky.
 3. **Visual pass.** Apply the type rules (mono only for dates and data), section headings
-   (`sec-top`), "How to read" popovers, buttons, focus rings, scroll margins.
+   (`sec-top`), buttons, focus rings, scroll margins. "How to read" popovers ship with the
+   graphics they explain (3.4, 5.2, 6.2), so none describes something not yet built.
 
 **Acceptance:** Twinkle is clearly visible on a recorded 10-second clip at desktop and
 phone sizes. Sky costs < 2 ms/frame on a mid-range laptop. Text contrast ≥ 4.5:1
@@ -188,7 +189,7 @@ Slices:
    Output static SVG (no layout work in the browser).
 2. **Interaction.** Overview panel (count, groups, most used), select lights up co-used
    skills, filter All/Projects/Experience, clear, links to projects and roles; timeline tags
-   focus a star.
+   focus a star. "How to read this" popover.
 
 **Acceptance:** ≤ 30 resting lines; every label ≥ 12 px on desktop; no overlapping labels
 (checked by a test that measures label boxes).

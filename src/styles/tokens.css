@@ -19,6 +19,9 @@
   --d-ml: #b9a8d8;
   --d-data: #6fa7c4;
   --d-math: #c7d6e6;
+  /* Darkens the sky just around small dim text so a star glow behind it cannot pull the
+     contrast under 4.5:1 (measured in slice 2.3). */
+  --halo: 0 0 3px var(--void), 0 0 6px var(--void);
 
   /* Type */
   --f-display: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
