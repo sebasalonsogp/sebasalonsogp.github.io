@@ -52,8 +52,8 @@ src/features/
   sky/          2D canvas starfield (in use)
   explorer/     Three.js scene, bodies, labels, camera, visit state machine, landing
                 previews and lightbox, tour (in use)
-  timeline/     build-time layout (in use); selection + playback over the SVG (5.2, 5.3)
-  constellation/ selection + filter over build-time SVG
+  timeline/     build-time layout, selection and playback over the SVG (in use)
+  constellation/ build-time layout (in use); selection + filter over the SVG (6.2)
   blackhole/    WebGL shader
 ```
 

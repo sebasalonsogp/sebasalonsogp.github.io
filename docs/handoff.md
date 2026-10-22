@@ -7,8 +7,9 @@ public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved th
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
 slices are live and the Phase 3 checkpoint is approved. **Phase 4 is live** (`main` c0151cb,
 deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 is
-done** on `feat/timeline` (5.1 build-time timeline, 5.2 selection, 5.3 playback), not yet
-merged; next is the Phase 5 checkpoint ("Timeline + playback" on the live site). Every push to `main` runs the CI checks and deploys only if they pass.
+live** (`main` a41cd97, deploy run 39778943782) and its checkpoint is approved. **Phase 6
+has started:** slice 6.1 (constellation layout) is done on `feat/constellation`, not yet
+merged; next is 6.2 (overview, selection, filter, cross-links). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -295,11 +296,29 @@ content migrated; each validation rule was shown to fail the build when broken.
   hides the track; no-JS hides the controls. 83 tests × 3 browsers: 245 passed, 1 skipped.
   `npm run verify` passes.
 
+## Slice 6.1 — constellation layout
+
+- `src/features/constellation/layout.ts` and `Constellation.astro` (chart and static
+  overview above the readable list in `SkillGroups.astro`); group anchors added to
+  `src/data/skill-groups.ts`, carried through `buildSkillIndex`. Rules in
+  `docs/design-spec.md`.
+- Checked: Playwright screenshots at 1440×900 beside the concept (same arrangement; group
+  names larger for the 12 px rule; the overview counts 7 roles where the concept counted the
+  6 with skills, matching the section fact); 390×844 scrolls inside its frame. Measured at
+  1440: 35 stars, 28 lines, no label overlaps, smallest label 12.2 px.
+- Tests (`constellation.spec.ts`): one star per listed skill with size and fill from its
+  uses; Σ(n − 1) lines, each joining stars of one group, ≤ 30; no overlapping or clipped
+  labels and ≥ 12 px at 1440 and on phones (each browser's own font metrics); phone scroll,
+  hint and axe; overview count and most used; drawn without JavaScript. 89 tests × 3
+  browsers: 263 passed, 1 skipped (before the swipe hint; the spec reran 18/18 after it).
+  `npm run verify` passes.
+
 ## Next task
 
-Phase 5 checkpoint: on Sebastian's go-ahead merge `feat/timeline` into `main` and push to
-deploy; he reviews the timeline and playback on the live site (desktop and phone). Then
-Phase 6, slice 6.1 (constellation layout).
+Phase 6, slice 6.2 — overview panel and selection: select lights up co-used skills and
+lists projects (visit links) and roles (timeline links), filter All / Projects / Experience,
+clear, timeline skill tags focus a star, "How to read this" popover. Decide how the readable
+skill list relates to the panel (the experience list became the timeline's details).
 
 ## Open inputs and issues
 

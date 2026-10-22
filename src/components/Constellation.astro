@@ -1,0 +1,247 @@
+---
+// The skills constellation (docs/design-spec.md, "Skills constellation"), drawn at build time
+// from the skills the projects and roles use, beside an overview of them. The list below it
+// carries the same information as text.
+import { layoutConstellation } from '../features/constellation/layout';
+import type { SkillGroupUse, SkillUse } from '../lib/skills';
+
+interface Props {
+  core: SkillUse | undefined;
+  groups: SkillGroupUse[];
+  total: number;
+  projectCount: number;
+  roleCount: number;
+}
+
+const { core, groups, total, projectCount, roleCount } = Astro.props;
+const c = layoutConstellation(core, groups);
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const mostUsed = [...(core ? [core] : []), ...groups.flatMap((g) => g.skills)]
+  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+  .slice(0, 6);
+const description =
+  `Skills constellation: ${plural(total, 'skill')} in ${plural(groups.length, 'group')}` +
+  `${core ? `, with ${core.name} at the centre` : ''}. Bigger stars are used in more places.` +
+  ' The skills are listed below.';
+---
+
+<div class="skills-figure">
+  <div class="chart">
+    <p class="swipe-hint">Swipe the constellation sideways →</p>
+    <div class="figwrap" tabindex="0" role="region" aria-label="Skills constellation">
+      <svg class="cn" viewBox={`0 0 ${c.width} ${c.height}`} role="img" aria-label={description}>
+        <g class="links">
+          {c.lines.map((l) => (
+            <line
+              x1={l.x1.toFixed(1)}
+              y1={l.y1.toFixed(1)}
+              x2={l.x2.toFixed(1)}
+              y2={l.y2.toFixed(1)}
+            />
+          ))}
+        </g>
+        {c.groups.map((g) => (
+          <text class="group-label" x={g.x.toFixed(1)} y={g.y.toFixed(1)} text-anchor="middle">
+            {g.name}
+          </text>
+        ))}
+        {c.stars.map((star) => (
+          <g class:list={['star', { major: star.major }]} data-skill={star.name}>
+            {star.projects > 0 && star.roles > 0 && (
+              <circle class="ring" cx={star.x.toFixed(1)} cy={star.y.toFixed(1)} r={star.r + 3.5} />
+            )}
+            <circle
+              class:list={['core', { hollow: star.projects === 0 }]}
+              cx={star.x.toFixed(1)}
+              cy={star.y.toFixed(1)}
+              r={star.r.toFixed(2)}
+            />
+            <text
+              x={(star.labelLeft ? star.x - star.r - 8 : star.x + star.r + 8).toFixed(1)}
+              y={(star.y + 4.5).toFixed(1)}
+              text-anchor={star.labelLeft ? 'end' : 'start'}
+            >
+              {star.name}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  </div>
+
+  <div class="overview">
+    <p class="eyebrow">Overview</p>
+    <h3>{plural(total, 'skill')}</h3>
+    <p class="mono">
+      {plural(groups.length, 'group')} · from {plural(projectCount, 'project')} and{' '}
+      {plural(roleCount, 'role')}
+    </p>
+    <p class="list-head">Most used</p>
+    <ul>
+      {mostUsed.map((skill) => (
+        <li>
+          <i class:list={['ico', { role: skill.projects.length === 0 }]} aria-hidden="true" />
+          {skill.name} · {skill.count}
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .skills-figure {
+    display: grid;
+    grid-template-columns: minmax(0, 2.6fr) minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+    margin-bottom: var(--sp-6);
+  }
+
+  .swipe-hint {
+    display: none;
+    margin: 0 0 var(--sp-2);
+    font-size: var(--s-small);
+    color: var(--dim);
+    text-shadow: var(--halo);
+  }
+
+  .figwrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .figwrap:focus-visible {
+    outline: 2px solid var(--sol);
+    outline-offset: 4px;
+  }
+
+  /* 14-unit labels stay at least 12 px: never drawn narrower than 772 px (phones scroll). */
+  .cn {
+    display: block;
+    width: 100%;
+    min-width: 772px;
+    height: auto;
+  }
+
+  .links line {
+    stroke: var(--dim);
+    stroke-opacity: 0.38;
+    stroke-width: 1;
+  }
+
+  text {
+    paint-order: stroke;
+    stroke: var(--void);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+
+  .group-label {
+    fill: var(--dim);
+    font-family: var(--f-data);
+    font-size: 14px;
+    letter-spacing: 0.16em;
+  }
+
+  .star text {
+    fill: color-mix(in srgb, var(--ink) 82%, var(--dim));
+    font-family: var(--f-body);
+    font-size: 14px;
+  }
+
+  .star.major text {
+    fill: var(--ink);
+    font-weight: 500;
+  }
+
+  .core {
+    fill: var(--ink);
+  }
+
+  .core.hollow {
+    fill: var(--void);
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  .ring {
+    fill: none;
+    stroke: var(--cold);
+    stroke-width: 1.2;
+    opacity: 0.85;
+  }
+
+  .overview {
+    display: grid;
+    gap: 10px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .overview p,
+  .overview h3,
+  .overview ul {
+    margin: 0;
+  }
+
+  .overview h3 {
+    font-size: 2rem;
+    font-weight: 400;
+  }
+
+  .overview .mono {
+    text-transform: uppercase;
+  }
+
+  .list-head {
+    margin-top: 8px;
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    text-shadow: var(--halo);
+  }
+
+  .overview ul {
+    display: grid;
+    gap: 2px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .overview li {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 0;
+  }
+
+  .ico {
+    display: inline-block;
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .ico.role {
+    border: 1.5px solid var(--ink);
+    background: transparent;
+  }
+
+  /* The chart needs 772 px beside its panel; narrower screens stack them. */
+  @media (max-width: 1179px) {
+    .skills-figure {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* Below 772 px plus the gutters the chart scrolls. */
+  @media (max-width: 803px) {
+    .swipe-hint {
+      display: block;
+    }
+  }
+</style>

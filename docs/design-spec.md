@@ -282,6 +282,19 @@ one-liner.
 - Select: star turns `--sol`, co-used skills stay bright, others fade to 24%; panel lists
   projects and roles with links; "Clear ×" or empty-sky click returns to overview. Filter
   All / Projects / Experience.
+- Implemented in 6.1 (`src/features/constellation/layout.ts`, `Constellation.astro`): drawn
+  at build time in the concept's 900 × 580 viewBox from the skills the content uses. Each
+  group's `anchor` lives in `src/data/skill-groups.ts` (Python's in `coreAnchor`); members
+  spiral out from it most used first (46 units per √index, golden angle, stretched 1.25 ×
+  0.85), then star-plus-label boxes are pushed apart vertically until none overlap, inside
+  x 30–860, y 40–566. Labels flip left from x 760. Lines: Prim's shortest tree per group
+  (28 today). Group names centre above their stars. Labels are 14 units (group names mono
+  with 0.16em tracking, raised from the concept's 11 so they also clear 12 px), with a void
+  stroke halo; the SVG never draws narrower than 772 px, so every label is ≥ 12 px. The
+  chart sits beside the overview (2.6 : 1) from 1180 px and stacks above it below that;
+  under 804 px it scrolls with "Swipe the constellation sideways →". The overview is static
+  in 6.1 (count, groups and sources, "Most used" top six with filled / hollow icons); 6.2
+  makes it the selection panel.
 
 ## Readable equivalents (no graphics)
 

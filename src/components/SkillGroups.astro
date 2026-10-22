@@ -2,6 +2,7 @@
 import type { Project, Role } from '../lib/content';
 import { skillAnchor } from '../lib/format';
 import { buildSkillIndex, type SkillUse } from '../lib/skills';
+import Constellation from './Constellation.astro';
 import Section from './Section.astro';
 
 interface Props {
@@ -27,6 +28,13 @@ const lists = [...(core ? [{ name: 'Core', skills: [core] }] : []), ...groups];
 ---
 
 <Section id="skills" title="Skills" fact={fact}>
+  <Constellation
+    core={core}
+    groups={groups}
+    total={total}
+    projectCount={projects.length}
+    roleCount={roles.length}
+  />
   <div class="groups">
     {lists.map((group) => (
       <div class="group">

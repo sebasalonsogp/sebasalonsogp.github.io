@@ -10,6 +10,8 @@ export interface SkillUse {
 
 export interface SkillGroupUse {
   name: string;
+  /** Where the group sits in the constellation (viewBox units). */
+  anchor: { x: number; y: number };
   skills: SkillUse[];
 }
 
@@ -34,7 +36,7 @@ export function buildSkillIndex(projects: Project[], roles: Role[]) {
     names.flatMap((name) => uses.get(name) ?? []).sort(byUse);
 
   const groups: SkillGroupUse[] = skillGroups
-    .map((group) => ({ name: group.name, skills: pick(group.skills) }))
+    .map((group) => ({ name: group.name, anchor: group.anchor, skills: pick(group.skills) }))
     .filter((group) => group.skills.length > 0);
 
   return { core: uses.get(coreSkill), groups, total: uses.size };

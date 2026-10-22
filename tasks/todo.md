@@ -54,7 +54,7 @@ before ending a session.
 
 ## Phase 6 — Skills constellation
 
-- [ ] 6.1 Build-time layout and group lines.
+- [x] 6.1 Build-time layout and group lines.
 - [ ] 6.2 Overview, light-up selection, filter, cross-links.
 
 ## Phase 7 — Contact, black hole, 404
