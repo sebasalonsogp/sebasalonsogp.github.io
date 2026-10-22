@@ -6,9 +6,9 @@
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
 slices are live and the Phase 3 checkpoint is approved. **Phase 4 is live** (`main` c0151cb,
-deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 has
-started:** slices 5.1 (build-time timeline) and 5.2 (selection) are done on `feat/timeline`,
-not yet merged; next is 5.3 (playback). Every push to `main` runs the CI checks and deploys only if they pass.
+deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 is
+done** on `feat/timeline` (5.1 build-time timeline, 5.2 selection, 5.3 playback), not yet
+merged; next is the Phase 5 checkpoint ("Timeline + playback" on the live site). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -279,13 +279,27 @@ content migrated; each validation rule was shown to fail the build when broken.
   and Enter, `#role-…` links, skill links resolve, popover terms and Escape; no-JS shows
   every entry. 78 tests × 3 browsers: 230 passed, 1 skipped. `npm run verify` passes.
 
+## Slice 5.3 — playback
+
+- `src/features/timeline/playback.ts`; controls, cursor and riding dots in
+  `ExperienceTimeline.astro` (layout now exports the time scale and role times); intro and
+  "now" panels as hidden entries in `ExperienceList.astro`; `selection.ts` gained
+  `showPanel`, `setPreview` and an `onUserSelect` hook. Rules in `docs/design-spec.md`.
+- Checked with Playwright at 1440×900 with real motion (frames during a sweep, mid-run and
+  at the end; controls, chart and details in view at every role; no console errors) and at
+  390×844 with and without reduced motion (frame follows the cursor, track hidden under
+  reduced motion, Esc stops, no page overflow).
+- Tests (fake clock, so a full run takes seconds): roles in start order with the one-screen
+  check at each role and faded future roles, ends at "Now" with bars restored; Stop, Esc and
+  a role click stop it; hover does not; scrolling away stops it; reduced motion jumps and
+  hides the track; no-JS hides the controls. 83 tests × 3 browsers: 245 passed, 1 skipped.
+  `npm run verify` passes.
+
 ## Next task
 
-Phase 5, slice 5.3 — playback: "Play the timeline" moves a cursor between role starts
-(0.9–2.6 s per segment), draws roles as it passes with riding dots, 4.6 s per role, then
-reveals now and the cone; stops on any interaction or Esc; phones follow the cursor.
-`enhanceTimeline` returns `select()` for it. Acceptance: chart, controls and details on one
-screen at 1440×900.
+Phase 5 checkpoint: on Sebastian's go-ahead merge `feat/timeline` into `main` and push to
+deploy; he reviews the timeline and playback on the live site (desktop and phone). Then
+Phase 6, slice 6.1 (constellation layout).
 
 ## Open inputs and issues
 

@@ -2,7 +2,8 @@
 // The experience worldline (docs/design-spec.md, "Experience timeline"), drawn at build time
 // from the experience and education collections. The list below it carries the same
 // information; with JavaScript, roles and the college band become buttons that show their
-// entry from that list (src/features/timeline/selection.ts).
+// entry from that list (src/features/timeline/selection.ts), and "Play the timeline" walks
+// through the roles in order (src/features/timeline/playback.ts).
 import { site } from '../data/site';
 import { layoutTimeline } from '../features/timeline/layout';
 import type { Education, Role } from '../lib/content';
@@ -24,15 +25,31 @@ const coneX = t.now.x + t.now.cone.width;
 ---
 
 <div class="timeline">
+  <div class="wl-ctl" hidden data-timeline-controls>
+    <button class="btn btn-primary" type="button" aria-controls="timeline-chart" data-play>
+      Play the timeline
+    </button>
+    <div class="wl-bar" hidden data-play-bar>
+      <span aria-live="polite" data-play-label></span>
+      <div class="track" aria-hidden="true">
+        <i data-play-fill></i>
+      </div>
+    </div>
+  </div>
   <p class="swipe-hint">Swipe the timeline sideways →</p>
   <div class="figwrap" tabindex="0" role="region" aria-label="Experience timeline">
     <svg
+      id="timeline-chart"
       class="wl"
       viewBox={`0 0 ${t.width} ${t.height}`}
       role="img"
       aria-label={description}
       data-timeline
       data-default={`role-${t.latest}`}
+      data-left={t.left}
+      data-start={t.time.start}
+      data-scale={t.time.scale}
+      data-now={t.time.now}
     >
       {t.years.map(({ year, x }) => (
         <>
@@ -105,6 +122,8 @@ const coneX = t.now.x + t.now.cone.width;
           class:list={['wr', { hl: role.highlight }]}
           data-role={role.id}
           data-entry={`role-${role.id}`}
+          data-t0={role.t0}
+          data-t1={role.t1}
           aria-label={role.name}
         >
           <rect
@@ -128,17 +147,29 @@ const coneX = t.now.x + t.now.cone.width;
               {role.sublabel}
             </tspan>
           </text>
+          {/* Rides the end of the bar while playback draws it. */}
+          <circle class="head" cx={role.x1} cy={role.y} r="5" />
         </g>
       ))}
+
+      {/* Playback cursor: a line, a tag and the month it has reached. */}
+      <g class="cursor" aria-hidden="true">
+        <line class="cursor-line" x1="0" y1={t.top - 8} x2="0" y2={t.bottom + 4} />
+        <polygon points={`-5,${t.top - 8} 5,${t.top - 8} 0,${t.top - 1}`} />
+        <text class="sol" x="9" y="50" />
+      </g>
     </svg>
   </div>
 </div>
 
 <script>
+  import { createPlayback, type Playback } from '../features/timeline/playback';
   import { enhanceTimeline } from '../features/timeline/selection';
 
   const section = document.querySelector<HTMLElement>('#experience');
-  if (section) enhanceTimeline(section);
+  let playback: Playback | null = null;
+  const selection = section && enhanceTimeline(section, { onUserSelect: () => playback?.stop() });
+  if (section && selection) playback = createPlayback(section, selection);
 </script>
 
 <style>
@@ -320,6 +351,105 @@ const coneX = t.now.x + t.now.cone.width;
 
   .wr.is-selected .bar {
     stroke-width: 7;
+  }
+
+  /* Playback (playback.ts). */
+  .wl-ctl {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 20px;
+    margin-bottom: 18px;
+    scroll-margin-top: var(--scroll-offset);
+  }
+
+  .wl-ctl[hidden],
+  .wl-bar[hidden] {
+    display: none;
+  }
+
+  .wl-bar {
+    display: grid;
+    flex: 1 1 220px;
+    max-width: 26rem;
+    gap: 6px;
+    font-family: var(--f-data);
+    font-size: var(--s-cap);
+    color: var(--dim);
+    text-shadow: var(--halo);
+  }
+
+  .track {
+    height: 2px;
+    overflow: hidden;
+    background: var(--rule);
+  }
+
+  .track i {
+    display: block;
+    height: 100%;
+    background: var(--sol);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .track i.is-running {
+    animation: wl-fill linear forwards;
+  }
+
+  @keyframes wl-fill {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .cursor {
+    opacity: 0;
+    transition: opacity var(--dur-fast);
+  }
+
+  .cursor polygon {
+    fill: var(--sol);
+  }
+
+  .cursor-line {
+    stroke: var(--sol);
+    stroke-opacity: 0.85;
+  }
+
+  .wl.is-playing .cursor {
+    opacity: 1;
+  }
+
+  .head {
+    fill: var(--sol);
+    stroke: var(--void);
+    stroke-width: 2;
+    opacity: 0;
+    transition: opacity var(--dur-fast);
+  }
+
+  .wl.is-playing .wr.is-live .head {
+    opacity: 1;
+  }
+
+  .wr.is-future {
+    opacity: 0.07 !important;
+  }
+
+  .now {
+    transition: opacity var(--dur-base);
+  }
+
+  .wl.is-playing .now {
+    opacity: 0;
+  }
+
+  /* The label still says where playback is; the bar does not move. */
+  @media (prefers-reduced-motion: reduce) {
+    .track {
+      display: none;
+    }
   }
 
   .wl.has-selection .wr:not(.is-selected) {

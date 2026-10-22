@@ -255,6 +255,21 @@ one-liner.
   text reads as two phrases; WCAG 2.5.3), then the full title, organization and dates.
   Skill tags link to `#skill-…`. "How to read this" sits in the section header (Lanes,
   Lines, Band, Cone; `Section` gained an `aside` slot).
+- Playback, implemented in 5.3 (`src/features/timeline/playback.ts`): the controls row
+  (shown only with JavaScript) sits above the chart; while playing the button reads "Stop"
+  and a bar shows "Role n of N" (announced politely) with a 2 px fill over each 4.6 s dwell,
+  hidden under reduced motion. The cursor (line, tag, "MON YYYY" label that flips left past
+  x 840) starts 0.3 years before the first role and eases (sine in-out) to each role start,
+  1.5 s per year clamped to 0.9–2.6 s, instant with reduced motion. Roles not yet reached
+  fade to 0.07; bars draw up to the cursor with a `--sol` dot riding each live one; the now
+  marker and cone fade out and return at the end. The readout opens with a "Timeline · From
+  YYYY to now" panel and closes with a "Now" panel (`site.availability`, `site.location`;
+  both are hidden entries in the HTML), then the button reads "Play again". If the controls
+  are off screen or low, playback first scrolls them to the top, so controls, chart and
+  details stay on one screen at 1440×900. Hover and focus previews pause while it runs.
+  Stop, Esc, selecting a role or the band, a `#role-…` link, or scrolling the chart out of
+  view stops it (bars return to full length, the current details stay). Phones keep the
+  cursor at 55 % of the frame.
 
 ## Skills constellation
 

@@ -42,6 +42,22 @@ const chart = (page: Page) =>
     now: Number(svg.querySelector('.now-line')!.getAttribute('x1')),
   }));
 
+const shownEntries = (page: Page) =>
+  page
+    .locator('[data-readout] .entry')
+    .evaluateAll((entries) => entries.filter((e) => !(e as HTMLElement).hidden).map((e) => e.id));
+const button = (page: Page, entryId: string) =>
+  page.locator(`#experience [data-entry="${entryId}"]`);
+/**
+ * Centre of a role's hit area, with the chart in view. Pointing by coordinates: Playwright's
+ * own scrolling to an SVG <text> in WebKit measures the text in the wrong place.
+ */
+const roleTarget = async (page: Page, entryId: string) => {
+  await page.locator('#experience svg').evaluate((svg) => svg.scrollIntoView({ block: 'center' }));
+  const box = (await button(page, entryId).locator('.hit').boundingBox())!;
+  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+};
+
 test.describe('experience timeline', () => {
   test('draws every listed role once, in its lane', async ({ page }) => {
     await page.goto('/');
@@ -90,10 +106,11 @@ test.describe('experience timeline', () => {
       /roles are listed below/,
     );
     // Every entry shows, and the scrolling frame is the keyboard's way to the picture.
-    for (const entry of await page.locator('[data-readout] .entry').all()) {
+    for (const entry of await page.locator('[data-readout] .entry:not(.status)').all()) {
       await expect(entry).toBeVisible();
     }
     await expect(page.locator('#experience .figwrap')).toHaveAttribute('tabindex', '0');
+    await expect(page.locator('[data-timeline-controls]')).toBeHidden();
     await context.close();
   });
 
@@ -140,29 +157,11 @@ test.describe('timeline selection', () => {
     await page.goto('/');
   });
 
-  const shownEntries = (page: Page) =>
-    page
-      .locator('[data-readout] .entry')
-      .evaluateAll((entries) => entries.filter((e) => !(e as HTMLElement).hidden).map((e) => e.id));
-  const button = (page: Page, entryId: string) =>
-    page.locator(`#experience [data-entry="${entryId}"]`);
-  /**
-   * Centre of a role's hit area, with the chart in view. Pointing by coordinates: Playwright's
-   * own scrolling to an SVG <text> in WebKit measures the text in the wrong place.
-   */
-  const roleTarget = async (page: Page, entryId: string) => {
-    await page
-      .locator('#experience svg')
-      .evaluate((svg) => svg.scrollIntoView({ block: 'center' }));
-    const box = (await button(page, entryId).locator('.hit').boundingBox())!;
-    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-  };
-
   test('roles and the band become buttons for their list entries', async ({ page }) => {
     await expect(page.locator('#experience svg')).toHaveAttribute('role', 'group');
     const buttons = page.locator('#experience [data-entry]');
     const ids = await page
-      .locator('[data-readout] .entry')
+      .locator('[data-readout] .entry:not(.status)')
       .evaluateAll((entries) => entries.map((e) => e.id));
     expect(await buttons.count()).toBe(ids.length);
     for (const b of await buttons.all()) {
@@ -221,7 +220,8 @@ test.describe('timeline selection', () => {
     const order = await page
       .locator('#experience [data-entry]')
       .evaluateAll((items) => items.map((i) => i.getAttribute('data-entry')!));
-    await page.locator('#experience summary').focus();
+    // Tab order: the key, "Play the timeline", then the band and the roles.
+    await page.locator('[data-play]').focus();
     for (const id of order) {
       await page.keyboard.press('Tab');
       await expect(button(page, id)).toBeFocused();
@@ -256,6 +256,129 @@ test.describe('timeline selection', () => {
     await page.keyboard.press('Escape');
     await expect(popover).not.toHaveAttribute('open', '');
     await expect(popover.locator('summary')).toBeFocused();
+  });
+});
+
+test.describe('timeline playback', () => {
+  // A fake clock drives timers and animation frames, so a whole playback runs in moments.
+  test.beforeEach(async ({ page }) => {
+    await page.clock.install();
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+  });
+
+  const play = (page: Page) => page.locator('[data-play]');
+  const label = (page: Page) => page.locator('[data-play-label]');
+  const svg = (page: Page) => page.locator('#timeline-chart');
+  /** Role entries in the order they started. */
+  const order = (page: Page) =>
+    page.locator('#experience [data-role]').evaluateAll((groups) =>
+      groups
+        .map((g) => ({ id: g.getAttribute('data-entry')!, t0: Number(g.getAttribute('data-t0')) }))
+        .sort((a, b) => a.t0 - b.t0)
+        .map((r) => r.id),
+    );
+  const barEnds = (page: Page) =>
+    page
+      .locator('#experience .wr .bar')
+      .evaluateAll((bars) => bars.map((bar) => bar.getAttribute('x2')));
+  /** Advances the clock in small steps until `check` holds. */
+  const advanceUntil = async (page: Page, check: () => Promise<boolean>, maxMs = 10_000) => {
+    for (let elapsed = 0; elapsed <= maxMs; elapsed += 100) {
+      if (await check()) return;
+      await page.clock.runFor(100);
+    }
+    throw new Error(`Still waiting after ${maxMs} ms of page time`);
+  };
+  const showing = (page: Page, id: string) => async () =>
+    JSON.stringify(await shownEntries(page)) === JSON.stringify([id]);
+
+  test('walks the roles in start order with chart, controls and details on one screen, then ends at now', async ({
+    page,
+  }) => {
+    test.slow();
+    const ids = await order(page);
+    const fullBars = await barEnds(page);
+    await play(page).click();
+    await expect(play(page)).toHaveText('Stop');
+    await expect(svg(page)).toHaveClass(/is-playing/);
+    expect(await shownEntries(page)).toEqual(['timeline-intro']);
+
+    for (const [i, id] of ids.entries()) {
+      await advanceUntil(page, showing(page, id));
+      await expect(label(page)).toHaveText(`Role ${i + 1} of ${ids.length}`);
+      await expect(page.locator('[data-timeline-controls]')).toBeInViewport({ ratio: 1 });
+      await expect(svg(page)).toBeInViewport({ ratio: 1 });
+      await expect(page.locator(`#${id} h3`)).toBeInViewport({ ratio: 1 });
+      // Roles that start later are faded out until the cursor reaches them.
+      const future = await page.locator('#experience .wr.is-future').count();
+      expect(future).toBe(ids.length - 1 - i);
+    }
+
+    await advanceUntil(page, async () => (await play(page).textContent())!.includes('again'));
+    expect(await shownEntries(page)).toEqual(['timeline-now']);
+    await expect(svg(page)).not.toHaveClass(/is-playing/);
+    expect(await barEnds(page)).toEqual(fullBars);
+  });
+
+  test('Stop, Escape or selecting a role stops it', async ({ page }) => {
+    const ids = await order(page);
+    const fullBars = await barEnds(page);
+    const start = async () => {
+      await play(page).click();
+      await advanceUntil(page, showing(page, ids[0]!));
+    };
+
+    await start();
+    await play(page).click();
+    await expect(play(page)).toHaveText('Play the timeline');
+    await expect(svg(page)).not.toHaveClass(/is-playing/);
+    expect(await barEnds(page)).toEqual(fullBars);
+    expect(await shownEntries(page)).toEqual([ids[0]]);
+
+    await start();
+    await page.keyboard.press('Escape');
+    await expect(svg(page)).not.toHaveClass(/is-playing/);
+
+    await start();
+    const target = await roleTarget(page, ids.at(-1)!);
+    await page.mouse.click(target.x, target.y);
+    await expect(svg(page)).not.toHaveClass(/is-playing/);
+    expect(await shownEntries(page)).toEqual([ids.at(-1)]);
+    await expect(button(page, ids.at(-1)!)).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('hovering a role does not interrupt it', async ({ page }) => {
+    const ids = await order(page);
+    await play(page).click();
+    await advanceUntil(page, showing(page, ids[0]!));
+    const target = await roleTarget(page, ids.at(-1)!);
+    await page.mouse.move(target.x, target.y);
+    await page.clock.runFor(200);
+    expect(await shownEntries(page)).toEqual([ids[0]]);
+    await expect(svg(page)).toHaveClass(/is-playing/);
+  });
+
+  test('scrolling the chart away stops it', async ({ page }) => {
+    const ids = await order(page);
+    await play(page).click();
+    await advanceUntil(page, showing(page, ids[0]!));
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await expect(svg(page)).not.toHaveClass(/is-playing/);
+  });
+
+  test('with reduced motion it jumps between roles and hides the progress track', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const ids = await order(page);
+    await play(page).click();
+    await page.clock.runFor(100);
+    expect(await shownEntries(page)).toEqual([ids[0]]);
+    await expect(page.locator('[data-play-bar] .track')).toBeHidden();
+    // 4.6 s on the role, then straight to the next.
+    await page.clock.runFor(4600);
+    expect(await shownEntries(page)).toEqual([ids[1]]);
   });
 });
 

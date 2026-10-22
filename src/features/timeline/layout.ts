@@ -38,6 +38,9 @@ export interface TimelineRole {
   label: string;
   sublabel: string;
   highlight: boolean;
+  /** Start and end in years (end exclusive), for playback. */
+  t0: number;
+  t1: number;
   x0: number;
   x1: number;
   y: number;
@@ -69,6 +72,8 @@ export interface TimelineLayout {
   bands: TimelineBand[];
   /** The role that ended last (or is ongoing): selected first, and where now sits. */
   latest: string;
+  /** Time scale, so playback can place its cursor: x = left + (t − start) · scale. */
+  time: { start: number; scale: number; now: number };
   now: {
     x: number;
     y: number;
@@ -150,6 +155,8 @@ export function layoutTimeline(
     label: data.label,
     sublabel: data.sublabel,
     highlight: data.highlight,
+    t0: toYears(data.start),
+    t1: endOf(data.end),
     x0,
     x1: x(endOf(data.end)),
     y: rowY(data.lane, row),
@@ -208,6 +215,7 @@ export function layoutTimeline(
     roles: timelineRoles,
     bands,
     latest: latest.id,
+    time: { start, scale, now },
     now: {
       x: nowX,
       y: nowY,

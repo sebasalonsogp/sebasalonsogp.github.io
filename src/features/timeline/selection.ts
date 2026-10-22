@@ -6,8 +6,18 @@
 import { reducedMotion } from '../motion/motion';
 
 export interface TimelineSelection {
+  /** Shows a role or band entry (by its element id) and presses its button. */
   select(entryId: string): void;
+  /** Shows one of the readout's other panels (playback's intro and "now"); no button pressed. */
+  showPanel(id: string): void;
+  /** Hover and focus previews; playback turns them off while it runs. */
+  setPreview(enabled: boolean): void;
   dispose(): void;
+}
+
+export interface SelectionOptions {
+  /** Called before a selection the visitor made (click, tap, Enter, a link), e.g. to stop playback. */
+  onUserSelect?(): void;
 }
 
 interface Item {
@@ -15,7 +25,10 @@ interface Item {
   entry: HTMLElement;
 }
 
-export function enhanceTimeline(section: HTMLElement): TimelineSelection | null {
+export function enhanceTimeline(
+  section: HTMLElement,
+  options: SelectionOptions = {},
+): TimelineSelection | null {
   const svg = section.querySelector<SVGSVGElement>('svg[data-timeline]');
   const readout = section.querySelector<HTMLElement>('[data-readout]');
   if (!svg || !readout) return null;
@@ -26,6 +39,7 @@ export function enhanceTimeline(section: HTMLElement): TimelineSelection | null 
     if (entry && readout.contains(entry)) items.push({ button, entry });
   }
   if (!items.length) return null;
+  const entries = [...readout.querySelectorAll<HTMLElement>('.entry')];
 
   // From a picture to a group of buttons; the buttons make the scrolling frame reachable, so
   // the frame itself no longer needs to be a tab stop.
@@ -41,20 +55,22 @@ export function enhanceTimeline(section: HTMLElement): TimelineSelection | null 
   }
   readout.dataset.single = '';
 
-  let current: Item | null = null;
+  let current: HTMLElement | null = null;
+  let preview = true;
 
-  const show = (item: Item, animate = true) => {
-    if (item === current) return;
-    current = item;
-    svg.classList.add('has-selection');
+  /** Shows one entry of the readout; `item` is its button, if it has one. */
+  const show = (entry: HTMLElement, item: Item | undefined, animate = true) => {
+    if (entry === current) return;
+    current = entry;
+    svg.classList.toggle('has-selection', item !== undefined);
     for (const other of items) {
       const selected = other === item;
       other.button.classList.toggle('is-selected', selected);
       other.button.setAttribute('aria-pressed', String(selected));
-      other.entry.hidden = !selected;
     }
+    for (const other of entries) other.hidden = other !== entry;
     if (animate && !reducedMotion.matches) {
-      item.entry.animate(
+      entry.animate(
         [
           { opacity: 0, transform: 'translateY(6px)' },
           { opacity: 1, transform: 'none' },
@@ -63,31 +79,37 @@ export function enhanceTimeline(section: HTMLElement): TimelineSelection | null 
       );
     }
   };
+  const showItem = (item: Item, animate = true) => show(item.entry, item, animate);
+  const take = (item: Item) => {
+    options.onUserSelect?.();
+    showItem(item);
+  };
 
   const itemFor = (target: EventTarget | null) =>
     items.find(({ button }) => button === (target as Element | null)?.closest('[data-entry]'));
 
   const onClick = (event: MouseEvent) => {
     const item = itemFor(event.target);
-    if (item) show(item);
+    if (item) take(item);
   };
   const onKey = (event: KeyboardEvent) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     const item = itemFor(event.target);
     if (!item) return;
     event.preventDefault();
-    show(item);
+    take(item);
   };
   // Mouse hover previews roles; touch taps arrive as clicks. The band spans the whole college
   // period, so it only responds to a click (else crossing it would keep stealing the view).
   const onOver = (event: PointerEvent) => {
-    if (event.pointerType !== 'mouse') return;
+    if (!preview || event.pointerType !== 'mouse') return;
     const item = itemFor(event.target);
-    if (item?.button.dataset.role !== undefined) show(item);
+    if (item?.button.dataset.role !== undefined) showItem(item);
   };
   const onFocus = (event: FocusEvent) => {
+    if (!preview) return;
     const item = itemFor(event.target);
-    if (item) show(item);
+    if (item) showItem(item);
   };
 
   /** Selects the entry a `#role-…` / `#education-…` link points to, and scrolls to the chart. */
@@ -95,7 +117,8 @@ export function enhanceTimeline(section: HTMLElement): TimelineSelection | null 
     const id = decodeURIComponent(window.location.hash.slice(1));
     const item = items.find(({ entry }) => entry.id === id);
     if (!item) return;
-    show(item, false);
+    options.onUserSelect?.();
+    showItem(item, false);
     section.scrollIntoView({ block: 'start' });
   };
 
@@ -106,20 +129,28 @@ export function enhanceTimeline(section: HTMLElement): TimelineSelection | null 
   window.addEventListener('hashchange', showHash);
 
   const first = items.find(({ button }) => button.dataset.entry === svg.dataset.default);
-  show(first ?? items[0]!, false);
+  showItem(first ?? items[0]!, false);
   showHash();
 
   // Phones: start the scrolled frame at the selected role.
   const frame = svg.closest<HTMLElement>('.figwrap');
-  if (frame && current && frame.scrollWidth > frame.clientWidth) {
-    const box = (current as Item).button.getBoundingClientRect();
+  const selected = items.find(({ entry }) => entry === current);
+  if (frame && selected && frame.scrollWidth > frame.clientWidth) {
+    const box = selected.button.getBoundingClientRect();
     frame.scrollLeft += box.left - frame.getBoundingClientRect().left - 40;
   }
 
   return {
     select(entryId) {
       const item = items.find(({ entry }) => entry.id === entryId);
-      if (item) show(item);
+      if (item) showItem(item);
+    },
+    showPanel(id) {
+      const panel = entries.find((entry) => entry.id === id);
+      if (panel) show(panel, undefined);
+    },
+    setPreview(enabled) {
+      preview = enabled;
     },
     dispose() {
       svg.removeEventListener('click', onClick);

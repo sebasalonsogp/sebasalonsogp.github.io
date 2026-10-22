@@ -50,7 +50,7 @@ before ending a session.
 
 - [x] 5.1 Build-time SVG timeline.
 - [x] 5.2 Selection, details, skill links, help popover.
-- [ ] 5.3 Playback.
+- [x] 5.3 Playback.
 
 ## Phase 6 — Skills constellation
 
