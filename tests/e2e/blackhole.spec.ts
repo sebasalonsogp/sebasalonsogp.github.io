@@ -1,11 +1,15 @@
 import { expect, test, type Page } from '@playwright/test';
-import { hasHorizontalScroll } from './helpers';
+import { hasHorizontalScroll, supportsWebGL } from './helpers';
 
 const figure = (page: Page) => page.locator('[data-black-hole]');
 
 /** Scrolls Contact into view, which loads the black hole. */
 async function toContact(page: Page) {
   await page.evaluate(() => document.querySelector('#contact')!.scrollIntoView());
+}
+/** For tests that need the black hole drawn: skips where the browser has no WebGL. */
+async function requireWebGL(page: Page) {
+  test.skip(!(await supportsWebGL(page)), 'No WebGL in this browser');
 }
 const drawn = (page: Page) =>
   page.waitForFunction(
@@ -62,6 +66,7 @@ test.describe('black hole', () => {
   test('is decorative and never covers the contact details', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
+    await requireWebGL(page);
     await toContact(page);
     await drawn(page);
     await expect(figure(page)).toHaveAttribute('aria-hidden', 'true');
@@ -80,6 +85,7 @@ test.describe('black hole', () => {
   test('a fast GPU animates it at full resolution, and it pauses off screen', async ({ page }) => {
     await fakeGpu(page, 2);
     await page.goto('/');
+    await requireWebGL(page);
     await toContact(page);
     await drawn(page);
     await expect(figure(page)).toHaveAttribute('data-state', 'running');
@@ -92,6 +98,7 @@ test.describe('black hole', () => {
     // 30 ms: over budget at every step, but bearable at the lowest resolution.
     await fakeGpu(page, 30);
     await page.goto('/');
+    await requireWebGL(page);
     await toContact(page);
     await drawn(page);
     await expect(figure(page)).toHaveAttribute('data-quality', '0.50', { timeout: 15_000 });
@@ -101,6 +108,7 @@ test.describe('black hole', () => {
   test('a GPU that cannot keep up gets one still frame', async ({ page }) => {
     await fakeGpu(page, 200);
     await page.goto('/');
+    await requireWebGL(page);
     await toContact(page);
     await drawn(page);
     await expect(figure(page)).toHaveAttribute('data-state', 'static');
@@ -110,6 +118,7 @@ test.describe('black hole', () => {
   test('reduced motion draws one frame', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
+    await requireWebGL(page);
     await toContact(page);
     await drawn(page);
     await expect(figure(page)).toHaveAttribute('data-state', 'static');

@@ -383,6 +383,17 @@ content migrated; each validation rule was shown to fail the build when broken.
   overflow and axe at 1440; banner above the line on phones; no WebGL keeps line and link.
   115 tests × 3 browsers: 336 passed, 3 skipped. `npm run verify` passes.
 
+## CI follow-up to Phase 7
+
+- The first deploy of 1576687 was cancelled: "Install Playwright browsers" hung on the runner
+  for the job's whole 20 minutes (no tests ran). The re-run failed 7 Firefox tests: CI's
+  Linux Firefox has no WebGL, so the black hole correctly never draws, but the black hole and
+  404 tests waited for it. They now skip without WebGL (`supportsWebGL` in `helpers.ts`), as
+  the explorer tests already did; checked locally in Firefox with `webgl.disabled` (7 skipped,
+  4 passed, including the no-WebGL fallback). Also seen once on CI: `visits › a project row
+  scrolls up and opens the visit` timed out in Chromium and passed on retry (watch it in
+  Phase 8).
+
 ## Next task
 
 Phase 7 checkpoint: on Sebastian's go-ahead merge `feat/not-found` (contains `feat/contact`

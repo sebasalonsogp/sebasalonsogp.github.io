@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { hasHorizontalScroll } from './helpers';
+import { hasHorizontalScroll, supportsWebGL } from './helpers';
 
 const blackHoleDrawn = () => {
   const f = document.querySelector<HTMLElement>('[data-black-hole]');
@@ -21,6 +21,7 @@ test('unknown paths get the 404 page with a way back', async ({ page }) => {
 test('the 404 draws the black hole at once, behind the text', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/a/deeper/missing/path/');
+  test.skip(!(await supportsWebGL(page)), 'No WebGL in this browser');
   // No scrolling needed: the black hole is this page's hero.
   await page.waitForFunction(blackHoleDrawn, null, { timeout: 30_000 });
   await expect(page.locator('[data-black-hole]')).toHaveAttribute('aria-hidden', 'true');
@@ -41,6 +42,7 @@ test('the 404 draws the black hole at once, behind the text', async ({ page }) =
 test('on phones the black hole is a banner above the line', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/no-such-page/');
+  test.skip(!(await supportsWebGL(page)), 'No WebGL in this browser');
   await page.waitForFunction(blackHoleDrawn, null, { timeout: 30_000 });
   const banner = (await page.locator('[data-black-hole] canvas').boundingBox())!;
   const heading = (await page.getByRole('heading', { level: 1 }).boundingBox())!;

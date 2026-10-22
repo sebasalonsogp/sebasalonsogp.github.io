@@ -62,6 +62,10 @@ export async function settled(page: Page) {
 export const hero = (page: Page) => page.locator('#hero');
 export const visitTitle = (page: Page) => page.locator('#explorer-visit-title');
 
+/** WebGL 1, which the black hole needs (CI's Linux Firefox has none). */
+export const supportsWebGL = (page: Page) =>
+  page.evaluate(() => Boolean(document.createElement('canvas').getContext('webgl')));
+
 export const supportsWebGL2 = (page: Page) =>
   page.evaluate(() => Boolean(document.createElement('canvas').getContext('webgl2')));
 
