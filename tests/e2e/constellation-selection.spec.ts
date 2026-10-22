@@ -41,11 +41,20 @@ test.describe('constellation selection', () => {
   test('stars become buttons named by their label', async ({ page }) => {
     await expect(page.locator('#skills svg')).toHaveAttribute('role', 'group');
     await expect(page.locator('[data-constellation-controls]')).toBeVisible();
-    for (const s of await page.locator('#skills .star').all()) {
-      await expect(s).toHaveAttribute('role', 'button');
-      await expect(s).toHaveAttribute('aria-controls', 'constellation-panel');
-      const name = (await s.getAttribute('data-skill'))!;
-      expect((await s.getAttribute('aria-label'))!.startsWith(name)).toBe(true);
+    // One read for all stars (35 round trips per attribute are slow on CI).
+    const stars = await page.locator('#skills .star').evaluateAll((all) =>
+      all.map((s) => ({
+        name: s.getAttribute('data-skill')!,
+        role: s.getAttribute('role'),
+        controls: s.getAttribute('aria-controls'),
+        label: s.getAttribute('aria-label') ?? '',
+      })),
+    );
+    expect(stars.length).toBeGreaterThan(0);
+    for (const star of stars) {
+      expect(star.role, star.name).toBe('button');
+      expect(star.controls, star.name).toBe('constellation-panel');
+      expect(star.label.startsWith(star.name), star.name).toBe(true);
     }
   });
 
