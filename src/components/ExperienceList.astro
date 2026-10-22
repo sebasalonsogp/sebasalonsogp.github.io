@@ -2,6 +2,7 @@
 import { lanes } from '../data/taxonomy';
 import type { Education, Role } from '../lib/content';
 import { formatMonth, formatSpan, skillAnchor } from '../lib/format';
+import ExperienceTimeline from './ExperienceTimeline.astro';
 import ExternalLink from './ExternalLink.astro';
 import Section from './Section.astro';
 
@@ -15,6 +16,7 @@ const newestFirst = [...roles].reverse();
 ---
 
 <Section id="experience" title="Experience">
+  <ExperienceTimeline roles={roles} education={education} />
   <ol class="roles">
     {newestFirst.map(({ id, data }) => (
       <li class="entry" id={`role-${id}`}>

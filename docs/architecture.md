@@ -50,9 +50,9 @@ content collections + github.json + site.ts
 src/features/
   motion/       reduced motion, visibility, fps cap (shared; in use)
   sky/          2D canvas starfield (in use)
-  explorer/     Three.js scene, bodies, labels, camera, visit state machine (shell in use)
-  landing/      preview screen + lightbox
-  timeline/     selection + playback over build-time SVG
+  explorer/     Three.js scene, bodies, labels, camera, visit state machine, landing
+                previews and lightbox, tour (in use)
+  timeline/     build-time layout (in use); selection + playback over the SVG (5.2, 5.3)
   constellation/ selection + filter over build-time SVG
   blackhole/    WebGL shader
 ```

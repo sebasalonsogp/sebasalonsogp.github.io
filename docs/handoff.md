@@ -5,10 +5,10 @@
 **Phase 1 is live** at https://sebasalonsogp.github.io/ (`noindex`) from `main` of the
 public repository `sebasalonsogp/sebasalonsogp.github.io`; Sebastian approved the
 checkpoint by moving on. **Phase 2 is live and approved** (checkpoint passed). **Phase 3 has started:** all four
-slices are live and the Phase 3 checkpoint is approved. **Phase 4 has started:** slices 4.1
-(visit), 4.2 (landing) and 4.3 (routes) are live (`main` b0735cd). Slices 4.4 (tour) and 4.5
-(journey tests) are done on `feat/tour` → `feat/journeys`, not yet merged. Phase 4 is
-ready for its checkpoint. Every push to `main` runs the CI checks and deploys only if they pass.
+slices are live and the Phase 3 checkpoint is approved. **Phase 4 is live** (`main` c0151cb,
+deploy run 39732028756) and Sebastian approved its checkpoint by moving on. **Phase 5 has
+started:** slice 5.1 (build-time timeline) is done on `feat/timeline`, not yet merged; next
+is 5.2 (selection and details). Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -244,11 +244,28 @@ content migrated; each validation rule was shown to fail the build when broken.
   sending focus back to the departing screen. The new test fails without the fix.
 - 65 tests × 3 browsers: 191 passed, 1 skipped. `npm run verify` passes.
 
+## Slice 5.1 — build-time timeline
+
+- `src/features/timeline/layout.ts` (pure layout from the collections) and
+  `ExperienceTimeline.astro` (SVG above the readable list in `ExperienceList.astro`).
+  Rules in `docs/design-spec.md`.
+- Checked: Playwright screenshots at 1440×900 beside the concept's worldline (matches:
+  lanes, bars, labels, band, graduation line, now, connector, cone); 390×844 scrolls inside
+  its frame with no page overflow. A throwaway build with an overlapping role and an ongoing
+  role (files deleted) showed the extra row and now moving to the top lane; that exposed the
+  cone crossing the axis, fixed by fitting the cone and moving its title below.
+- Tests (`timeline.spec.ts`): one bar per listed role in its lane, one time scale matching
+  the listed dates and ending by now, drawn without JavaScript, 1440 px fits with text
+  ≥ 12 px, phones scroll in the frame with labels ≥ 11 px plus axe on the section. 70 tests
+  × 3 browsers: 206 passed, 1 skipped (before a type fix in the new spec; the spec reran
+  15/15 after it). `npm run verify` passes.
+
 ## Next task
 
-Phase 4 checkpoint: Sebastian reviews the full journey (including a project link sent to
-a phone); on approval merge `feat/journeys` (contains `feat/tour`) into `main` and push to
-deploy. Then Phase 5, slice 5.1.
+Phase 5, slice 5.2 — selection: roles and the college band become buttons that show their
+details below (lane, title, org · place, dates · duration, note, bullets, skill links to the
+constellation, link), "How to read this" popover (`HowToRead.astro`). Decide then how the
+readable list and the details relate (the concept shows only the selected role).
 
 ## Open inputs and issues
 

@@ -226,6 +226,20 @@ one-liner.
 - Playback: "Play the timeline" → cursor eases between role starts (900–2,600 ms), roles
   draw and fade in as reached, riding dots on active roles, 4.6 s dwell, reveal now/cone,
   "Play again". Stop on click, Stop button or Esc.
+- Implemented in 5.1 (`src/features/timeline/layout.ts`, `ExperienceTimeline.astro`): the
+  SVG is drawn at build time above the readable list, in the concept's 960-unit viewBox.
+  Time runs from a quarter before the first role to the build month ("now"), scaled so the
+  cone ends at the lanes' right edge (150 units per year with today's data, as in the
+  concept). Lanes keep the taxonomy order; a role that overlaps another in its lane (more
+  than a shared month, or into its labels) gets an extra row below, and the chart grows.
+  Now sits on the row of the role that ended last (an ongoing role ends at now); the dotted
+  connector runs from that role's end. The cone stays below the axis; when there is no room
+  above it, its title moves below with the availability text (`site.availability`, split
+  into two lines). The SVG is never drawn narrower than its viewBox, so data labels are
+  ≥ 12.8 px at 1440 px and 11 px minimum on phones, where the frame scrolls sideways (with
+  "Swipe the timeline sideways →" below 992 px). Small text carries a void stroke halo
+  (`paint-order: stroke`). Until 5.2 makes roles selectable, the SVG is one `role="img"` with
+  a generated description and the scrolling frame is a focusable region.
 
 ## Skills constellation
 
