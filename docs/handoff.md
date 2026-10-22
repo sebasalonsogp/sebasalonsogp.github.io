@@ -502,9 +502,11 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
 
 ## Next task
 
-Phase 8 checkpoint (release candidate): Sebastian works through `docs/release-candidate.md`
-(manual checks and decisions). Then Phase 9: 9.1 apply his content decisions, 9.2 launch by
-the steps in `docs/deployment.md`.
+Phase 8 checkpoint (release candidate): Sebastian works through `docs/release-candidate.md`.
+Decided 2026-10-22, no site change: keep the draft pitch, "Founding Software Engineer"
+(he updates LinkedIn), the phone shown, the opsz font. Still open: screenshots (SVD Lens,
+real Wine Journal), the Eigenflow demo description, the Streamlit sleep note, domain and
+tag, the manual checks and the Actions PR setting. Then 9.2 launch by `docs/deployment.md`.
 
 ## Open inputs and issues
 
@@ -519,9 +521,8 @@ the steps in `docs/deployment.md`.
 - **Sky cost on real hardware:** confirm < 2 ms/frame on a mid-range laptop and a phone
   in Phase 8.2; this machine is likely faster than mid-range.
 - `npm test` fails to start if another `astro preview` is running (Astro allows one).
-- **Font weight:** kept the opsz Newsreader (budgets pass with applied throttling); switching
-  to weight-only would improve PageSpeed Insights' simulated LCP (home ~3.2 → ~2.4 s) at the
-  cost of a wider hero. Sebastian's call (8.2).
+- **Font weight:** kept the opsz Newsreader (Sebastian, 2026-10-22); the weight-only files
+  would improve PageSpeed Insights' simulated LCP (home ~3.2 → ~2.4 s) but widen the hero.
 - **Streamlit demos sleep:** the Quantum Playground demo showed Streamlit's "gone to
   sleep" screen when opened. Idle Community Cloud apps sleep, so visitors may have to wake
   them. Consider a keep-alive or a note near the demo buttons.

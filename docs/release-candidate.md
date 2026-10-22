@@ -60,18 +60,22 @@ Tick these on real hardware; anything that fails becomes a fix before Phase 9.
 
 ## Decisions for Phase 9 (9.1 content review)
 
-- [ ] **Pitch:** the hero line is still the draft ("I build backends for data and ML
+- [x] **Pitch:** the hero line is still the draft ("I build backends for data and ML
       products, down to the math.").
-- [ ] **PadStats title:** LinkedIn says "Software Engineer"; the site and resume say
+      **Decided:** keep the draft (2026-10-22).
+- [x] **PadStats title:** LinkedIn says "Software Engineer"; the site and resume say
       "Founding Software Engineer" (resume: "… – Cloud & ML Systems"). Align one way.
-- [ ] **Phone number:** shown today (also in the resume and the public repository); keep?
+      **Decided:** keep "Founding Software Engineer" on the site; Sebastian updates LinkedIn.
+- [x] **Phone number:** shown today (also in the resume and the public repository); keep?
+      **Decided:** keep it shown.
 - [ ] **Screenshots:** SVD Lens has none; Wine Journal shows the design prototype, labelled
       as such. Real captures when available.
 - [ ] **Eigenflow demo description:** the 14-second recording is silent (checked), so it needs
       no captions, but WCAG 1.2.1 asks for a short text description of what it shows; today
       the caption is only "Demo recording". One sentence.
-- [ ] **Headline font:** kept the optical-size Newsreader; the lighter weight-only files would
+- [x] **Headline font:** kept the optical-size Newsreader; the lighter weight-only files would
       improve PageSpeed Insights' simulated mobile LCP (~3.2 → ~2.4 s) but draw the hero wider.
+      **Decided:** keep the optical-size Newsreader.
 - [ ] **Streamlit demos sleep** when idle (Quantum Playground showed the wake-up screen); a
       note by the demo buttons, or a keep-alive, is optional.
 - [ ] **Custom domain** (optional) and the release tag `v1.0.0`.
