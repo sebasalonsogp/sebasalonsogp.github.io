@@ -450,8 +450,9 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
 - Tests: 117 tests × 3 browsers: 348 passed, 3 skipped. `npm run verify` passes.
 - CI (Lighthouse, GPU-less runner): TBT and the score are now measurable because the
   explorer idles on software WebGL — home TBT ~0.8 s / score 81, Eigenflow ~0.9 s / 77;
-  LCP and CLS unchanged. Watch: `contact › without clipboard access…` failed once on CI (status
-  stayed empty) and passed on retry; not reproduced locally.
+  LCP and CLS unchanged. `contact › without clipboard access…` flaked twice on CI (the status,
+  which clears after 2.4 s, was read too late); fixed in 8.5 by clicking and reading in one
+  step.
 
 ## Slice 8.4 — SEO and sharing
 
