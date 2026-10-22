@@ -76,5 +76,7 @@ export const site: Site = siteSchema.parse({
 });
 
 /** Document titles, shared by the static pages and the explorer's in-page visits. */
-export const homeTitle = `${site.name} — Backend and ML systems engineer`;
+/** What Sebastian does, in the home title and the structured data. */
+export const role = 'Backend and ML systems engineer';
+export const homeTitle = `${site.name} — ${role}`;
 export const projectTitle = (title: string) => `${title} — ${site.name}`;

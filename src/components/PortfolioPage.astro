@@ -2,6 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { homeTitle, projectTitle, site } from '../data/site';
 import { getEducation, getProjects, getRoles } from '../lib/content';
+import { withBase } from '../lib/format';
+import { personData, projectData } from '../lib/seo';
 import { toSystemData } from '../lib/system-data';
 import ContactSection from './ContactSection.astro';
 import ExperienceList from './ExperienceList.astro';
@@ -35,9 +37,16 @@ const title = visit ? projectTitle(visit.project.data.title) : homeTitle;
 const description = visit
   ? visit.project.data.summary
   : `${site.pitch.lead} ${site.pitch.emphasis} ${site.lede}`;
+const image = visit ? `og/${visit.project.id}.jpg` : 'og/home.jpg';
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+const homeUrl = new URL(withBase(''), Astro.site).href;
+const imageUrl = new URL(withBase(image), Astro.site).href;
+const structuredData = visit
+  ? projectData(visit.project, pageUrl, homeUrl, imageUrl)
+  : personData(homeUrl, imageUrl);
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} image={image} structuredData={structuredData}>
   <SiteNav slot="header" />
   <Hero initialProject={initialProject} system={await toSystemData(projects)}>
     {visit && <ProjectVisit {...visit} />}

@@ -11,8 +11,8 @@ live** (`main` a41cd97, deploy run 39778943782) and its checkpoint is approved. 
 has started:** Phase 6 is live (`main` 61f943a, deploy run 39783890725) and its checkpoint is
 approved. **Phase 7 is live** (`main` 66ac6ae) and its checkpoint is approved. CI now runs in the
 Playwright container (`main` 93ffdce). **Phase 8 has started:** 8.1 (accessibility audit)
-and 8.2 are live (`main` eee0c9a); 8.1's screen-reader pass is outstanding. 8.3
-(cross-browser) is on `feat/explorer-software`, not merged; real devices outstanding. Every push to `main` runs the CI checks and deploys only if they pass.
+and 8.2 are live; 8.3's automated part is live (`main` 165747f); real devices and the
+screen-reader pass are outstanding. 8.4 (SEO and sharing) is on `feat/seo`, not merged. Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -452,11 +452,26 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
   LCP and CLS unchanged. Watch: `contact › without clipboard access…` failed once on CI (status
   stayed empty) and passed on retry; not reproduced locally.
 
+## Slice 8.4 — SEO and sharing
+
+- `BaseLayout.astro` head (canonical, Open Graph, Twitter, JSON-LD, icons, manifest,
+  theme colour); `src/lib/seo.ts` builds the JSON-LD only from `site.ts` and project entries
+  (`role` moved into `site.ts` for the home title and `jobTitle`); endpoints `sitemap.xml`,
+  `robots.txt`, `site.webmanifest`; scripts `og-images.mjs` (`npm run og`) and `icons.mjs`
+  (`npm run icons`) with their outputs committed (six cards ~75–95 KB; favicon.ico 16/32,
+  apple-touch-icon 180, icons 192/512).
+- After adding or renaming a project, or changing the hero: `npm run og`, then rebuild; the
+  SEO test fails if a page has no image of its own.
+- Tests (`seo.spec.ts`): canonical and sharing tags per page, a 1200×630 JPEG per page,
+  JSON-LD agreeing with the visible name, contact links and source links, sitemap = the
+  site's pages (each 200), robots.txt → sitemap, icons and manifest sizes, 404 untagged,
+  `noindex` kept. 122 tests × 3 browsers: 363 passed, 3 skipped. `npm run verify` passes.
+
 ## Next task
 
-Real-device checks (Sebastian; lists in `docs/browser-device-pass.md` and
-`docs/accessibility-audit.md`). Then Phase 8, slice 8.4 — SEO and sharing: titles,
-descriptions, Open Graph image, canonical URLs, sitemap, structured data (Person), favicons.
+Phase 8, slice 8.5 — GitHub data refresh: a script that updates `src/data/github.json` (last
+commit, lines of code) and a scheduled workflow that opens a PR when it changes. Real-device
+checks and the screen-reader pass remain with Sebastian.
 
 ## Open inputs and issues
 

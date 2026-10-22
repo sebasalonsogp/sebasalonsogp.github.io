@@ -1,14 +1,32 @@
 ---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import Fonts from '../components/Fonts.astro';
 import Sky from '../components/Sky.astro';
+import { site } from '../data/site';
+import { withBase } from '../lib/format';
 import '../styles/global.css';
 
 interface Props {
   title: string;
   description: string;
+  /**
+   * Sharing image under public/ (1200 × 630, made by `npm run og`), e.g. `og/home.jpg`. A
+   * missing file falls back to the home image; a test requires one per page.
+   */
+  image?: string;
+  /** schema.org JSON-LD for the page. */
+  structuredData?: object;
+  /** Off for pages that should not be shared or indexed under their URL (the 404). */
+  shareable?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, image, structuredData, shareable = true } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const exists = (path: string) => existsSync(join(process.cwd(), 'public', path));
+const imagePath = [image, 'og/home.jpg'].find((path) => path && exists(path));
+const imageUrl = imagePath && new URL(withBase(imagePath), Astro.site).href;
+const icon = (path: string) => withBase(path);
 ---
 
 <!doctype html>
@@ -16,11 +34,41 @@ const { title, description } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
     <meta name="description" content={description} />
+    {/* Until launch (Phase 9) nothing is indexed. */}
     <meta name="robots" content="noindex" />
     <meta name="color-scheme" content="dark" />
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
-    <title>{title}</title>
+    <meta name="theme-color" content="#030408" />
+    <link rel="icon" href={icon('favicon.ico')} sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href={icon('favicon.svg')} />
+    <link rel="apple-touch-icon" href={icon('apple-touch-icon.png')} />
+    <link rel="manifest" href={icon('site.webmanifest')} />
+    {shareable && (
+      <>
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={site.name} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonical} />
+        {imageUrl && (
+          <>
+            <meta property="og:image" content={imageUrl} />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
+            <meta property="og:image:alt" content={title} />
+          </>
+        )}
+        <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
+        {structuredData && (
+          <script
+            type="application/ld+json"
+            set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')}
+          />
+        )}
+      </>
+    )}
     <Fonts />
   </head>
   <body>

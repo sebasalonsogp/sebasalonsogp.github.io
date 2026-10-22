@@ -7,7 +7,11 @@ import { withBase } from '../lib/format';
 // docs/design-spec.md, "404": the line and a way back, with the black hole behind them.
 ---
 
-<BaseLayout title={`Page not found — ${site.name}`} description="This page does not exist.">
+<BaseLayout
+  title={`Page not found — ${site.name}`}
+  description="This page does not exist."
+  shareable={false}
+>
   <section class="lost gut" aria-labelledby="lost-heading">
     <BlackHole eager />
     <div class="wrap">
