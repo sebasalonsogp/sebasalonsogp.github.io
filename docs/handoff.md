@@ -447,6 +447,10 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
 - Outstanding (needs Sebastian): real Safari / iOS / Android, WebM playback on Safari (no
   ffmpeg here for an MP4), mid-range performance, the screen-reader pass.
 - Tests: 117 tests × 3 browsers: 348 passed, 3 skipped. `npm run verify` passes.
+- CI (Lighthouse, GPU-less runner): TBT and the score are now measurable because the
+  explorer idles on software WebGL — home TBT ~0.8 s / score 81, Eigenflow ~0.9 s / 77;
+  LCP and CLS unchanged. Watch: `contact › without clipboard access…` failed once on CI (status
+  stayed empty) and passed on retry; not reproduced locally.
 
 ## Next task
 
