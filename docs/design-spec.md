@@ -384,6 +384,9 @@ The timeline and constellation enhance these lists, which are always in the HTML
 - Pointer targets are effectively ≥ 24×24 px (WCAG 2.5.8): sized, padded, or given an
   invisible hit area (planet labels, constellation stars); `a11y.spec.ts` checks it.
 - Instant moves (reduced motion, direct loads) finish when they start, not on the next frame.
+- Software WebGL (SwiftShader, llvmpipe, Microsoft Basic Render; `src/features/gpu.ts`):
+  the explorer behaves as with reduced motion (frames on demand, instant flights, no drift;
+  hero `data-renderer="software"`) and the black hole draws one frame.
 
 ## Media
 

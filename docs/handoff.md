@@ -11,8 +11,8 @@ live** (`main` a41cd97, deploy run 39778943782) and its checkpoint is approved. 
 has started:** Phase 6 is live (`main` 61f943a, deploy run 39783890725) and its checkpoint is
 approved. **Phase 7 is live** (`main` 66ac6ae) and its checkpoint is approved. CI now runs in the
 Playwright container (`main` 93ffdce). **Phase 8 has started:** 8.1 (accessibility audit)
-is on `feat/a11y-audit` except the screen-reader pass; 8.2 (performance budgets) is on
-`feat/performance` (stacked on it). Neither is merged. Every push to `main` runs the CI checks and deploys only if they pass.
+and 8.2 are live (`main` eee0c9a); 8.1's screen-reader pass is outstanding. 8.3
+(cross-browser) is on `feat/explorer-software`, not merged; real devices outstanding. Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -435,11 +435,24 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
   there (printed as n/a). The black hole already falls back to a still frame on software
   renderers; the explorer should too (8.3). With a GPU, TBT is ~0.15–0.8 s.
 
+## Slice 8.3 — cross-browser and devices
+
+- Explorer on software WebGL: still mode (`src/features/gpu.ts`, shared with the black hole;
+  `ambientLoop` gained `still`). Measured on SwiftShader at 4× CPU: long tasks 28% → 0%,
+  page 26 → 60 fps. Motion tests hide the renderer name (`asIfGpu` in `helpers.ts`); a new
+  test forces a software name and checks the system holds still and visits arrive at once.
+- Engine and device results in `docs/browser-device-pass.md`: all three engines render
+  every section; emulated iPhone 13 and Pixel 7 tap through explorer, timeline and stars.
+  The first timeline-tap reading ("no") was a script error (role scrolled out of its frame).
+- Outstanding (needs Sebastian): real Safari / iOS / Android, WebM playback on Safari (no
+  ffmpeg here for an MP4), mid-range performance, the screen-reader pass.
+- Tests: 117 tests × 3 browsers: 348 passed, 3 skipped. `npm run verify` passes.
+
 ## Next task
 
-8.1 screen-reader pass (Sebastian). Then Phase 8, slice 8.3 — cross-browser and device pass
-(Chromium, Firefox, Safari desktop and iOS, Android Chrome), including the explorer on
-software renderers and real-device performance (sky, explorer, black hole).
+Real-device checks (Sebastian; lists in `docs/browser-device-pass.md` and
+`docs/accessibility-audit.md`). Then Phase 8, slice 8.4 — SEO and sharing: titles,
+descriptions, Open Graph image, canonical URLs, sitemap, structured data (Person), favicons.
 
 ## Open inputs and issues
 

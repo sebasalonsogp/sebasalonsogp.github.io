@@ -68,7 +68,8 @@ before ending a session.
 - [ ] 8.1 Accessibility audit. Automated, keyboard, contrast, targets and motion done
       (`docs/accessibility-audit.md`); screen-reader pass (NVDA, VoiceOver) outstanding.
 - [x] 8.2 Performance budgets + Lighthouse CI.
-- [ ] 8.3 Cross-browser and device pass.
+- [ ] 8.3 Cross-browser and device pass. Engines, emulated phones and software WebGL done
+      (`docs/browser-device-pass.md`); real Safari / iOS / Android devices outstanding.
 - [ ] 8.4 SEO, Open Graph, sitemap, structured data.
 - [ ] 8.5 GitHub data refresh automation.
 - [ ] 8.6 Analytics (optional).
