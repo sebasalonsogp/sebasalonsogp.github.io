@@ -5,7 +5,8 @@ import snapshotJson from '../data/github.json';
 const snapshotSchema = z.record(
   z.string().regex(/^[\w.-]+\/[\w.-]+$/),
   z.strictObject({
-    lastCommit: z.iso.date(),
+    // When the newest commit on the default branch was made (UTC), from `npm run sync:github`.
+    lastCommit: z.iso.datetime(),
     loc: z.number().int().positive(),
   }),
 );

@@ -12,7 +12,8 @@ has started:** Phase 6 is live (`main` 61f943a, deploy run 39783890725) and its 
 approved. **Phase 7 is live** (`main` 66ac6ae) and its checkpoint is approved. CI now runs in the
 Playwright container (`main` 93ffdce). **Phase 8 has started:** 8.1 (accessibility audit)
 and 8.2 are live; 8.3's automated part is live (`main` 165747f); real devices and the
-screen-reader pass are outstanding. 8.4 (SEO and sharing) is on `feat/seo`, not merged. Every push to `main` runs the CI checks and deploys only if they pass.
+screen-reader pass are outstanding. 8.4 (SEO and sharing) is live (`main` 7428f4c). 8.5
+(GitHub data refresh) is on `feat/github-sync`, not merged. Every push to `main` runs the CI checks and deploys only if they pass.
 
 ## Slices 2.1 + 2.2 — sky and motion policy
 
@@ -467,11 +468,28 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
   site's pages (each 200), robots.txt → sitemap, icons and manifest sizes, 404 untagged,
   `noindex` kept. 122 tests × 3 browsers: 363 passed, 3 skipped. `npm run verify` passes.
 
+## Slice 8.5 — GitHub data refresh
+
+- `scripts/sync-github.mjs` (`npm run sync:github`): GitHub API for the default branch's
+  newest commit, a shallow clone for lines of code (rule in `docs/content.md`), output
+  formatted with Prettier. `lastCommit` is now a UTC timestamp (`z.iso.datetime()`).
+- First run: Wine Journal 2026-10-22, 38,433 → 55,437 lines (repository grew; planet ~5%
+  larger); Eigenflow 7,291 → 7,422; the others unchanged apart from times. Sharing cards
+  regenerated (`npm run og`) for the new orbit order.
+- `.github/workflows/github-data.yml`: Mondays 06:17 UTC and on demand; re-measures, and when
+  the snapshot changed checks format, types, build and budgets, then pushes
+  `data/github-refresh` and opens or updates a PR. PRs opened with GITHUB_TOKEN do not start
+  CI; merging deploys with the full checks. **Needs** the repository setting "Allow GitHub
+  Actions to create and approve pull requests" (currently off); without it the job pushes the
+  branch and its summary links to open the PR by hand. Not run on GitHub yet: a manual
+  dispatch only works once the workflow is on `main`.
+- 122 tests × 3 browsers: 363 passed, 3 skipped. `npm run verify` passes.
+
 ## Next task
 
-Phase 8, slice 8.5 — GitHub data refresh: a script that updates `src/data/github.json` (last
-commit, lines of code) and a scheduled workflow that opens a PR when it changes. Real-device
-checks and the screen-reader pass remain with Sebastian.
+After merging: run "Refresh GitHub data" once by hand (Actions tab or
+`gh workflow run github-data.yml`) to confirm it. Then 8.6 (optional analytics) or Phase 9.
+Real-device checks and the screen-reader pass remain with Sebastian.
 
 ## Open inputs and issues
 
@@ -495,9 +513,8 @@ checks and the screen-reader pass remain with Sebastian.
 - Phone is shown (Sebastian's decision); it is also in the public repo and resume.
 - Eigenflow's page stacks three media items before the text on phones; Phase 4.2's
   carousel (dots + lightbox) should replace the stack.
-- SVD Lens and Exoplanet share `lastCommit` 2026-09-15; ties sort by id, so Exoplanet
-  orbits inside SVD Lens (the concept had the reverse). Real commit times from the sync
-  script (Phase 8) would settle it.
+- Orbit order: settled in 8.5 by real commit times (SVD Lens 04:10 vs Exoplanet 04:09 UTC on
+  15 Sep), so SVD Lens now orbits inside Exoplanet, as in the concept.
 - Final pitch (draft in use); PadStats title on LinkedIn ("Software Engineer") vs resume
   ("Founding Software Engineer"); screenshots for SVD Lens and the real Wine Journal app. The resume
   lists the PadStats role as "Founding Software Engineer – Cloud & ML Systems".

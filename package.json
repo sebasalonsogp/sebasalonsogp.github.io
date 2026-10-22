@@ -19,7 +19,8 @@
     "budgets": "node scripts/check-budgets.mjs",
     "lighthouse": "node scripts/lighthouse.mjs",
     "og": "astro build && node scripts/og-images.mjs",
-    "icons": "node scripts/icons.mjs"
+    "icons": "node scripts/icons.mjs",
+    "sync:github": "node scripts/sync-github.mjs"
   },
   "dependencies": {
     "@fontsource-variable/newsreader": "5.3.0",

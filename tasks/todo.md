@@ -71,7 +71,7 @@ before ending a session.
 - [ ] 8.3 Cross-browser and device pass. Engines, emulated phones and software WebGL done
       (`docs/browser-device-pass.md`); real Safari / iOS / Android devices outstanding.
 - [x] 8.4 SEO, Open Graph, sitemap, structured data.
-- [ ] 8.5 GitHub data refresh automation.
+- [x] 8.5 GitHub data refresh automation.
 - [ ] 8.6 Analytics (optional).
 
 ## Phase 9 — Launch
