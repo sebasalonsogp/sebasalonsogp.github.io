@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import { PerspectiveCamera, Vector3 } from 'three';
+import { applyPose, explorePose } from '../../src/features/explorer/camera';
+import { layoutSystem, type SystemData } from '../../src/features/explorer/system';
 import { asIfGpu, setRendererName, withoutWebGL2 } from './helpers';
 
 const EXPLORER_CHUNK = /\/_astro\/explorer\.[^/]+\.js$/;
@@ -327,5 +330,51 @@ test.describe('explorer on a software renderer', () => {
     // A visit arrives without a flight.
     await page.locator('.planet-label').first().click();
     await expect(hero(page)).toHaveAttribute('data-mode', 'visit');
+  });
+});
+
+test.describe('explore framing', () => {
+  // Projected with Three.js itself, so the check does not rely on the framing's own formula.
+  test('the whole system stays inside the hero at any window shape and tilt', async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(browserName !== 'chromium', 'Pure geometry; one browser is enough');
+    await page.goto('/');
+    const data = await page.evaluate(
+      () =>
+        JSON.parse(
+          document.querySelector('script[data-explorer-system]')!.textContent!,
+        ) as SystemData,
+    );
+    const { extent } = layoutSystem(data.projects);
+    const camera = new PerspectiveCamera();
+    const failures: string[] = [];
+    // Hero sizes: wide and short (the reported case), common desktops, a tablet and a phone.
+    for (const [width, height] of [
+      [1920, 736],
+      [1728, 699],
+      [2560, 900],
+      [1440, 828],
+      [1200, 660],
+      [1024, 660],
+      [390, 844],
+    ] as const) {
+      // Default tilt, and the drag limits (0.06 to 1.15).
+      for (const pitch of [undefined, 0.06, 1.15]) {
+        applyPose(camera, explorePose(width, height, extent, pitch), width, height);
+        camera.updateMatrixWorld(); // Three.js updates it when rendering; here, by hand.
+        for (let i = 0; i < 72; i++) {
+          const angle = (i / 72) * Math.PI * 2;
+          const point = new Vector3(Math.cos(angle) * extent, 0, Math.sin(angle) * extent);
+          const y = ((1 - point.project(camera).y) / 2) * height;
+          if (y < 0 || y > height) {
+            failures.push(`${width}×${height} pitch ${pitch ?? 'default'}: y ${Math.round(y)}`);
+            break;
+          }
+        }
+      }
+    }
+    expect(failures).toEqual([]);
   });
 });

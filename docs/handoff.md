@@ -500,6 +500,16 @@ scrolls up and opens the visit` timed out in Chromium and passed on retry (watch
   (content, `indexable`, optional domain, verification, `v1.0.0` tag) and rollback (revert
   on `main`, which alone may deploy; undo launch or domain).
 
+## Fix — system cut off at the hero's bottom (2026-10-23)
+
+- Reported by Sebastian: in a wide, short window the outer orbit and the belt ran past the
+  hero's bottom edge, so planets vanished into the next section. The explore distance only
+  fitted the width. `explorePose` now also fits the outer edge vertically for the current
+  tilt (`camera.ts`); `explorer.ts` passes the tilt each frame.
+- Checked: 1920×800 before (orbit cut at the edge) and after (whole system inside); 1200×660
+  unchanged. Test `explore framing` projects the belt edge with Three.js at seven hero sizes
+  and three tilts (fails on the old framing: 742 px in a 736 px hero). 364 passed, 5 skipped.
+
 ## Next task
 
 Phase 8 checkpoint (release candidate): Sebastian works through `docs/release-candidate.md`.

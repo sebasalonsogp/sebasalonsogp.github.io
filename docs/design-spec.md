@@ -127,6 +127,12 @@ All tokens live in `src/styles/tokens.css`; values taken from the concept.
   `max(12, f·10.6 / (0.34·W))` (phone `f·7.9 / (0.47·W)`), system centre at 64% / 56% of the
   hero (phone 50% / 68%) via `setViewOffset`. Phones are < 760 px wide. The fit radius scales
   with the system's outer edge (×1.184 desktop, ×0.883 phone), so more projects zoom out.
+  The distance is also at least what keeps the system's outer edge (the belt) inside the
+  hero vertically, with `max(24 px, 4% of H)` to spare, at the current tilt: the near point of
+  a ring of radius r projects `f·r·sin p / (d − r·cos p)` below the centre. Wide, short
+  windows (and steep drags) used to push the outer orbit past the hero's bottom edge; the
+  pose is recomputed every frame, so tilting backs the camera off. At 1440×900 and similar
+  sizes the width fit still decides.
 - Bodies (`src/features/explorer/system.ts`, `bodies.ts`, `shaders.ts`), from the page's
   embedded project data: orbit `2.3 + 1.15·i` in last-commit order; starting angle
   `2.2 + i·2.39996` (golden angle, ≈ the concept's hand-picked angles); Kepler speed

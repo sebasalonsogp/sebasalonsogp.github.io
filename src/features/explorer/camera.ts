@@ -11,6 +11,10 @@ const INITIAL_YAW = 0.7;
 const FRAME_DESKTOP = 10.6 / 8.95;
 const FRAME_PHONE = 7.9 / 8.95;
 const MIN_DISTANCE = 12;
+/** Room kept between the system's outer edge and the hero's top and bottom (CSS px, and as a
+ * share of the hero's height, whichever is larger). */
+const EDGE_MARGIN_PX = 24;
+const EDGE_MARGIN = 0.04;
 
 export interface CameraPose {
   target: readonly [number, number, number];
@@ -27,19 +31,56 @@ export function focalLength(width: number, height: number): number {
   return Math.min(height * 0.95, width * 1.35);
 }
 
+/** The resting "explore" pitch: steeper on phones, where the system sits below the text. */
+export function explorePitch(width: number): number {
+  return width < PHONE_MAX_WIDTH ? 0.62 : 0.4;
+}
+
+/**
+ * Camera distance at which a ring of `radius` on the orbital plane, seen at `pitch`, stays
+ * between `above` and `below` CSS px of the projection centre. Its near point projects
+ * f·r·sin p / (d − r·cos p) below the centre and its far point f·r·sin p / (d + r·cos p) above.
+ */
+function distanceToFit(
+  radius: number,
+  pitch: number,
+  focal: number,
+  above: number,
+  below: number,
+): number {
+  const lift = focal * radius * Math.sin(pitch);
+  const depth = radius * Math.cos(pitch);
+  return Math.max(depth + lift / Math.max(1, below), lift / Math.max(1, above) - depth);
+}
+
 /** The resting "explore" view: whole system to the right on desktop, below the text on phones.
- * `extent` is the system's outer radius (the belt's outer edge). */
-export function explorePose(width: number, height: number, extent: number): CameraPose {
+ * `extent` is the system's outer radius (the belt's outer edge). The camera stands back far
+ * enough for the system to fit the available width and to stay inside the hero vertically at
+ * the current `pitch` (wide, short windows and steep tilts would otherwise push the near side
+ * of the outer orbit past the hero's bottom edge). */
+export function explorePose(
+  width: number,
+  height: number,
+  extent: number,
+  pitch = explorePitch(width),
+): CameraPose {
   const phone = width < PHONE_MAX_WIDTH;
   const available = (phone ? 0.47 : 0.34) * width;
   const radius = extent * (phone ? FRAME_PHONE : FRAME_DESKTOP);
+  const focal = focalLength(width, height);
+  const cy = phone ? 0.68 : 0.56;
+  const margin = Math.max(EDGE_MARGIN_PX, EDGE_MARGIN * height);
   return {
     target: [0, 0, 0],
     yaw: INITIAL_YAW,
-    pitch: phone ? 0.62 : 0.4,
-    distance: Math.max(MIN_DISTANCE, (focalLength(width, height) * radius) / available),
+    pitch,
+    distance: Math.max(
+      MIN_DISTANCE,
+      (focal * radius) / available,
+      distanceToFit(extent, pitch, focal, cy * height - margin, (1 - cy) * height - margin),
+    ),
     cx: phone ? 0.5 : 0.64,
-    cy: phone ? 0.68 : 0.56,
+    cy,
   };
 }
 

@@ -14,6 +14,7 @@ import { setSkyYaw } from '../sky/sky';
 import { createBodies } from './bodies';
 import {
   applyPose,
+  explorePitch,
   explorePose,
   focalLength,
   interpolatePose,
@@ -232,10 +233,11 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
 
   // Camera poses for the current moment.
   const planetAt = (id: string) => bodies.planets[indexOf.get(id) ?? 0]!;
-  const explorePoseNow = (): CameraPose => {
-    const pose = explorePose(width, height, layout.extent);
-    return { ...pose, yaw, pitch: pitch ?? pose.pitch };
-  };
+  // The distance follows the current tilt, so the system stays inside the hero when dragged.
+  const explorePoseNow = (): CameraPose => ({
+    ...explorePose(width, height, layout.extent, pitch),
+    yaw,
+  });
   const visitPoseNow = (id: string): CameraPose => {
     const planet = planetAt(id);
     const { x, y, z } = planet.position;
@@ -573,7 +575,7 @@ export function mountExplorer(hero: HTMLElement): ExplorerController | null {
       x: event.clientX,
       y: event.clientY,
       yaw,
-      pitch: pitch ?? explorePose(width, height, layout.extent).pitch,
+      pitch: pitch ?? explorePitch(width),
       moved: false,
       mouse: event.pointerType === 'mouse',
     };
